@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 const UserRoutes = React.lazy(() => import("./routes/UserRoutes"));
 const AdminRoutes = React.lazy(() => import("./routes/AdminRoutes"));
 const Home = React.lazy(() => import("./pages/Home"));
+import { Button, Typography, ThemeProvider, createTheme } from "@mui/material";
 
 const Fallback = () => <div>Loading...</div>; // Custom fallback loader
 
@@ -14,18 +15,34 @@ export const LazyRoute = ({ Component }) => (
   </React.Suspense>
 );
 
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#1976d2", // Customize primary color
+    },
+    secondary: {
+      main: "#dc004e", // Customize secondary color
+    },
+  },
+});
+
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Home route */}
-        <Route path="/" element={<LazyRoute Component={Home} />} />
+    <ThemeProvider theme={theme}>
+      <Router>
+        <Routes>
+          {/* Home route */}
+          <Route path="/" element={<LazyRoute Component={Home} />} />
 
-        {/* User and Admin routes */}
-        <Route path="user/*" element={<LazyRoute Component={UserRoutes} />} />
-        <Route path="admin/*" element={<LazyRoute Component={AdminRoutes} />} />
-      </Routes>
-    </Router>
+          {/* User and Admin routes */}
+          <Route path="user/*" element={<LazyRoute Component={UserRoutes} />} />
+          <Route
+            path="admin/*"
+            element={<LazyRoute Component={AdminRoutes} />}
+          />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 

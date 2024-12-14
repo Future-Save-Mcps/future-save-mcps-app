@@ -1,4 +1,5 @@
 // components/SignUpForm.jsx
+import { Button } from "@mui/material";
 import React, { useState } from "react";
 
 const SignUpForm = () => {
@@ -88,12 +89,13 @@ const SignUpForm = () => {
             className="w-full p-3 border border-gray-300 rounded-md"
           />
         </div>
-        <button
+        {/* <button
           type="submit"
           className="w-full py-3 bg-blue-900 text-white rounded-md hover:bg-blue-800"
         >
           Next
-        </button>
+        </button> */}
+          <Button variant="outlined">Outlined</Button>
       </form>
     </div>
   );
