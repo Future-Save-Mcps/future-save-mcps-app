@@ -35,11 +35,8 @@ function App() {
           <Route path="/" element={<LazyRoute Component={Home} />} />
 
           {/* User and Admin routes */}
-          <Route path="user/*" element={<LazyRoute Component={UserRoutes} />} />
-          <Route
-            path="admin/*"
-            element={<LazyRoute Component={AdminRoutes} />}
-          />
+          <Route path="user/*" element={<UserRoutes />} />
+          <Route path="admin/*" element={<AdminRoutes />} />
         </Routes>
       </Router>
     </ThemeProvider>
