@@ -1,14 +1,22 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./Loader.css";
 
 // Lazy loading route components
 const UserRoutes = React.lazy(() => import("./routes/UserRoutes"));
 const AdminRoutes = React.lazy(() => import("./routes/AdminRoutes"));
 const Home = React.lazy(() => import("./pages/Home"));
-import { Button, Typography, ThemeProvider, createTheme } from "@mui/material";
+import { ThemeProvider, createTheme } from "@mui/material";
 
-const Fallback = () => <div>Loading...</div>; // Custom fallback loader
+const Loader = () => {
+  return <span className="loader"></span>;
+};
 
+export const Fallback = () => (
+  <div className="flex-1 bg-white flex justify-center items-center min-h-[70vh] h-[100%]w-[100%]">
+    <Loader />
+  </div>
+);
 export const LazyRoute = ({ Component }) => (
   <React.Suspense fallback={<Fallback />}>
     <Component />
