@@ -16,12 +16,51 @@ export const LazyRoute = ({ Component }) => (
 );
 
 const theme = createTheme({
+  components: {
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          "&:focus": {
+            outline: "none",
+            border: "none",
+          },
+        },
+      },
+    },
+    MuiModal: {
+      styleOverrides: {
+        root: {
+          "&:focus": {
+            outline: "none",
+            border: "none",
+          },
+        },
+      },
+    },
+    MuiBackdrop: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "rgba(0, 0, 0, 0.24)",
+          backdropFilter: "blur(8px)",
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          "&:focus-within": {
+            outline: "none",
+          },
+        },
+      },
+    },
+  },
   palette: {
     primary: {
-      main: "#1976d2", // Customize primary color
+      main: "#1976d2",
     },
     secondary: {
-      main: "#dc004e", // Customize secondary color
+      main: "#dc004e",
     },
   },
 });
