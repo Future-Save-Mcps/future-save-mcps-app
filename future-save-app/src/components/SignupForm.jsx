@@ -1,6 +1,7 @@
 // components/SignUpForm.jsx
 import { Button } from "@mui/material";
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const SignUpForm = () => {
   const [formData, setFormData] = useState({
@@ -89,13 +90,16 @@ const SignUpForm = () => {
             className="w-full p-3 border border-gray-300 rounded-md"
           />
         </div>
-        {/* <button
-          type="submit"
-          className="w-full py-3 bg-blue-900 text-white rounded-md hover:bg-blue-800"
-        >
-          Next
-        </button> */}
-          <Button variant="outlined">Outlined</Button>
+        <Link to={"/user"}>
+          <button
+            // type="submit"
+            className="w-full py-3 bg-primary text-white rounded-md hover:bg-blue-800"
+          >
+            go to user dashboard
+          </button>
+        </Link>
+
+        {/* <Button variant="outlined">go to iser</Button> */}
       </form>
     </div>
   );
