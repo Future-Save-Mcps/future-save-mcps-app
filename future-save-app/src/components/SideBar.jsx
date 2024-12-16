@@ -113,7 +113,7 @@ const SideBar = ({ toggleSidebar }) => {
             <div
               onClick={handleOpen}
               className={` py-3 font-[500] px-4 rounded-xl flex items-center gap-4  
-            text-white hover:bg-[#1e3774]`}
+            text-white hover:bg-[#fc242b]`}
             >
               <LogoutIcon color="white" />
               Log Out
