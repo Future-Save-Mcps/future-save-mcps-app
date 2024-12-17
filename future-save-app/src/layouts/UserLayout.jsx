@@ -12,7 +12,7 @@ const UserLayout = () => {
   };
 
   return (
-    <div className="flex min-h-screen  ">
+    <div className="flex min-h-screen m-auto max-w-screen-2xl relative  ">
       <div
         className={`fixed top-0 left-0  h-screen w-fit z-30 text-white transform transition-transform duration-300 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
