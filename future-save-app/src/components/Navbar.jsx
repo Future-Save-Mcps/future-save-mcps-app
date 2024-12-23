@@ -36,7 +36,7 @@ const Navbar = () => {
   return (
     <>
       <div className="flex w-[100%] md:p-4 py-4 md:pt-[60px]  justify-between items-center pr-4  pl-[50px] bg-white">
-        <div className="text-lg font-semibold">{getGreetingText()}</div>
+        <div className="text-[24px] font-[600]">{getGreetingText()}</div>
         <div className="flex items-center space-x-4">
           {/* {location.pathname === "/user" && (
             <div>Hope you are doing great!</div>
