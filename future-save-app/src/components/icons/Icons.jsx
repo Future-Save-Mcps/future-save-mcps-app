@@ -122,3 +122,22 @@ export const PercentIcon = () => (
     />
   </svg>
 );
+
+export const WarningIcon = ({ color = "currentColor" }) => (
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 22 22"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="11" cy="11" r="10" stroke={color} stroke-width="1.5" />
+    <circle cx="11" cy="15" r="1" fill={color} />
+    <path
+      d="M11 6V12"
+      stroke={color}
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+  </svg>
+);

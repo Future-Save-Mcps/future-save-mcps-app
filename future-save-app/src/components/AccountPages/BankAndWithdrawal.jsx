@@ -4,6 +4,8 @@ import { Box, Modal, Typography } from "@mui/material";
 import React, { useState } from "react";
 import FormFieldComp from "../form/FormFieldComp";
 import { useForm } from "react-hook-form";
+import CloseIcon from "@mui/icons-material/Close";
+
 
 const style = {
     position: "absolute",
@@ -69,7 +71,6 @@ const BankAndWithdrawal = () => {
       </div>
       <Modal
         open={open}
-        onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
@@ -78,8 +79,24 @@ const BankAndWithdrawal = () => {
       onSubmit={handleSubmit(onSubmit)}
       className=" my-6  h-[100%] overflow-auto hide-scrollbar max-h-[80vh]"
     >
-      <h2 className="text-xl font-semibold mb-4">Update Withdrawal Account</h2>
 
+
+      <div className="flex justify-between mb-4 items-center">
+      <h2 className="text-xl font-semibold ">Update Withdrawal Account</h2>
+      <CloseIcon
+              onClick={handleClose}
+              sx={{
+                cursor: "pointer",
+                padding: "5px",
+                width: "35px",
+                height: "35px",
+                borderRadius: "50%",
+                backgroundColor: "#F8F8FA",
+              }}
+            />
+
+      </div>
+     
       {/* First Name */}
       <FormFieldComp
         label="First Name"
