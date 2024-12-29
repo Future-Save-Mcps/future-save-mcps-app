@@ -1,70 +1,3 @@
-// import React, { useEffect, useState } from "react";
-
-// const FormFieldComp = ({
-//   label,
-//   name,
-//   type = "text",
-//   placeholder,
-//   register,
-//   validation,
-//   errors,
-//   options = [],
-//   icon,
-// }) => {
-//   const [showError, setShowError] = useState(false);
-
-//   useEffect(() => {
-//     if (errors[name]) {
-//       setShowError(true);
-//       const timer = setTimeout(() => setShowError(false), 5000);
-//       return () => clearTimeout(timer);
-//     }
-//   }, [errors, name]);
-
-//   return (
-//     <div className="mb-4">
-//       <label className="block text-sm font-medium text-gray-700 mb-1">
-//         {label}
-//       </label>
-//       <div className="relative">
-//         {type === "select" ? (
-//           <select
-//             {...register(name, validation)}
-//             className="w-full px-2 py-3 rounded-lg border  focus:outline-none
-// "
-//           >
-//             <option value="">Select {label}</option>
-//             {options.map((option, index) => (
-//               <option key={index} value={option.value}>
-//                 {option.label}
-//               </option>
-//             ))}
-//           </select>
-//         ) : (
-//           <input
-//             type={type}
-//             {...register(name, validation)}
-//             placeholder={placeholder}
-//             className={`w-full px-2 py-3 rounded-lg border  focus:outline-none  ${
-//               icon ? "pr-10" : ""
-//             }`}
-//           />
-//         )}
-//         {icon && (
-//           <span className="absolute inset-y-0 right-3 flex items-center text-gray-400 pointer-events-none">
-//             {icon}
-//           </span>
-//         )}
-//       </div>
-//       {errors[name] && showError && (
-//         <p className="text-red-500 mt-1 text-[9px]">{errors[name].message}</p>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default FormFieldComp;
-
 import React, { useEffect, useState } from "react";
 
 const FormFieldComp = ({
@@ -82,13 +15,13 @@ const FormFieldComp = ({
   const [isOpen, setIsOpen] = useState(false); // For custom dropdown
   const [selectedValue, setSelectedValue] = useState(""); // For custom dropdown
 
-  useEffect(() => {
-    if (errors[name]) {
-      setShowError(true);
-      const timer = setTimeout(() => setShowError(false), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [errors, name]);
+  // useEffect(() => {
+  //   if (errors[name]) {
+  //     setShowError(true);
+  //     const timer = setTimeout(() => setShowError(false), 5000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [errors, name]);
 
   const handleSelect = (value) => {
     setSelectedValue(value);
@@ -145,8 +78,8 @@ const FormFieldComp = ({
           </span>
         )}
       </div>
-      {errors[name] && showError && (
-        <p className="text-red-500 mt-1 text-[9px]">{errors[name].message}</p>
+      {errors[name] && (
+        <p className="text-red-500 mt-1 text-[12px]">{errors[name].message}</p>
       )}
     </div>
   );
