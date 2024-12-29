@@ -58,9 +58,9 @@ const LoanManagement = () => {
 
   const { control, handleSubmit, watch } = useForm({
     defaultValues: {
-      paymentType: "advance",
+      paymentType: "this-week",
       numberOfWeeks: "2",
-      weeklyAmount: 31300,
+      weeklyAmount: 5000,
     },
   });
 
@@ -90,10 +90,10 @@ const LoanManagement = () => {
             }}
             className="min-h-[200px] border bg-[#72109D] gap-4 p-4 flex flex-col justify-center items-center flex-1 rounded-2xl"
           >
-            <div className="font-[700] text-[28px] text-[#fff] ">
+            <div className="font-[700] text-center text-[28px] text-[#fff] ">
               Thrift Loan
             </div>
-            <div className="font-[400] text-[16px] text-[#fff]">
+            <div className="font-[400] text-center text-[16px] text-[#fff]">
               4.2% monthly interest
             </div>
             <button
@@ -112,10 +112,10 @@ const LoanManagement = () => {
             }}
             className="min-h-[200px] border bg-[#1DAB40] gap-4 p-4 flex flex-col justify-center items-center flex-1 rounded-2xl"
           >
-            <div className="font-[700] text-[28px] text-[#fff] ">
+            <div className="font-[700] text-center text-[28px] text-[#fff] ">
               Premium Loan
             </div>
-            <div className="font-[400] text-[16px] text-[#fff]">
+            <div className="font-[400] text-center text-[16px] text-[#fff]">
               8.4% monthly interest
             </div>
             <button
@@ -143,10 +143,22 @@ const LoanManagement = () => {
             <OngoingCompletedCard
               onClick={toggleDrawer(true)}
               percentage={20}
+              cardType={"Loan"}
+              loanAmount={"₦375,000.00 "}
+              loanBalance={"₦ 15,650.00"}
+              status={"In Progress"}
+              cardTitle={"Thrift Loan"}
+              remainingDays={" 299 days remaining"}
             />
             <OngoingCompletedCard
               onClick={toggleDrawer(true)}
               percentage={90}
+              cardType={"Loan"}
+              loanAmount={"₦375,000.00 "}
+              loanBalance={"₦ 15,650.00"}
+              status={"In Progress"}
+              cardTitle={"Premium Loan"}
+              remainingDays={" 299 days remaining"}
             />
           </div>
         </div>
@@ -168,7 +180,15 @@ const LoanManagement = () => {
             />
           </div>
           <Warning WarningType="Yellow" text="You Loan is being processed " />
-          <OngoingCompletedCard percentage={20} />
+          <OngoingCompletedCard
+            percentage={90}
+            cardType={"Loan"}
+            loanAmount={"₦375,000.00 "}
+            loanBalance={"₦ 15,650.00"}
+            status={"In Progress"}
+            cardTitle={"Premium Loan"}
+            remainingDays={" 299 days remaining"}
+          />
 
           <div className="flex justify-center items-center">
             <button
