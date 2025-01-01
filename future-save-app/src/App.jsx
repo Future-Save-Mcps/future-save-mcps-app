@@ -6,6 +6,7 @@ import "./Loader.css";
 const UserRoutes = React.lazy(() => import("./routes/UserRoutes"));
 const AdminRoutes = React.lazy(() => import("./routes/AdminRoutes"));
 const Home = React.lazy(() => import("./pages/Home"));
+const Login = React.lazy(() => import("./pages/Login"));
 import { ThemeProvider, createTheme } from "@mui/material";
 
 const Loader = () => {
@@ -79,7 +80,8 @@ function App() {
       <Router>
         <Routes>
           {/* Home route */}
-          <Route path="/" element={<LazyRoute Component={Home} />} />
+          <Route path="/" element={<LazyRoute Component={Login} />} />
+          <Route path="/register" element={<LazyRoute Component={Home} />} />
 
           {/* User and Admin routes */}
           <Route path="user/*" element={<UserRoutes />} />
