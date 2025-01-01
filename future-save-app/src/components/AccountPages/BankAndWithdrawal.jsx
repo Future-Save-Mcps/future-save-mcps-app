@@ -30,6 +30,7 @@ const BankAndWithdrawal = () => {
     const {
         register,
         handleSubmit,
+        setValue,
         formState: { errors },
       } = useForm();
     
@@ -124,6 +125,7 @@ const BankAndWithdrawal = () => {
         label="Gender"
         name="gender"
         type="select"
+        setValue={setValue} 
         register={register}
         validation={{ required: "Gender is required" }}
         errors={errors}

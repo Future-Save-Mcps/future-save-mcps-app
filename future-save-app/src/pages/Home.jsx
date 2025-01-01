@@ -7,7 +7,7 @@ const Home = () => {
       <div className="bg-primary text-[#fff] rounded-b-2xl md:rounded-xl flex-[1] flex justify-center items-center">
         this is fucking responsive
       </div>
-      <div className="border  border-green-500 overflow-auto flex-[2]">
+      <div className=" flex items-center  overflow-auto flex-[1.5]">
         <SignUpForm />
       </div>
     </div>

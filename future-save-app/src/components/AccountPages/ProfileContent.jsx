@@ -27,6 +27,7 @@ const ProfileContent = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm();
 
@@ -125,6 +126,7 @@ const ProfileContent = () => {
               label="Gender"
               name="gender"
               type="select"
+              setValue={setValue} 
               register={register}
               validation={{ required: "Gender is required" }}
               errors={errors}
