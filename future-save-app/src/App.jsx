@@ -2,12 +2,13 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./Loader.css";
 
-// Lazy loading route components
 const UserRoutes = React.lazy(() => import("./routes/UserRoutes"));
 const AdminRoutes = React.lazy(() => import("./routes/AdminRoutes"));
 const Home = React.lazy(() => import("./pages/Home"));
+import { Provider } from "react-redux";
 const Login = React.lazy(() => import("./pages/Login"));
 import { ThemeProvider, createTheme } from "@mui/material";
+import { store } from "./app/store";
 
 const Loader = () => {
   return <span className="loader"></span>;
@@ -76,19 +77,21 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <Router>
-        <Routes>
-          {/* Home route */}
-          <Route path="/" element={<LazyRoute Component={Login} />} />
-          <Route path="/register" element={<LazyRoute Component={Home} />} />
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <Router>
+          <Routes>
+            {/* Home route */}
+            <Route path="/" element={<LazyRoute Component={Login} />} />
+            <Route path="/register" element={<LazyRoute Component={Home} />} />
 
-          {/* User and Admin routes */}
-          <Route path="user/*" element={<UserRoutes />} />
-          <Route path="admin/*" element={<AdminRoutes />} />
-        </Routes>
-      </Router>
-    </ThemeProvider>
+            {/* User and Admin routes */}
+            <Route path="user/*" element={<UserRoutes />} />
+            <Route path="admin/*" element={<AdminRoutes />} />
+          </Routes>
+        </Router>
+      </ThemeProvider>
+    </Provider>
   );
 }
 
