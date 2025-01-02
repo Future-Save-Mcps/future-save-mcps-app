@@ -48,8 +48,6 @@ export const useApiPost = () => {
   return { post, isLoading, isError, error };
 };
 
-
-
 export const useApiGet = () => {
   const { data, error, isLoading, refetch } = useGetDataQuery();
 
@@ -71,4 +69,24 @@ export const useApiGet = () => {
   return { get, data, isLoading, error, refetch };
 };
 
-// Add similar hooks for GET, DELETE, and UPDATE operations as needed
+export const useApiPatch = () => {
+  const [trigger, { isLoading, isError, error }] = usePatchDataMutation();
+
+  const patch = useCallback(
+    async (url, data) => {
+      try {
+        const result = await trigger({ url, data }).unwrap();
+        toast.success("Update successful!", {
+          style: { background: "#FFA500", color: "white" },
+        });
+        return result;
+      } catch (err) {
+        return handleError(err);
+      }
+    },
+    [trigger]
+  );
+
+  return { patch, isLoading, isError, error };
+};
+// remaining hook for delete
