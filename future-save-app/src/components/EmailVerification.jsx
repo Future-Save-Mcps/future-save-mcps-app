@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 
-const EmailVerification = ({ onVerify }) => {
+const EmailVerification = ({ onVerify, agreement = false }) => {
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [timer, setTimer] = useState(30); // Countdown timer
   const inputRefs = useRef([]);
@@ -46,7 +46,9 @@ const EmailVerification = ({ onVerify }) => {
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-white rounded-2xl border">
-      <h2 className="text-xl font-semibold text-center mb-2">Email Verification</h2>
+      <h2 className="text-xl font-semibold text-center mb-2">
+        Email Verification
+      </h2>
       <p className="text-center text-gray-600 mb-6">
         We sent an OTP code to <strong>chinonsoa2@gmail.com</strong>
       </p>
@@ -66,7 +68,9 @@ const EmailVerification = ({ onVerify }) => {
       </div>
       <div className="text-center mb-6">
         {timer > 0 ? (
-          <p className="text-gray-400">Send code again in 00:{timer < 10 ? `0${timer}` : timer}</p>
+          <p className="text-gray-400">
+            Send code again in 00:{timer < 10 ? `0${timer}` : timer}
+          </p>
         ) : (
           <button
             className="text-primary w-full py-3 mt-4 mb-8 rounded-lg hover:bg-[#dbdada] bg-[#f1f1f1] font-medium"
@@ -85,17 +89,19 @@ const EmailVerification = ({ onVerify }) => {
       >
         Continue
       </button>
-      <p className="text-center text-gray-500 mt-4 text-sm">
-        By clicking continue, you agree to our{" "}
-        <a href="#" className="text-primary font-medium">
-          Privacy Policy
-        </a>{" "}
-        and{" "}
-        <a href="#" className="text-primary font-medium">
-          User Agreement
-        </a>
-        .
-      </p>
+      {agreement && (
+        <p className="text-center text-gray-500 mt-4 text-sm">
+          By clicking continue, you agree to our{" "}
+          <a href="#" className="text-primary font-medium">
+            Privacy Policy
+          </a>{" "}
+          and{" "}
+          <a href="#" className="text-primary font-medium">
+            User Agreement
+          </a>
+          .
+        </p>
+      )}
     </div>
   );
 };

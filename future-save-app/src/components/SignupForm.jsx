@@ -5,11 +5,14 @@ import EmailVerification from "./EmailVerification";
 import { useState } from "react";
 import AccountCompletion from "./AccountCompletion";
 import { useNavigate } from "react-router-dom";
+import { useApiPost } from "../hooks/useApi";
+import FormButton from "./FormBtn";
 
 const SignUpForm = () => {
   const [step, setStep] = useState(1);
+  const { post, isLoading, isError, error, data } = useApiPost();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleNext = () => {
     if (step === 3) {
@@ -33,9 +36,27 @@ const SignUpForm = () => {
     watch,
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log("Form Data:", data);
-    handleNext();
+  const onSubmit = async (data) => {
+    const result = await post("auth/register", {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      emailAddress: data.email,
+      password: data.password,
+      role: "user",
+      phoneNumber: data.phoneNumber,
+    });
+
+    if (
+      result !== "NETWORK_ERROR" &&
+      result !== "FETCH_ERROR" &&
+      result !== "AUTH_ERROR" &&
+      result !== "PERMISSION_ERROR" &&
+      result !== "SERVER_ERROR" &&
+      result !== "UNKNOWN_ERROR"
+    ) {
+      console.log("Registration result:", result);
+      handleNext();
+    }
   };
 
   const password = watch("password");
@@ -133,16 +154,19 @@ const SignUpForm = () => {
                   }}
                   errors={errors}
                 />
-                <button
+
+                <FormButton
                   type="submit"
-                  className="w-[150px] mt-8 bg-primary text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
-                >
-                  Next
-                </button>
+                  text="Next"
+                  isLoading={isLoading}
+                  disabled={isLoading}
+                />
               </form>
             </>
           )}
-          {step === 2 && <EmailVerification onVerify={handleVerify} />}
+          {step === 2 && (
+            <EmailVerification onVerify={handleVerify} agreement={true} />
+          )}
           {step === 3 && <AccountCompletion onNext={handleNext} />}
         </div>
       </div>
