@@ -45,7 +45,9 @@ export const handleError = (error) => {
   }
 
   toast.error(
-    error?.data?.message || "An unexpected error occurred. Please try again.",
+    error?.data?.errors[0]?.description ||
+      error?.data?.message ||
+      "An unexpected error occurred. Please try again.",
     {
       style: { background: "#fff", color: "#000" },
     }

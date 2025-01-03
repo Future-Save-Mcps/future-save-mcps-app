@@ -1,21 +1,41 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useApiPost } from "../hooks/useApi";
 
-const EmailVerification = ({ onVerify, agreement = false }) => {
-  const [otp, setOtp] = useState(["", "", "", ""]);
+const EmailVerification = ({ email, onVerify, agreement = false }) => {
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(30); // Countdown timer
   const inputRefs = useRef([]);
+  const [resending, setResending] = useState(false);
+  const { post, isLoading } = useApiPost();
 
   // Handle OTP change
   const handleChange = (value, index) => {
-    if (!/^\d*$/.test(value)) return; // Only allow numbers
+    // Allow only alphanumeric characters and convert to uppercase
+    value = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
 
     const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
 
-    // Move to the next input field
-    if (value && index < 3) {
-      inputRefs.current[index + 1]?.focus();
+    // If multiple characters are pasted
+    if (value.length > 1) {
+      value.split("").forEach((char, i) => {
+        if (index + i < newOtp.length) {
+          newOtp[index + i] = char;
+        }
+      });
+      setOtp(newOtp);
+
+      // Move focus to the appropriate input field
+      const nextIndex = Math.min(index + value.length, newOtp.length - 1);
+      inputRefs.current[nextIndex]?.focus();
+    } else {
+      // Single character input
+      newOtp[index] = value;
+      setOtp(newOtp);
+
+      // Move to the next input field
+      if (value && index < newOtp.length - 1) {
+        inputRefs.current[index + 1]?.focus();
+      }
     }
   };
 
@@ -37,11 +57,28 @@ const EmailVerification = ({ onVerify, agreement = false }) => {
   // Verify OTP
   const handleVerify = () => {
     const enteredOtp = otp.join("");
-    if (enteredOtp.length < 4) {
+    if (enteredOtp.length < 6) {
       alert("Please enter a valid 4-digit OTP.");
     } else {
       onVerify(enteredOtp); // Pass the OTP to the parent component
     }
+  };
+
+  const handleResend = async () => {
+    setResending(true);
+    setOtp(["", "", "", "", "", ""]);
+    const result = await post(
+      "/auth/otp/resend"
+      //   , {
+      //   userId: userId,
+      //   otp: otp,
+      // }
+    );
+
+    if (result.success && result.data) {
+      setTimer(30);
+    }
+    setResending(false);
   };
 
   return (
@@ -50,7 +87,7 @@ const EmailVerification = ({ onVerify, agreement = false }) => {
         Email Verification
       </h2>
       <p className="text-center text-gray-600 mb-6">
-        We sent an OTP code to <strong>chinonsoa2@gmail.com</strong>
+        We sent an OTP code to <strong>{email}</strong>
       </p>
       <div className="flex justify-center gap-4 mb-6">
         {otp.map((digit, index) => (
@@ -73,13 +110,11 @@ const EmailVerification = ({ onVerify, agreement = false }) => {
           </p>
         ) : (
           <button
-            className="text-primary w-full py-3 mt-4 mb-8 rounded-lg hover:bg-[#dbdada] bg-[#f1f1f1] font-medium"
-            onClick={() => {
-              setOtp(["", "", "", ""]);
-              setTimer(30); // Reset the timer
-            }}
+          disabled={resending}
+            className="text-primary w-full py-3 mt-4 mb-8 rounded-lg disabled:border disabled:bg-white disabled:text-[#c0c0c0]  hover:bg-[#dbdada] bg-[#f1f1f1] font-medium"
+            onClick={handleResend}
           >
-            Resend Code
+            {resending ? "Resending..." : " Resend Code"}
           </button>
         )}
       </div>

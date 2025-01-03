@@ -3,8 +3,9 @@ import { useForm } from "react-hook-form";
 import FormFieldComp from "./form/FormFieldComp";
 import EmailVerification from "./EmailVerification";
 import { useState } from "react";
-import AccountCompletion from "./AccountCompletion";
+import ForgotPassword from "./ForgotPassword";
 import { useNavigate } from "react-router-dom";
+import ResetPassword from "./ResetPassword";
 
 const LoginForm = () => {
   const [step, setStep] = useState(1);
@@ -12,17 +13,24 @@ const LoginForm = () => {
   const navigate = useNavigate();
 
   const handleNext = () => {
-    if (step === 3) {
-      navigate("/user", { replace: true });
-    } else {
-      setStep((prevStep) => prevStep + 1);
-    }
+    setStep((prevStep) => prevStep + 1);
   };
 
   const handleVerify = (otp) => {
     console.log("Entered OTP:", otp);
     alert("Verification successful!");
-    navigate("/user", { replace: true });
+    setStep((prevStep) => prevStep + 1);
+  };
+
+  const handleVerifyLogin = (otp) => {
+    console.log("Entered OTP:", otp);
+    alert("Verification successful!");
+    navigate("/user");
+  };
+
+  const handleResetPassword = (otp) => {
+    alert("reset  successful!");
+    setStep(1);
   };
 
   const {
@@ -92,9 +100,12 @@ const LoginForm = () => {
 
                 <p className="text- font-semibold mb-[50px] flex  justify-between">
                   <span></span>
-                  <a href="/register" className="text-primary font-semibold">
+                  <p
+                    onClick={() => setStep(3)}
+                    className="text-primary font-semibold"
+                  >
                     Forgot Password?
-                  </a>
+                  </p>
                 </p>
 
                 <button
@@ -106,8 +117,10 @@ const LoginForm = () => {
               </form>
             </>
           )}
-          {step === 2 && <EmailVerification onVerify={handleVerify} />}
-          {step === 3 && <AccountCompletion onNext={handleNext} />}
+          {step === 2 && <EmailVerification onVerify={handleVerifyLogin} />}
+          {step === 3 && <ForgotPassword onNext={handleNext} />}
+          {step === 4 && <EmailVerification onVerify={handleVerify} />}
+          {step === 5 && <ResetPassword onNext={handleResetPassword} />}
         </div>
       </div>
     </div>
