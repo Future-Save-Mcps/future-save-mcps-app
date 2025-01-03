@@ -1,32 +1,43 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import FormFieldComp from "./form/FormFieldComp";
 import EmailVerification from "./EmailVerification";
-import { useState } from "react";
 import AccountCompletion from "./AccountCompletion";
-import { useNavigate } from "react-router-dom";
 import { useApiPost } from "../hooks/useApi";
 import FormButton from "./FormBtn";
 
 const SignUpForm = () => {
-  const [step, setStep] = useState(1);
-  const { post, isLoading, isError, error, data } = useApiPost();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [step, setStep] = useState(Number(searchParams.get("step")) || 1);
+  const email = searchParams.get("email") || "";
+  const userId = searchParams.get("userId") || null;
 
+  const { post, isLoading } = useApiPost();
   const navigate = useNavigate();
 
   const handleNext = () => {
     if (step === 3) {
-      navigate("/user", { replace: true });
+      navigate("/", { replace: true });
     } else {
       setStep((prevStep) => prevStep + 1);
     }
   };
 
-  const handleVerify = (otp) => {
+  const handleVerify = async (otp) => {
     console.log("Entered OTP:", otp);
-    alert("Verification successful!");
-    handleNext();
-    // Proceed to the next step or dashboard
+    const result = await post("auth/verify-user-email", {
+      userId: userId,
+      otp: otp,
+    });
+
+    if (result.success && result.data) {
+      setSearchParams((prevParams) => {
+        prevParams.set('step', '3');
+        return prevParams;
+      });
+      handleNext();
+    }
   };
 
   const {
@@ -36,41 +47,38 @@ const SignUpForm = () => {
     watch,
   } = useForm();
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (formData) => {
     const result = await post("auth/register", {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      emailAddress: data.email,
-      password: data.password,
-      role: "user",
-      phoneNumber: data.phoneNumber,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      emailAddress: formData.email,
+      password: formData.password,
+      role: "User",
+      phoneNumber: formData.phoneNumber,
     });
 
-    if (
-      result !== "NETWORK_ERROR" &&
-      result !== "FETCH_ERROR" &&
-      result !== "AUTH_ERROR" &&
-      result !== "PERMISSION_ERROR" &&
-      result !== "SERVER_ERROR" &&
-      result !== "UNKNOWN_ERROR"
-    ) {
-      console.log("Registration result:", result);
-      handleNext();
+    if (result.success && result.data) {
+      setSearchParams({
+        step: 2,
+        email: formData.email,
+        userId: result.data.id,
+      });
+      setStep(2);
     }
   };
 
   const password = watch("password");
 
   return (
-    <div className="flex w-[100%] ">
-      <div className=" m-auto flex-1 mt-10 px-[10%]">
+    <div className="flex w-[100%]">
+      <div className="m-auto flex-1 mt-10 px-[10%]">
         <div>
           {step === 1 && (
             <>
               <h2 className="text-3xl font-semibold mb-4">Sign Up</h2>
               <p className="text-sm mb-[50px]">
                 Already have an account?{" "}
-                <a href="/login" className="text-blue-500 font-medium">
+                <a href="/" className="text-blue-500 font-medium">
                   Login
                 </a>
               </p>
@@ -125,7 +133,6 @@ const SignUpForm = () => {
                     errors={errors}
                   />
                 </div>
-
                 <FormFieldComp
                   label="Password"
                   name="password"
@@ -154,7 +161,6 @@ const SignUpForm = () => {
                   }}
                   errors={errors}
                 />
-
                 <FormButton
                   type="submit"
                   text="Next"
@@ -165,9 +171,14 @@ const SignUpForm = () => {
             </>
           )}
           {step === 2 && (
-            <EmailVerification onVerify={handleVerify} agreement={true} />
+            <EmailVerification
+              onVerify={handleVerify}
+              email={email} // Pass the email
+            />
           )}
-          {step === 3 && <AccountCompletion onNext={handleNext} />}
+          {step === 3 && (
+            <AccountCompletion onNext={handleNext} userId={userId} />
+          )}
         </div>
       </div>
     </div>

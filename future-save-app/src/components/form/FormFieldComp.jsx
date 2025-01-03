@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
+import SearchIcon from "@mui/icons-material/Search";
+import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutlined";
+import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 
 const FormFieldComp = ({
   label,
@@ -8,21 +11,35 @@ const FormFieldComp = ({
   type = "text",
   placeholder,
   register,
-  setValue, // Manually set values in react-hook-form
+  setValue,
+  setBank,
   validation,
   errors,
   options = [],
   icon,
+  searchable = false, // New prop to make search optional
 }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // For the dropdown
-  const [selectedValue, setSelectedValue] = useState(""); // Dropdown selected value
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedValue, setSelectedValue] = useState("");
+  // const [selectedBank, setSelectedBank] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
+  const searchInputRef = useRef(null);
 
-  const handleSelect = (value) => {
-    setSelectedValue(value); // Update local state
-    setValue(name, value); // Update form state
-    setIsOpen(false); // Close dropdown
+  const handleSelect = (value, label) => {
+    setSelectedValue(label);
+    setValue(name, value);
+    setIsOpen(false);
+    setSearchQuery("");
+  };
+
+  const handleSelectBank = (value, label, bank) => {
+    setBank(bank);
+    setSelectedValue(label);
+    setValue(name, value);
+    setIsOpen(false);
+    setSearchQuery("");
   };
 
   const togglePasswordVisibility = () => {
@@ -31,12 +48,11 @@ const FormFieldComp = ({
 
   const handleClickOutside = (event) => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      setIsOpen(false); // Close dropdown if clicked outside
+      setIsOpen(false);
     }
   };
 
   useEffect(() => {
-    // Close dropdown on outside click
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -44,11 +60,28 @@ const FormFieldComp = ({
   }, []);
 
   useEffect(() => {
-    // Initialize field with an existing value if necessary
     if (selectedValue) {
       setValue(name, selectedValue);
     }
   }, [selectedValue, setValue, name]);
+
+  // useEffect(() => {
+  //   if (selectedBank) {
+  //     setBank(name, selectedBank);
+  //   }
+  // }, [selectedBank, setBank, name]);
+
+  useEffect(() => {
+    if (isOpen && searchable && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isOpen, searchable]);
+
+  const filteredOptions = searchable
+    ? options.filter((option) =>
+        option.label.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : options;
 
   return (
     <div className="mb-4">
@@ -56,30 +89,116 @@ const FormFieldComp = ({
         {label}
       </label>
       <div className="relative" ref={dropdownRef}>
-        {type === "select" ? (
+        {type === "Bank" ? (
+        <div>
+        <div
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full px-2 py-3 rounded-lg border cursor-pointer focus:outline-none flex items-center justify-between"
+        >
+          <span>{selectedValue || `Select ${label}`}</span>
+          <span className="text-gray-400">
+            {isOpen ? (
+              <KeyboardArrowUpOutlinedIcon />
+            ) : (
+              <KeyboardArrowDownOutlinedIcon />
+            )}
+          </span>
+        </div>
+        {isOpen && (
+          <div className="absolute w-full bg-white border mt-1 rounded-lg shadow-md z-10">
+            {searchable && (
+              <div className="p-2">
+                <div className="relative">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search..."
+                    className="w-full px-2 py-2 rounded-lg border focus:outline-none pr-8"
+                  />
+                  <SearchIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+              </div>
+            )}
+            <ul className="max-h-[200px] overflow-auto">
+              {filteredOptions.map((option, index) => (
+                <li
+                  key={index}
+                  onClick={() => handleSelectBank(option.value, option.label, option)}
+                  className="px-4 py-2 cursor-pointer hover:bg-primary hover:text-white focus:bg-primary focus:text-white"
+                >
+                  {option.label}
+                </li>
+              ))}
+              {searchable && filteredOptions.length === 0 && (
+                <li className="px-4 py-2 text-gray-500">
+                  No results found
+                </li>
+              )}
+            </ul>
+          </div>
+        )}
+        <input
+          type="hidden"
+          {...register(name, validation)}
+          value={selectedValue}
+          name={name}
+        />
+      </div>
+        ) : type === "select" ? (
           <div>
             <div
               onClick={() => setIsOpen(!isOpen)}
-              className="w-full px-2 py-3 rounded-lg border cursor-pointer focus:outline-none"
+              className="w-full px-2 py-3 rounded-lg border cursor-pointer focus:outline-none flex items-center justify-between"
             >
-              {selectedValue || `Select ${label}`}
+              <span>{selectedValue || `Select ${label}`}</span>
+              <span className="text-gray-400">
+                {isOpen ? (
+                  <KeyboardArrowUpOutlinedIcon />
+                ) : (
+                  <KeyboardArrowDownOutlinedIcon />
+                )}
+              </span>
             </div>
             {isOpen && (
-              <ul className="absolute w-full bg-white border mt-1 rounded-lg shadow-md z-10">
-                {options.map((option, index) => (
-                  <li
-                    key={index}
-                    onClick={() => handleSelect(option.value)}
-                    className="px-4 py-2 cursor-pointer hover:bg-primary hover:text-white focus:bg-primary focus:text-white"
-                  >
-                    {option.label}
-                  </li>
-                ))}
-              </ul>
+              <div className="absolute w-full bg-white border mt-1 rounded-lg shadow-md z-10">
+                {searchable && (
+                  <div className="p-2">
+                    <div className="relative">
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search..."
+                        className="w-full px-2 py-2 rounded-lg border focus:outline-none pr-8"
+                      />
+                      <SearchIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    </div>
+                  </div>
+                )}
+                <ul className="max-h-[200px] overflow-auto">
+                  {filteredOptions.map((option, index) => (
+                    <li
+                      key={index}
+                      onClick={() => handleSelect(option.value, option.label)}
+                      className="px-4 py-2 cursor-pointer hover:bg-primary hover:text-white focus:bg-primary focus:text-white"
+                    >
+                      {option.label}
+                    </li>
+                  ))}
+                  {searchable && filteredOptions.length === 0 && (
+                    <li className="px-4 py-2 text-gray-500">
+                      No results found
+                    </li>
+                  )}
+                </ul>
+              </div>
             )}
             <input
               type="hidden"
-              {...register(name, validation)} // Connect hidden input to react-hook-form
+              {...register(name, validation)}
               value={selectedValue}
               name={name}
             />

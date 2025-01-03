@@ -13,7 +13,7 @@ export const useApiLogin = () => {
     async (credentials) => {
       try {
         const result = await login(credentials).unwrap();
-        toast.success("Login successful!", {
+        toast.info("Login successful!", {
           style: { background: "#FFA500", color: "white" },
         });
         return result;
@@ -34,8 +34,8 @@ export const useApiPost = () => {
     async (url, data) => {
       try {
         const result = await trigger({ url, data }).unwrap();
-        toast.success("Operation successful!", {
-          style: { background: "#FFA500", color: "white" },
+        toast.info(" successful!", {
+          // style: { background: "#FFA500", color: "white" },
         });
         return result;
       } catch (err) {
@@ -55,7 +55,7 @@ export const useApiGet = () => {
     async (url, params) => {
       try {
         const result = await refetch({ url, params });
-        toast.success("Data retrieved successfully!", {
+        toast.info("Data retrieved successfully!", {
           style: { background: "#FFA500", color: "white" },
         });
         return result;
@@ -76,7 +76,7 @@ export const useApiPatch = () => {
     async (url, data) => {
       try {
         const result = await trigger({ url, data }).unwrap();
-        toast.success("Update successful!", {
+        toast.info("Update successful!", {
           style: { background: "#FFA500", color: "white" },
         });
         return result;
