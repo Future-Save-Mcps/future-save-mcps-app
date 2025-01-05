@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useRef } from "react";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
@@ -17,15 +19,26 @@ const FormFieldComp = ({
   errors,
   options = [],
   icon,
-  searchable = false, // New prop to make search optional
+  readOnly = false,
+  searchable = false,
+  defaultValueAttachment = "",
+  onchange,
+  setOnChangeValue
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState("");
-  // const [selectedBank, setSelectedBank] = useState("");
+  const [selectedValue, setSelectedValue] = useState(defaultValueAttachment);
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
+
+  // Update selected value when defaultValueAttachment changes
+  useEffect(() => {
+    if (defaultValueAttachment) {
+      setSelectedValue(defaultValueAttachment);
+      setValue(name, defaultValueAttachment);
+    }
+  }, [defaultValueAttachment, setValue, name]);
 
   const handleSelect = (value, label) => {
     setSelectedValue(label);
@@ -60,18 +73,6 @@ const FormFieldComp = ({
   }, []);
 
   useEffect(() => {
-    if (selectedValue) {
-      setValue(name, selectedValue);
-    }
-  }, [selectedValue, setValue, name]);
-
-  // useEffect(() => {
-  //   if (selectedBank) {
-  //     setBank(name, selectedBank);
-  //   }
-  // }, [selectedBank, setBank, name]);
-
-  useEffect(() => {
     if (isOpen && searchable && searchInputRef.current) {
       searchInputRef.current.focus();
     }
@@ -90,62 +91,64 @@ const FormFieldComp = ({
       </label>
       <div className="relative" ref={dropdownRef}>
         {type === "Bank" ? (
-        <div>
-        <div
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-full px-2 py-3 rounded-lg border cursor-pointer focus:outline-none flex items-center justify-between"
-        >
-          <span>{selectedValue || `Select ${label}`}</span>
-          <span className="text-gray-400">
-            {isOpen ? (
-              <KeyboardArrowUpOutlinedIcon />
-            ) : (
-              <KeyboardArrowDownOutlinedIcon />
-            )}
-          </span>
-        </div>
-        {isOpen && (
-          <div className="absolute w-full bg-white border mt-1 rounded-lg shadow-md z-10">
-            {searchable && (
-              <div className="p-2">
-                <div className="relative">
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search..."
-                    className="w-full px-2 py-2 rounded-lg border focus:outline-none pr-8"
-                  />
-                  <SearchIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                </div>
+          <div>
+            <div
+              onClick={() => setIsOpen(!isOpen)}
+              className="w-full px-2 py-3 rounded-lg border cursor-pointer focus:outline-none flex items-center justify-between"
+            >
+              <span>{selectedValue || `Select ${label}`}</span>
+              <span className="text-gray-400">
+                {isOpen ? (
+                  <KeyboardArrowUpOutlinedIcon />
+                ) : (
+                  <KeyboardArrowDownOutlinedIcon />
+                )}
+              </span>
+            </div>
+            {isOpen && (
+              <div className="absolute w-full bg-white border mt-1 rounded-lg shadow-md z-10">
+                {searchable && (
+                  <div className="p-2">
+                    <div className="relative">
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search..."
+                        className="w-full px-2 py-2 rounded-lg border focus:outline-none pr-8"
+                      />
+                      <SearchIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    </div>
+                  </div>
+                )}
+                <ul className="max-h-[200px] overflow-auto">
+                  {filteredOptions.map((option, index) => (
+                    <li
+                      key={index}
+                      onClick={() =>
+                        handleSelectBank(option.value, option.label, option)
+                      }
+                      className="px-4 py-2 cursor-pointer hover:bg-primary hover:text-white focus:bg-primary focus:text-white"
+                    >
+                      {option.label}
+                    </li>
+                  ))}
+                  {searchable && filteredOptions.length === 0 && (
+                    <li className="px-4 py-2 text-gray-500">
+                      No results found
+                    </li>
+                  )}
+                </ul>
               </div>
             )}
-            <ul className="max-h-[200px] overflow-auto">
-              {filteredOptions.map((option, index) => (
-                <li
-                  key={index}
-                  onClick={() => handleSelectBank(option.value, option.label, option)}
-                  className="px-4 py-2 cursor-pointer hover:bg-primary hover:text-white focus:bg-primary focus:text-white"
-                >
-                  {option.label}
-                </li>
-              ))}
-              {searchable && filteredOptions.length === 0 && (
-                <li className="px-4 py-2 text-gray-500">
-                  No results found
-                </li>
-              )}
-            </ul>
+            <input
+              type="hidden"
+              {...register(name, validation)}
+              value={selectedValue}
+              name={name}
+            />
           </div>
-        )}
-        <input
-          type="hidden"
-          {...register(name, validation)}
-          value={selectedValue}
-          name={name}
-        />
-      </div>
         ) : type === "select" ? (
           <div>
             <div
@@ -205,9 +208,15 @@ const FormFieldComp = ({
           </div>
         ) : (
           <input
+            readOnly={readOnly}
             type={type === "password" && showPassword ? "text" : type}
             {...register(name, validation)}
             placeholder={placeholder}
+            value={selectedValue}
+            onChange={(e) => {
+              setSelectedValue(e.target.value);
+              onchange && setOnChangeValue(e.target.value);
+            }}
             className={`w-full px-2 py-3 rounded-lg border focus:outline-none ${
               type === "password" ? "pr-10" : ""
             }`}

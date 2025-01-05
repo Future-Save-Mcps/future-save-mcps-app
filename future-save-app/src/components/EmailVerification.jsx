@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useApiPost } from "../hooks/useApi";
+import FormButton from "./FormBtn";
+import { toast } from "react-toastify";
 
-const EmailVerification = ({ email, onVerify, agreement = false }) => {
+const EmailVerification = ({ email, onVerify, agreement = false, userId }) => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(30); // Countdown timer
+  const [loading, setLoading] = useState(false);
   const inputRefs = useRef([]);
   const [resending, setResending] = useState(false);
   const { post, isLoading } = useApiPost();
@@ -56,23 +59,22 @@ const EmailVerification = ({ email, onVerify, agreement = false }) => {
 
   // Verify OTP
   const handleVerify = () => {
+    setLoading(true);
     const enteredOtp = otp.join("");
     if (enteredOtp.length < 6) {
-      alert("Please enter a valid 4-digit OTP.");
+      toast.error("Please enter a valid OTP.");
     } else {
       onVerify(enteredOtp); // Pass the OTP to the parent component
     }
+    setLoading(false);
   };
 
   const handleResend = async () => {
     setResending(true);
     setOtp(["", "", "", "", "", ""]);
     const result = await post(
-      "/auth/otp/resend"
-      //   , {
-      //   userId: userId,
-      //   otp: otp,
-      // }
+      `/auth/${userId}otp/resend`
+   
     );
 
     if (result.success && result.data) {
@@ -110,7 +112,7 @@ const EmailVerification = ({ email, onVerify, agreement = false }) => {
           </p>
         ) : (
           <button
-          disabled={resending}
+            disabled={resending}
             className="text-primary w-full py-3 mt-4 mb-8 rounded-lg disabled:border disabled:bg-white disabled:text-[#c0c0c0]  hover:bg-[#dbdada] bg-[#f1f1f1] font-medium"
             onClick={handleResend}
           >
@@ -118,12 +120,19 @@ const EmailVerification = ({ email, onVerify, agreement = false }) => {
           </button>
         )}
       </div>
-      <button
+      {/* <button
         className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark"
         onClick={handleVerify}
       >
         Continue
-      </button>
+      </button> */}
+      <FormButton
+        width="100%"
+        onClick={handleVerify}
+        text="Continue"
+        isLoading={loading}
+        disabled={loading}
+      />
       {agreement && (
         <p className="text-center text-gray-500 mt-4 text-sm">
           By clicking continue, you agree to our{" "}

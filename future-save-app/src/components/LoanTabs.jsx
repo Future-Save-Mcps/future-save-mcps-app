@@ -1,14 +1,20 @@
 import React, { useState } from "react";
 import PaymentBarChart from "./charts/PaymentBarChart";
+import {
+  ContributionIcon,
+  LoanIcon,
+  PercentIcon,
+} from "../components/icons/Icons";
+import formatTimeAgo from "../utils/formatTimeAgo";
 
-const LoanTabs = () => {
+const LoanTabs = ({ activities = [] }) => {
   const [activeTab, setActiveTab] = useState("activities");
 
-  const activities = [
-    { icon: "👤", text: "Your 1st Guarantor accepted", time: "1 hour ago" },
-    { icon: "👤", text: "Your 2nd Guarantor accepted", time: "1 day ago" },
-    { icon: "🎯", text: "You applied for a loan", time: "1 week ago" },
-  ];
+  // const activities = [
+  //   { icon: "👤", text: "Your 1st Guarantor accepted", time: "1 hour ago" },
+  //   { icon: "👤", text: "Your 2nd Guarantor accepted", time: "1 day ago" },
+  //   { icon: "🎯", text: "You applied for a loan", time: "1 week ago" },
+  // ];
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
@@ -43,14 +49,16 @@ const LoanTabs = () => {
       {/* Content */}
       {activeTab === "activities" && (
         <div className="mt-4 space-y-4">
-          {activities.map((activity, index) => (
+          {activities?.map((activity, index) => (
             <div key={index} className="flex items-center space-x-4">
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-900 text-white">
-                {activity.icon}
+                <ContributionIcon color="white" />
               </div>
               <div>
-                <p className="font-medium">{activity.text}</p>
-                <p className="text-sm text-gray-500">{activity.time}</p>
+                <p className="font-medium">{activity.description}</p>
+                <p className="text-sm text-gray-500">
+                  {formatTimeAgo(activity.timestamp)}
+                </p>
               </div>
             </div>
           ))}

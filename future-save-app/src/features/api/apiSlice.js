@@ -20,9 +20,12 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     // Try to get a new token
     const refreshResult = await baseQuery(
       {
-        url: "auth/refresh",
+        url: "auth/refresh-token",
         method: "POST",
-        body: { refreshToken: getTokens().refreshToken },
+        body: {
+          accessToken: getTokens().accessToken,
+          refreshToken: getTokens().refreshToken,
+        },
       },
       api,
       extraOptions
@@ -45,16 +48,26 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 export const api = createApi({
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
-    login: builder.mutation({
+    initiateLogin: builder.mutation({
       query: (credentials) => ({
         url: "auth/login",
         method: "POST",
         body: credentials,
       }),
+    }),
+    completeLogin: builder.mutation({
+      query: ({ emailAddress, otp }) => ({
+        url: `auth/complete-login?EmailAddress=${encodeURIComponent(
+          emailAddress
+        )}&Otp=${otp}`,
+        method: "POST",
+      }),
       onQueryStarted: async (_, { queryFulfilled }) => {
         try {
           const { data } = await queryFulfilled;
-          setTokens(data.accessToken, data.refreshToken);
+          if (data.success && data.data) {
+            setTokens(data.data.accessToken, data.data.refreshToken);
+          }
         } catch (err) {
           console.error(err);
           // Handle error
@@ -75,7 +88,6 @@ export const api = createApi({
         params,
       }),
     }),
-
     patchData: builder.mutation({
       query: ({ url, data }) => ({
         url,
@@ -83,63 +95,20 @@ export const api = createApi({
         body: data,
       }),
     }),
-    // remaining slice for delete
+    deleteData: builder.mutation({
+      query: ({ url }) => ({
+        url,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
 export const {
-  useLoginMutation,
+  useInitiateLoginMutation,
+  useCompleteLoginMutation,
   usePostDataMutation,
   useGetDataQuery,
   usePatchDataMutation,
+  useDeleteDataMutation,
 } = api;
-
-// export const api = createApi({
-//   baseQuery: baseQueryWithReauth,
-//   endpoints: (builder) => ({
-//     login: builder.mutation({
-//       query: (credentials) => ({
-//         url: "auth/login",
-//         method: "POST",
-//         body: credentials,
-//       }),
-//       onQueryStarted: async (_, { queryFulfilled }) => {
-//         try {
-//           const { data } = await queryFulfilled;
-//           setTokens(data.accessToken, data.refreshToken);
-//         } catch (err) {
-//           console.error(err);
-//         }
-//       },
-//     }),
-//     postData: builder.mutation({
-//       query: ({ url, data }) => ({
-//         url,
-//         method: "POST",
-//         body: data,
-//       }),
-//     }),
-//     getData: builder.query({
-//       query: ({ url, params }) => ({
-//         url,
-//         method: "GET",
-//         params,
-//       }),
-//     }),
-//     patchData: builder.mutation({
-//       query: ({ url, data }) => ({
-//         url,
-//         method: "PATCH",
-//         body: data,
-//       }),
-//     }),
-//     // remaining slice for delete
-//   }),
-// });
-
-// export const {
-//   useLoginMutation,
-//   usePostDataMutation,
-//   useGetDataQuery,
-//   usePatchDataMutation,
-// } = api;

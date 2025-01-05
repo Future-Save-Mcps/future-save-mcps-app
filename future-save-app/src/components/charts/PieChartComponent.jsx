@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
-const PieChartComponent = ({ percentage = 90 }) => {
+const PieChartComponent = ({ percentage = 0 }) => {
   const data = [
     { name: "Remaining", value: 100 },
     { name: "Filled", value: percentage },
   ];
+
+  
+  
 
   const COLORS = ["#041F621A", "#041F62"];
 

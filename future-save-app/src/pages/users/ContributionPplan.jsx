@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import OngoingCompletedCard from "../../components/Cards/OngoingCompletedCard";
 import Warning from "../../components/Cards/Warning";
 import Bg from "../../assets/cardBd.svg";
@@ -15,6 +15,9 @@ import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import { Controller, useForm } from "react-hook-form";
 import FormFieldComp from "../../components/form/FormFieldComp";
+import { useApiGet, useApiPost } from "../../hooks/useApi";
+import FormButton from "../../components/FormBtn";
+import { formatDate } from "../../utils/formatDate";
 const style = {
   position: "absolute",
   top: "50%",
@@ -66,7 +69,13 @@ const IOSSwitch = styled((props) => (
 
 const ContributionPplan = () => {
   const [state, setState] = useState(false);
+  const [planId, setPlanId] = useState(null);
+  const { data, refetch } = useApiGet("user/dashboard");
 
+  const { data: contributionPlan, isLoading: isLoadingContributionPlan } =
+    useApiGet(`savingsplan?PlanId=${planId}`);
+
+  const { post, isLoading } = useApiPost();
   const {
     register,
     handleSubmit,
@@ -74,22 +83,36 @@ const ContributionPplan = () => {
     setValue,
     watch,
     formState: { errors },
+    reset,
   } = useForm();
 
   // Watch the selected savings plan
   const savingsPlan = watch("savingsPlan", "25"); // Default to '25' weeks plan
-  const weeklyAmount = watch("weeklyAmount", 5000.0);
-  const targetAmount = watch("targetAmount", 125000.0);
 
-  const onSubmit = (data) => {
-    console.log("Form Data Submitted:", data);
+  const onSubmit = async (data) => {
+    const formData = {
+      savingsPlanName: data.nameOfSavings,
+      savingsPlan: data.savingsPlan,
+      weeklyAmount: data.weeklyAmount,
+      targetAmount: data.targetAmount,
+      startDate: data.startDate,
+    };
+
+    const result = await post(`savingsplan`, formData);
+    if (result.success && result.data) {
+      handleClose();
+    }
   };
 
   const [open, setOpen] = useState(false);
+  const [onChangeValue, setOnChangeValue] = useState(5000);
   const handleOpen = () => {
     setOpen(true);
   };
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    reset();
+  };
 
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const handleOpenPaymentModal = () => {
@@ -97,19 +120,27 @@ const ContributionPplan = () => {
   };
   const handleClosePaymentModal = () => setOpenPaymentModal(false);
 
-  const toggleDrawer = (open) => (event) => {
-    if (
-      event.type === "keydown" &&
-      (event.key === "Tab" || event.key === "Shift")
-    ) {
-      return;
-    }
-    setState(open);
-  };
+  const toggleDrawer =
+    (open, id = null) =>
+    (event) => {
+      if (
+        event.type === "keydown" &&
+        (event.key === "Tab" || event.key === "Shift")
+      ) {
+        return;
+      }
+      setPlanId(id);
+      setState(open);
+    };
 
-  const ggg = () => {
-    console.log(hello);
-  };
+  const weeklyAmount = watch("weeklyAmount", 0);
+  const planWeeks = parseInt(savingsPlan || 0, 10);
+  // Calculate targetAmount whenever weeklyAmount or savingsPlan changes
+  useEffect(() => {
+    const weekly = parseInt(onChangeValue || 0, 10);
+
+    setValue("targetAmount", weekly * planWeeks);
+  }, [savingsPlan, onChangeValue]);
 
   return (
     <>
@@ -120,14 +151,16 @@ const ContributionPplan = () => {
               Total Savings{" "}
             </div>
             <div className="font-[700] text-center text-[28px]">
-              ₦ 15,000.00{" "}
+              ₦ {data?.data?.userDashboard?.totalSavingsBalance}
             </div>
           </div>
           <div className="min-h-[150px] bg-[#041F620D] gap-4 p-4 flex flex-col justify-center items-center flex-1 rounded-2xl">
             <div className="font-[400] text-center text-[16px] text-primary">
               Total Savings Dividends
             </div>
-            <div className="font-[700] text-center text-[28px]">₦ 0.00 </div>
+            <div className="font-[700] text-center text-[28px]">
+              ₦ {data?.data?.userDashboard?.totalDividendBalance}{" "}
+            </div>
           </div>
         </div>
         <div className=" flex items-center  mb-4 justify-between ">
@@ -152,21 +185,29 @@ const ContributionPplan = () => {
           </div>
           <div className="">
             <OngoingCompletedCard
+              id={"3458f4a0-00ce-42b5-8840-b6d7958ee501"}
               cardTitle={"Ajor Money"}
               contrubutionBalance={"₦ 5000"}
               contributionWeekPlan={"25 weeks Plan"}
               status={"In Progress"}
               remainingDays={" 299 days remaining"}
-              onClick={toggleDrawer(true)}
+              onClick={toggleDrawer(
+                true,
+                "3458f4a0-00ce-42b5-8840-b6d7958ee501"
+              )}
               percentage={20}
             />
             <OngoingCompletedCard
+              id={"3458f4a0-00ce-42b5-8840-b6d7958ee501"}
               cardTitle={"Ajor Money"}
               contrubutionBalance={"₦ 10000"}
               contributionWeekPlan={"50 weeks Plan"}
               status={"In Progress"}
               remainingDays={" 299 days remaining"}
-              onClick={toggleDrawer(true)}
+              onClick={toggleDrawer(
+                true,
+                "3458f4a0-00ce-42b5-8840-b6d7958ee501"
+              )}
               percentage={40}
             />
           </div>
@@ -189,14 +230,24 @@ const ContributionPplan = () => {
             />
           </div>
           <OngoingCompletedCard
-            cardTitle={"Ajor Money"}
-            contrubutionBalance={"₦ 10000"}
-            contributionWeekPlan={"50 weeks Plan"}
-            status={"In Progress"}
-            remainingDays={" 299 days remaining"}
+            cardTitle={contributionPlan?.data?.planName}
+            contrubutionBalance={`₦ ${contributionPlan?.data?.currentBalance}`}
+            contributionWeekPlan={`${contributionPlan?.data?.durationInWeeks} weeks Plan`}
+            status={contributionPlan?.data?.planStatus}
+            remainingDays={` ${contributionPlan?.data?.daysRemaining} days remaining`}
             onClick={toggleDrawer(true)}
-            percentage={40}
+            percentage={
+              contributionPlan?.data?.currentBalance < 1
+                ? 0
+                : (contributionPlan?.data?.currentBalance /
+                    contributionPlan?.data?.targetAmount) *
+                  100
+            }
           />
+
+          {/* (data?.data?.userSavingsProgress?.totalSavingsCurrentBalance /
+        data?.data?.userSavingsProgress?.totalSavingsTarget) *
+      100 */}
 
           <div className="flex justify-center gap-6 flex-wrap items-center">
             <button
@@ -232,7 +283,7 @@ const ContributionPplan = () => {
                   <p>
                     <strong>Weekly Amount</strong>
                   </p>
-                  <p>NGN 15,650.00</p>
+                  <p>NGN {contributionPlan?.data?.weeklyAmount}</p>
                 </div>
               </div>
               <div style={styles.column}>
@@ -240,7 +291,7 @@ const ContributionPplan = () => {
                   <p>
                     <strong>Target Amount</strong>
                   </p>
-                  <p>NGN 125,000.00</p>
+                  <p>NGN {contributionPlan?.data?.targetAmount}</p>
                 </div>
               </div>
               <div style={styles.column}>
@@ -248,7 +299,7 @@ const ContributionPplan = () => {
                   <p>
                     <strong>Start Date</strong>
                   </p>
-                  <p>01/01/2025</p>
+                  <p>{formatDate(contributionPlan?.data?.startDate)}</p>
                 </div>
               </div>
             </div>
@@ -258,7 +309,7 @@ const ContributionPplan = () => {
                   <p>
                     <strong>End Date</strong>
                   </p>
-                  <p>01/07/2025</p>
+                  <p> {formatDate(contributionPlan?.data?.endDate)}</p>
                 </div>
               </div>
               <div style={styles.column}>
@@ -266,18 +317,18 @@ const ContributionPplan = () => {
                   <p>
                     <strong>Dividend</strong>
                   </p>
-                  <p>NGN 75,600.00</p>
+                  <p>NGN {contributionPlan?.data?.dividends}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <LoanTabs />
+          <LoanTabs activities={contributionPlan?.data?.activities} />
         </div>
       </Drawer>
       <Modal
         open={open}
-        onClose={handleClose}
+        // onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
@@ -372,6 +423,8 @@ const ContributionPplan = () => {
               type="number"
               placeholder="5000"
               register={register}
+              defaultValueAttachment={5000}
+              setValue={setValue}
               validation={{
                 required: "Weekly amount is required",
                 min: {
@@ -379,10 +432,15 @@ const ContributionPplan = () => {
                   message: "Amount must be at least NGN 5000.00",
                 },
               }}
+              onchange={true}
+              setOnChangeValue={setOnChangeValue}
               errors={errors}
             />
 
             <FormFieldComp
+              readOnly={true}
+              defaultValueAttachment={onChangeValue * planWeeks}
+              setValue={setValue}
               label="Target Amount"
               name="targetAmount"
               type="number"
@@ -443,13 +501,12 @@ const ContributionPplan = () => {
                 </p>
               )}
             </div>
-
-            <button
+            <FormButton
               type="submit"
-              className="w-full py-2 px-4 mt-4 text-white bg-[#00205C] hover:bg-[#001845] rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00205C]"
-            >
-              Create Plan
-            </button>
+              text="Create Plan"
+              isLoading={isLoading}
+              disabled={isLoading}
+            />
           </form>
         </Box>
       </Modal>
@@ -460,9 +517,7 @@ const ContributionPplan = () => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
-          hello
-        </Box>
+        <Box sx={style}>hello</Box>
       </Modal>
     </>
   );
