@@ -88,8 +88,56 @@ export const AccountIcon = ({ color = "currentColor" }) => (
 );
 
 export const LogoutIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M7 19H3C2.46957 19 1.96086 18.7893 1.58579 18.4142C1.21071 18.0391 1 17.5304 1 17V3C1 2.46957 1.21071 1.96086 1.58579 1.58579C1.96086 1.21071 2.46957 1 3 1H7M14 15L19 10M19 10L14 5M19 10H7" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M7 19H3C2.46957 19 1.96086 18.7893 1.58579 18.4142C1.21071 18.0391 1 17.5304 1 17V3C1 2.46957 1.21071 1.96086 1.58579 1.58579C1.96086 1.21071 2.46957 1 3 1H7M14 15L19 10M19 10L14 5M19 10H7"
+      stroke="white"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+export const PercentIcon = () => (
+  <svg
+    width="18"
+    height="19"
+    viewBox="0 0 18 19"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M16 2.5L2 16.5M6 4C6 5.38071 4.88071 6.5 3.5 6.5C2.11929 6.5 1 5.38071 1 4C1 2.61929 2.11929 1.5 3.5 1.5C4.88071 1.5 6 2.61929 6 4ZM17 15C17 16.3807 15.8807 17.5 14.5 17.5C13.1193 17.5 12 16.3807 12 15C12 13.6193 13.1193 12.5 14.5 12.5C15.8807 12.5 17 13.6193 17 15Z"
+      stroke="white"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+export const WarningIcon = ({ color = "currentColor" }) => (
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 22 22"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="11" cy="11" r="10" stroke={color} stroke-width="1.5" />
+    <circle cx="11" cy="15" r="1" fill={color} />
+    <path
+      d="M11 6V12"
+      stroke={color}
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+  </svg>
 );
