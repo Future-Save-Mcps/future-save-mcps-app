@@ -49,7 +49,7 @@ const LoanTabs = ({ activities = [] }) => {
       {/* Content */}
       {activeTab === "activities" && (
         <div className="mt-4 space-y-4">
-          {activities?.map((activity, index) => (
+          {activities?.slice().reverse().map((activity, index) => (
             <div key={index} className="flex items-center space-x-4">
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-900 text-white">
                 <ContributionIcon color="white" />

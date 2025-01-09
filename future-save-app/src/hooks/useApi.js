@@ -69,7 +69,7 @@ export const useApiLogin = () => {
 };
 
 export const useApiPost = () => {
-  const [trigger, { isLoading, isError, error }] = usePostDataMutation();
+  const [trigger, { isLoading, isError, error, }] = usePostDataMutation();
 
   const post = useCallback(
     async (url, data) => {
@@ -106,7 +106,7 @@ export const useApiPost = () => {
 // };
 
 export const useApiGet = (url, params) => {
-  const { data, error, isLoading, refetch } = useGetDataQuery({ url, params });
+  const { data, error, isLoading, refetch, isFetching } = useGetDataQuery({ url, params });
 
   const get = async () => {
     try {
@@ -117,7 +117,7 @@ export const useApiGet = (url, params) => {
     }
   };
 
-  return { data, isLoading, error, refetch, get };
+  return { data, isLoading, error, refetch, get, isFetching };
 };
 
 export const useApiPatch = () => {

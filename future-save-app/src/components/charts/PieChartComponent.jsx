@@ -50,7 +50,7 @@ const PieChartComponent = ({ percentage = 0 }) => {
                 whiteSpace: "nowrap",
               }}
             >
-              {`${percentage}%`}
+              {`${percentage?.toFixed()}%`}
             </div>
             <PieChart>
               <Pie

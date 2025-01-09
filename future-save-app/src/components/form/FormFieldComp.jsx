@@ -23,7 +23,8 @@ const FormFieldComp = ({
   searchable = false,
   defaultValueAttachment = "",
   onchange,
-  setOnChangeValue
+  setOnChangeValue,
+  big
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -217,7 +218,7 @@ const FormFieldComp = ({
               setSelectedValue(e.target.value);
               onchange && setOnChangeValue(e.target.value);
             }}
-            className={`w-full px-2 py-3 rounded-lg border focus:outline-none ${
+            className={`w-full px-2 py-3 ${big && "h-24 text-3xl font-medium text-center"} rounded-lg border focus:outline-none ${
               type === "password" ? "pr-10" : ""
             }`}
           />
