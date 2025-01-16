@@ -127,7 +127,7 @@ export const useApiPatch = () => {
     async (url, data) => {
       try {
         const result = await trigger({ url, data }).unwrap();
-        toainfoess("Update successful!");
+        toast.info("Update successful!");
         return result;
       } catch (err) {
         return handleError(err);
@@ -146,7 +146,7 @@ export const useApiDelete = () => {
     async (url) => {
       try {
         const result = await trigger({ url }).unwrap();
-        toainfoess("Delete successful!");
+        toast.info("Delete successful!");
         return result;
       } catch (err) {
         return handleError(err);

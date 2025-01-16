@@ -25,6 +25,7 @@ import { calculatePercentage } from "../../utils/calculatePercentage";
 import { generateWeekOptions } from "../../utils/weeksOptionGenerator";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../../components/Spinner";
+import { getUserData } from "../../utils/getUserData";
 const style = {
   position: "absolute",
   top: "50%",
@@ -75,6 +76,8 @@ const IOSSwitch = styled((props) => (
 }));
 
 const ContributionPplan = () => {
+    const userData = getUserData();
+  
   const [state, setState] = useState(false);
   const [planId, setPlanId] = useState(null);
   const {
@@ -644,6 +647,7 @@ const ContributionPplan = () => {
             <FormButton
               type="submit"
               text="Create Plan"
+              width="100%"
               isLoading={isLoading}
               disabled={isLoading}
             />
@@ -827,10 +831,10 @@ const ContributionPplan = () => {
                   }}
                   className=" bg-[#72109D] rounded-2xl p-6 flex flex-col justify-center items-center gap-1 "
                 >
-                  <div className="font-bold text-xl text-white">GTB</div>
-                  <div className="font-bold text-xl text-white">0424464148</div>
+                  <div className="font-bold text-xl text-white">{userData?.data?.bankName}</div>
+                  <div className="font-bold text-xl text-white">{userData?.data?.bankAccountNumber}</div>
                   <div className="font-bold text-base text-white">
-                    (Elum Williams)
+                    {`(${userData?.data?.accountName})`}
                   </div>
                 </div>
               </div>

@@ -7,6 +7,8 @@ import ForgotPassword from "./ForgotPassword";
 import ResetPassword from "./ResetPassword";
 import { useApiLogin } from "../hooks/useApi";
 import FormButton from "./FormBtn";
+import axios from "axios";
+import { baseUrl } from "../features/api/apiSlice";
 
 const LoginForm = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -14,6 +16,8 @@ const LoginForm = () => {
   const email = searchParams.get("email") || "";
   const userId = searchParams.get("userId") || null;
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
   const { login, verifyOtp, isInitiateLoading, isCompleteLoading } =
     useApiLogin();
 
@@ -38,7 +42,7 @@ const LoginForm = () => {
         setSearchParams({
           step: 2,
           email: data.email,
-          userId:result.data.userId
+          userId: result.data.userId,
         });
         handleNext();
       }
@@ -50,12 +54,29 @@ const LoginForm = () => {
   const handleVerifyLogin = async (otp) => {
     try {
       const result = await verifyOtp(watch("email"), otp);
+
       if (result.success) {
-        navigate("/user");
+        setLoading(true)
+        const { accessToken } = result.data;
+
+        axios.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${accessToken}`;
+
+        axios
+          .get(`${baseUrl}user`)
+          .then((response) => {
+            localStorage.setItem("userInfo", JSON.stringify(response.data));
+
+            navigate("/user");
+          })
+          .catch((error) => {
+            console.error("API Error:", error);
+          });
+          setLoading(false)
       }
     } catch (error) {
       console.error("OTP verification error:", error);
-      // Handle error (e.g., show error message to user)
     }
   };
 
@@ -144,10 +165,10 @@ const LoginForm = () => {
           )}
           {step === 2 && (
             <EmailVerification
-            userId={userId}
-            email={email}
+              userId={userId}
+              email={email}
               onVerify={handleVerifyLogin}
-              isLoading={isCompleteLoading}
+              isLoading={isCompleteLoading || loading}
             />
           )}
           {step === 3 && <ForgotPassword onNext={handleNext} />}
