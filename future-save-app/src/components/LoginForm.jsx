@@ -1,37 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import FormFieldComp from "./form/FormFieldComp";
 import EmailVerification from "./EmailVerification";
-import { useState } from "react";
 import ForgotPassword from "./ForgotPassword";
-import { useNavigate } from "react-router-dom";
 import ResetPassword from "./ResetPassword";
+import { useApiLogin } from "../hooks/useApi";
+import FormButton from "./FormBtn";
+import axios from "axios";
+import { baseUrl } from "../features/api/apiSlice";
 
 const LoginForm = () => {
-  const [step, setStep] = useState(1);
-
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [step, setStep] = useState(Number(searchParams.get("step")) || 1);
+  const email = searchParams.get("email") || "";
+  const userId = searchParams.get("userId") || null;
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const handleNext = () => {
-    setStep((prevStep) => prevStep + 1);
-  };
-
-  const handleVerify = (otp) => {
-    console.log("Entered OTP:", otp);
-    alert("Verification successful!");
-    setStep((prevStep) => prevStep + 1);
-  };
-
-  const handleVerifyLogin = (otp) => {
-    console.log("Entered OTP:", otp);
-    alert("Verification successful!");
-    navigate("/user");
-  };
-
-  const handleResetPassword = (otp) => {
-    alert("reset  successful!");
-    setStep(1);
-  };
+  const { login, verifyOtp, isInitiateLoading, isCompleteLoading } =
+    useApiLogin();
 
   const {
     register,
@@ -40,9 +28,67 @@ const LoginForm = () => {
     watch,
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log("Form Data:", data);
-    handleNext();
+  const handleNext = () => {
+    setStep((prevStep) => prevStep + 1);
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      const result = await login({
+        emailAddress: data.email,
+        password: data.password,
+      });
+      if (result.success) {
+        setSearchParams({
+          step: 2,
+          email: data.email,
+          userId: result.data.userId,
+        });
+        handleNext();
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+    }
+  };
+
+  const handleVerifyLogin = async (otp) => {
+    try {
+      const result = await verifyOtp(watch("email"), otp);
+
+      if (result.success) {
+        setLoading(true)
+        const { accessToken } = result.data;
+
+        axios.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${accessToken}`;
+
+        axios
+          .get(`${baseUrl}user`)
+          .then((response) => {
+            localStorage.setItem("userInfo", JSON.stringify(response.data));
+
+            navigate("/user");
+          })
+          .catch((error) => {
+            console.error("API Error:", error);
+          });
+          setLoading(false)
+      }
+    } catch (error) {
+      console.error("OTP verification error:", error);
+    }
+  };
+
+  const handleVerify = (otp) => {
+    console.log("Entered OTP:", otp);
+    alert("Verification successful!");
+    setStep((prevStep) => prevStep + 1);
+  };
+
+  const handleResetPassword = (otp) => {
+    alert("reset successful!");
+    setStep(1);
   };
 
   const password = watch("password");
@@ -55,7 +101,7 @@ const LoginForm = () => {
             <>
               <h2 className="text-3xl font-semibold mb-4">Login</h2>
               <p className="text-sm mb-[50px]">
-                Don’t have an account?{" "}
+                Don't have an account?{" "}
                 <a
                   href="/register"
                   className="text-primary ml-2  font-semibold"
@@ -108,16 +154,23 @@ const LoginForm = () => {
                   </p>
                 </p>
 
-                <button
+                <FormButton
                   type="submit"
-                  className="w-[150px] mt-8 bg-primary text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
-                >
-                  Next
-                </button>
+                  text="Next"
+                  isLoading={isInitiateLoading}
+                  disabled={isInitiateLoading}
+                />
               </form>
             </>
           )}
-          {step === 2 && <EmailVerification onVerify={handleVerifyLogin} />}
+          {step === 2 && (
+            <EmailVerification
+              userId={userId}
+              email={email}
+              onVerify={handleVerifyLogin}
+              isLoading={isCompleteLoading || loading}
+            />
+          )}
           {step === 3 && <ForgotPassword onNext={handleNext} />}
           {step === 4 && <EmailVerification onVerify={handleVerify} />}
           {step === 5 && <ResetPassword onNext={handleResetPassword} />}

@@ -1,12 +1,21 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Bell from "../assets/bellIcon.svg";
 import { Drawer } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { getUserData } from "../utils/getUserData";
+import { useApiGet } from "../hooks/useApi";
 
-const Navbar = () => {
+const Navbar = ({refresh}) => {
   const location = useLocation();
   const [state, setState] = React.useState(false);
+  const { data: userData, isLoading, error, refetch } = useApiGet("user");
+console.log(userData?.data);
+
+useEffect(() => {
+ refetch()
+}, [refresh])
+
 
   const toggleDrawer = (open) => (event) => {
     if (
@@ -21,7 +30,7 @@ const Navbar = () => {
   const getGreetingText = () => {
     switch (location.pathname) {
       case "/user":
-        return "Hello Williams"; // Default or Dashboard greeting
+        return `Hello, ${userData?.data?.firstName}`; // Default or Dashboard greeting
       case "/user/contribution_plan":
         return "Contribution Plans";
       case "/user/loan_management":
@@ -53,7 +62,7 @@ const Navbar = () => {
             </div>
             <div className="bg-[#CD2280]  rounded-full p-2">
               <span className="text-sm aspect-square h-[2.5em] text-white flex items-center justify-center">
-                W
+                {userData?.data?.firstName.charAt(0)}
               </span>
             </div>
           </div>

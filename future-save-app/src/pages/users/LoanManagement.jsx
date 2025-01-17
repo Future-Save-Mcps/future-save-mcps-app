@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import OngoingCompletedCard from "../../components/Cards/OngoingCompletedCard";
 import Warning from "../../components/Cards/Warning";
 import Bg from "../../assets/cardBd.svg";
@@ -11,6 +11,8 @@ import SendImg from "../../assets/send.svg";
 import { Box, Modal, Typography } from "@mui/material";
 import LoanTabs from "../../components/LoanTabs";
 import { Controller, useForm } from "react-hook-form";
+import { useApiGet } from "../../hooks/useApi";
+import AplicationForm from "../../components/ApplicationForm";
 const style = {
   position: "absolute",
   top: "50%",
@@ -28,13 +30,53 @@ const style = {
 const LoanManagement = () => {
   const [state, setState] = useState(false);
 
-  const [modalType, setModalType] = useState("Error");
-
+  const [modalType, setModalType] = useState("Success"); // Success or Error
+  const eligibleData = {
+    success: true,
+    message: "string",
+    note: "string",
+    data: {
+      isEligibleLoan: true,
+      inEligibilityReason: "string",
+      isEligibleForThriftLoan: true,
+      maxThriftLoanAmount: 0,
+      isEligibleForPremiumLoan: true,
+      maxPremiumLoanAmount: 0,
+    },
+  };
   const [open, setOpen] = useState(false);
+  const [loanType, setLoanType] = useState(null);
+  const [eligible, setEligible] = useState(false);
+  const [errorType, setErrorType] = useState(null);
   const handleOpen = () => {
     setOpen(true);
   };
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setEligible(false);
+  };
+
+  const handleOpenApplyThrift = () => {
+    setLoanType("Thrift");
+    if (eligibleData.data.isEligibleForThriftLoan) {
+      setEligible(true);
+    } else {
+      setEligible(false);
+      setErrorType("NoPlanYet"); //NoPlanYet or runningLoan
+    }
+    setOpen(true);
+  };
+
+  const handleOpenApplyPremium = () => {
+    setLoanType("Premium");
+    if (eligibleData.data.isEligibleForPremiumLoan) {
+      setEligible(true);
+    } else {
+      setEligible(false);
+      setErrorType("NoPlanYet"); //NoPlanYet or runningLoan
+    }
+    setOpen(true);
+  };
 
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const handleOpenPaymentModal = () => {
@@ -73,6 +115,13 @@ const LoanManagement = () => {
     // Handle payment submission
   };
 
+  const { data, isLoading, error, refetch } = useApiGet("loan/eligible");
+
+  useEffect(() => {
+    if (data) {
+      console.log(data);
+    }
+  }, [data]);
   return (
     <>
       <div>
@@ -97,7 +146,7 @@ const LoanManagement = () => {
               4.2% monthly interest
             </div>
             <button
-              onClick={handleOpen}
+              onClick={handleOpenApplyThrift}
               className="border text-[18px] font-[600] text-[#72109D] bg-[#fff] py-2 w-[60%] flex items-center justify-center rounded-xl"
             >
               Apply
@@ -119,7 +168,7 @@ const LoanManagement = () => {
               8.4% monthly interest
             </div>
             <button
-              onClick={handleOpen}
+              onClick={handleOpenApplyPremium}
               className="border text-[18px] font-[600] text-[#1DAB40] bg-[#fff] py-2 w-[60%] flex items-center justify-center rounded-xl"
             >
               Apply
@@ -278,13 +327,38 @@ const LoanManagement = () => {
           <LoanTabs />
         </div>
       </Drawer>
-      <Modal
+      {/* <Modal
         open={open}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
         {modalType === "Error" ? (
+          <Box sx={style}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Thrift Loan</h2>
+              <CloseIcon
+                onClick={handleClose}
+                sx={{
+                  cursor: "pointer",
+                  padding: "5px",
+                  width: "35px",
+                  height: "35px",
+                  borderRadius: "50%",
+                  backgroundColor: "#F8F8FA",
+                }}
+              />
+            </div>
+
+            <h2 className="text-lg text-center font-semibold">Error!</h2>
+            <p className="max-w-[90%] text-center m-auto my-4 text-[16px] text-[#B0B0B0] ">
+              You can not apply for this loan now because you have a similar
+              loan that has not been settled yet!
+            </p>
+
+            <img src={NotFound} width="50%" className="m-auto my-4" alt="" />
+          </Box>
+        ) : modalType === "Eligible" ? (
           <Box sx={style}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Thrift Loan</h2>
@@ -338,7 +412,7 @@ const LoanManagement = () => {
             </button>
           </Box>
         )}
-      </Modal>
+      </Modal> */}
 
       <Modal
         open={openPaymentModal}
@@ -462,6 +536,14 @@ const LoanManagement = () => {
           </div>
         </Box>
       </Modal>
+
+      <AplicationForm
+        open={open}
+        handleClose={handleClose}
+        eligible={eligible}
+        errorType={errorType}
+        loanType={loanType}
+      />
     </>
   );
 };
