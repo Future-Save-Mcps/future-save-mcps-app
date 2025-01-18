@@ -29,21 +29,42 @@ const style = {
 
 const LoanManagement = () => {
   const [state, setState] = useState(false);
+  const {
+    data: eligibleData,
+    isLoading,
+    error,
+    refetch,
+  } = useApiGet("loan/eligible");
 
   const [modalType, setModalType] = useState("Success"); // Success or Error
-  const eligibleData = {
-    success: true,
-    message: "string",
-    note: "string",
-    data: {
-      isEligibleLoan: true,
-      inEligibilityReason: "string",
-      isEligibleForThriftLoan: true,
-      maxThriftLoanAmount: 0,
-      isEligibleForPremiumLoan: true,
-      maxPremiumLoanAmount: 0,
-    },
-  };
+  function checkEligibility() {
+    // const { isEligibleForThriftLoan, isEligibleForPremiumLoan } = data?.data;
+
+    if (
+      eligibleData?.data?.isEligibleForThriftLoan &&
+      eligibleData?.data?.isEligibleForPremiumLoan
+    ) {
+      return {
+        text: "You're eligible for both Thrift and Premium loans.",
+        color: "Green",
+      };
+    } else if (eligibleData?.data?.isEligibleForThriftLoan) {
+      return {
+        text: "You're eligible for a Thrift loan.",
+        color: "Yellow",
+      };
+    } else if (eligibleData?.data?.isEligibleForPremiumLoan) {
+      return {
+        text: "You're eligible for a Premium loan.",
+        color: "Yellow",
+      };
+    } else {
+      return {
+        text: "You're not eligible for any loans at this time.",
+        color: "Red",
+      };
+    }
+  }
   const [open, setOpen] = useState(false);
   const [loanType, setLoanType] = useState(null);
   const [eligible, setEligible] = useState(false);
@@ -58,7 +79,7 @@ const LoanManagement = () => {
 
   const handleOpenApplyThrift = () => {
     setLoanType("Thrift");
-    if (eligibleData.data.isEligibleForThriftLoan) {
+    if (eligibleData?.data?.isEligibleForThriftLoan) {
       setEligible(true);
     } else {
       setEligible(false);
@@ -69,7 +90,7 @@ const LoanManagement = () => {
 
   const handleOpenApplyPremium = () => {
     setLoanType("Premium");
-    if (eligibleData.data.isEligibleForPremiumLoan) {
+    if (eligibleData?.data?.isEligibleForPremiumLoan) {
       setEligible(true);
     } else {
       setEligible(false);
@@ -115,19 +136,16 @@ const LoanManagement = () => {
     // Handle payment submission
   };
 
-  const { data, isLoading, error, refetch } = useApiGet("loan/eligible");
-
   useEffect(() => {
-    if (data) {
-      console.log(data);
-    }
-  }, [data]);
+    console.log("thi is eligibleData", eligibleData);
+  }, [eligibleData]);
+
   return (
     <>
       <div>
         <Warning
-          WarningType="Green"
-          text="You are eligible for both Thrift & Premium Loans"
+          WarningType={checkEligibility()?.color}
+          text={checkEligibility()?.text}
         />
         <div className="flex gap-6 mb-8">
           <div
