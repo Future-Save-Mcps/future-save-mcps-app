@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import SideBar from "../components/SideBar";
@@ -6,7 +6,33 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 
 const UserLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+ const [userInfo, setUserInfo] = useState(() => {
+        // Initialize state with data from localStorage
+        const storedUserInfo = localStorage.getItem("userInfo");
+        return storedUserInfo ? JSON.parse(storedUserInfo) : null;
+    });
 
+    useEffect(() => {
+        // Function to handle localStorage updates
+        const handleStorageChange = () => {
+            const updatedUserInfo = localStorage.getItem("userInfo");
+            setUserInfo(updatedUserInfo ? JSON.parse(updatedUserInfo) : null);
+        };
+
+        // Listen for changes in localStorage
+        window.addEventListener("storage", handleStorageChange);
+
+        // Cleanup listener on unmount
+        return () => {
+            window.removeEventListener("storage", handleStorageChange);
+        };
+    }, []);
+
+    useEffect(() => {
+      // ref
+        // React to local state changes if needed
+        console.log("User Info updated:", userInfo);
+    }, [userInfo]);
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
@@ -32,7 +58,7 @@ const UserLayout = () => {
             </button>
           </div>
 
-          <Navbar />
+          <Navbar refresh={userInfo} />
         </div>
 
         <main className="flex-1 overflow-auto p-4">

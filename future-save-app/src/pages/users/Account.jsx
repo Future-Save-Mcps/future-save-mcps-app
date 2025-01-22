@@ -11,17 +11,29 @@ import ReferIcon from "../../assets/referIcon.svg";
 import AccountIcon from "../../assets/account.svg";
 import Contact from "../../assets/contact.svg";
 import Bank from "../../assets/bank.svg";
+import { useApiGet } from "../../hooks/useApi";
 
 const Account = () => {
   const [activeTab, setActiveTab] = useState("Profile");
+  // const userData = getUserData();
+
+  const { data: userData, isLoading, error, refetch } = useApiGet("user");
 
   const tabs = [
-    { name: "Profile", Icon: Profile, component: <ProfileContent /> },
-    { name: "Account Settings", Icon: AccountIcon, component: <AccountSettings /> },
+    {
+      name: "Profile",
+      Icon: Profile,
+      component: <ProfileContent refetch={refetch} userData={userData} />,
+    },
+    {
+      name: "Account Settings",
+      Icon: AccountIcon,
+      component: <AccountSettings />,
+    },
     {
       name: "Bank & Withdrawal",
       Icon: Bank,
-      component: <BankAndWithdrawal />,
+      component: <BankAndWithdrawal refetch={refetch} userData={userData} />,
     },
     { name: "Refer and Earn", Icon: ReferIcon, component: <ReferAndEarn /> },
     { name: "Contact Us", Icon: Contact, component: <ContactUs /> },
@@ -29,7 +41,7 @@ const Account = () => {
 
   const renderContent = () => {
     const active = tabs.find((tab) => tab.name === activeTab);
-    return active ? active.component : <ProfileContent />;
+    return active ? active.component : <ProfileContent userData={userData} />;
   };
 
   return (

@@ -1,17 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useApiPost } from "../hooks/useApi";
+import { useApiGet, useApiPost } from "../hooks/useApi";
 import FormButton from "./FormBtn";
 import { toast } from "react-toastify";
 
-const EmailVerification = ({ email, onVerify, agreement = false, userId }) => {
+const EmailVerification = ({ email, onVerify, agreement = false, userId, isLoading }) => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(30); // Countdown timer
   const [loading, setLoading] = useState(false);
   const inputRefs = useRef([]);
   const [resending, setResending] = useState(false);
-  const { post, isLoading } = useApiPost();
-
-  // Handle OTP change
   const handleChange = (value, index) => {
     // Allow only alphanumeric characters and convert to uppercase
     value = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
@@ -130,8 +127,8 @@ const EmailVerification = ({ email, onVerify, agreement = false, userId }) => {
         width="100%"
         onClick={handleVerify}
         text="Continue"
-        isLoading={loading}
-        disabled={loading}
+        isLoading={loading || isLoading}
+        disabled={loading || isLoading}
       />
       {agreement && (
         <p className="text-center text-gray-500 mt-4 text-sm">

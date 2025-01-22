@@ -3,7 +3,9 @@ import React, { useState } from "react";
 import FormFieldComp from "../form/FormFieldComp";
 import { useForm } from "react-hook-form";
 import CloseIcon from "@mui/icons-material/Close";
-
+import { fetchAndStoreUserData } from "../../utils/authUtil";
+import { useApiPatch } from "../../hooks/useApi";
+import FormButton from "../FormBtn";
 const style = {
   position: "absolute",
   top: "50%",
@@ -18,7 +20,9 @@ const style = {
   borderRadius: "20px",
 };
 
-const ProfileContent = () => {
+const ProfileContent = ({ userData, refetch }) => {
+  const { patch, isLoading } = useApiPatch();
+  // api/user
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
     setOpen(true);
@@ -31,8 +35,13 @@ const ProfileContent = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    const result = await patch(`user`, data);
+    if (result.success && result.data) {
+      fetchAndStoreUserData();
+      refetch()
+      handleClose();
+    }
   };
   return (
     <>
@@ -45,31 +54,35 @@ const ProfileContent = () => {
         </div>
         <div className="flex flex-col mt-6 justify-center items-center gap-6">
           <div className="w-[130px] h-[130px] rounded-full flex justify-center items-center font-[600] bg-[#CD2280] text-[50px] text-[#fff]">
-            W
+            {userData?.data?.firstName.charAt(0)}
           </div>
-          <div className="text-[22px] font-[500]">Williams Elum</div>
+          <div className="text-[22px] font-[500]">
+            {(userData?.data?.lastName || "--") +
+              " " +
+              (userData?.data?.firstName || "--")}
+          </div>
         </div>
 
         <div className="p-6 mt-8">
           <div className="flex flex-wrap gap-12">
             <div className="max-w-[200px] w-[90vw]">
               <h3 className="font-bold">Gender</h3>
-              <p>Male</p>
+              <p>{userData?.data?.gender || "---"}</p>
             </div>
 
             <div className="max-w-[200px] w-[90vw]">
               <h3 className="font-bold">Date of Birth</h3>
-              <p>25/01/2001</p>
+              <p>{userData?.data?.dateOfBirth || "---"}</p>
             </div>
 
             <div className="max-w-[200px] w-[90vw]">
               <h3 className="font-bold">Phone Number</h3>
-              <p>09088776655</p>
+              <p>{userData?.data?.phoneNumber || "---"}</p>
             </div>
 
             <div className="max-w-[200px] w-[90vw]">
               <h3 className="font-bold">Email</h3>
-              <p>williams@gmail.com</p>
+              <p>{userData?.data?.email || "---"}</p>
             </div>
           </div>
         </div>
@@ -101,6 +114,8 @@ const ProfileContent = () => {
 
             {/* First Name */}
             <FormFieldComp
+              defaultValueAttachment={userData?.data?.firstName}
+              setValue={setValue}
               label="First Name"
               name="firstName"
               type="text"
@@ -112,6 +127,8 @@ const ProfileContent = () => {
 
             {/* Last Name */}
             <FormFieldComp
+              defaultValueAttachment={userData?.data?.lastName}
+              setValue={setValue}
               label="Last Name"
               name="lastName"
               type="text"
@@ -123,10 +140,11 @@ const ProfileContent = () => {
 
             {/* Gender (Select) */}
             <FormFieldComp
+              defaultValueAttachment={userData?.data?.gender}
               label="Gender"
               name="gender"
               type="select"
-              setValue={setValue} 
+              setValue={setValue}
               register={register}
               validation={{ required: "Gender is required" }}
               errors={errors}
@@ -138,8 +156,10 @@ const ProfileContent = () => {
 
             {/* Date of Birth */}
             <FormFieldComp
+              defaultValueAttachment={userData?.data?.dateOfBirth}
+              setValue={setValue}
               label="Date of Birth"
-              name="dob"
+              name="dateOfBirth"
               type="date"
               register={register}
               validation={{ required: "Date of Birth is required" }}
@@ -149,8 +169,10 @@ const ProfileContent = () => {
 
             {/* Phone Number */}
             <FormFieldComp
+              defaultValueAttachment={userData?.data?.phoneNumber}
+              setValue={setValue}
               label="Phone Number"
-              name="phone"
+              name="phoneNumber"
               type="tel"
               placeholder="Enter Phone Number"
               register={register}
@@ -164,30 +186,15 @@ const ProfileContent = () => {
               errors={errors}
             />
 
-            {/* Email */}
-            <FormFieldComp
-              label="Email"
-              name="email"
-              type="email"
-              placeholder="Enter Email Address"
-              register={register}
-              validation={{
-                required: "Email is required",
-                pattern: {
-                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-                  message: "Invalid email address",
-                },
-              }}
-              errors={errors}
-            />
-
             {/* Submit Button */}
-            <button
+            {/* <button
               type="submit"
               className="w-full bg-primary text-white py-3 mt-4 rounded-lg hover:bg-blue-600 transition"
             >
               Update
-            </button>
+            </button> */}
+
+            <FormButton isLoading={isLoading} type="submit" text="Update" width="100%"/>
           </form>
         </Box>
       </Modal>
