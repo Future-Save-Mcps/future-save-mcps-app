@@ -8,6 +8,7 @@ import { Controller, useForm } from "react-hook-form";
 import FormFieldComp from "./form/FormFieldComp";
 import Switch from "@mui/material/Switch";
 import { styled } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
 
 const style = {
   position: "absolute",
@@ -64,6 +65,7 @@ const AplicationForm = ({
   eligible,
   handleClose,
   open,
+  // navigate,
 }) => {
   //error type is either NoPlanYet or runningLoan
 
@@ -76,6 +78,8 @@ const AplicationForm = ({
     formState: { errors },
     reset,
   } = useForm();
+
+  const navigate = useNavigate();
 
   const onSubmit = async (data) => {
     console.log(data);
@@ -127,7 +131,7 @@ const AplicationForm = ({
               label="Loan Amount (Max. of NGN 375,000.00)"
               name="loanAmount"
               type="number"
-            //   placeholder="Amount"
+              //   placeholder="Amount"
               register={register}
               validation={{
                 required: "Name of savings is required",
@@ -139,7 +143,7 @@ const AplicationForm = ({
               label="Repayment Duration"
               name="paymentDuration"
               type="text"
-            //   placeholder="Payment Duration"
+              //   placeholder="Payment Duration"
               register={register}
               validation={{
                 required: "Name of savings is required",
@@ -151,7 +155,7 @@ const AplicationForm = ({
               label="Interest (4.2% per month)"
               name="interest"
               type="text"
-            //   placeholder="interest"
+              //   placeholder="interest"
               register={register}
               validation={{
                 required: "Name of savings is required",
@@ -163,7 +167,7 @@ const AplicationForm = ({
               label="Total Repayment Amount"
               name="totalRapayment"
               type="text"
-            //   placeholder="Total Rapayment"
+              //   placeholder="Total Rapayment"
               register={register}
               validation={{
                 required: "Name of savings is required",
@@ -175,7 +179,7 @@ const AplicationForm = ({
               label="Weekly Repayment"
               name="WeeklyRapayment"
               type="text"
-            //   placeholder="Weekly Rapayment"
+              //   placeholder="Weekly Rapayment"
               register={register}
               validation={{
                 required: "Name of savings is required",
@@ -188,7 +192,7 @@ const AplicationForm = ({
               label="Repayment Start Date"
               name="repaymentStartDate"
               type="date"
-                // placeholder="125000"
+              // placeholder="125000"
               register={register}
               validation={{
                 required: "Repayment Start Date is required",
@@ -211,7 +215,7 @@ const AplicationForm = ({
               label="Reason for requesting for loan"
               name="reason"
               type="text"
-                // placeholder="Weekly Rapayment"
+              // placeholder="Weekly Rapayment"
               register={register}
               validation={{
                 required: "Reason for requesting for loan is required",
@@ -224,7 +228,7 @@ const AplicationForm = ({
               label="Subscription Code"
               name="guarantorOneSubscriptionCode"
               type="text"
-                // placeholder="Weekly Rapayment"
+              // placeholder="Weekly Rapayment"
               register={register}
               validation={{
                 required: "Subscription Code is required",
@@ -236,7 +240,7 @@ const AplicationForm = ({
               label="Full Name"
               name="guarantorOneFullName"
               type="text"
-                // placeholder="Weekly Rapayment"
+              // placeholder="Weekly Rapayment"
               register={register}
               validation={{
                 required: "Full Name is required",
@@ -248,7 +252,7 @@ const AplicationForm = ({
               label="Email Address"
               name="guarantorOneFullEmail"
               type="text"
-                // placeholder="Weekly Rapayment"
+              // placeholder="Weekly Rapayment"
               register={register}
               validation={{
                 required: "Email Address is required",
@@ -261,7 +265,7 @@ const AplicationForm = ({
               label="Subscription Code"
               name="guarantorTwoSubscriptionCode"
               type="text"
-                // placeholder="Weekly Rapayment"
+              // placeholder="Weekly Rapayment"
               register={register}
               validation={{
                 required: "Subscription Code is required",
@@ -273,7 +277,7 @@ const AplicationForm = ({
               label="Full Name"
               name="guarantorTwoFullName"
               type="text"
-                // placeholder="Weekly Rapayment"
+              // placeholder="Weekly Rapayment"
               register={register}
               validation={{
                 required: "Full Name is required",
@@ -285,7 +289,7 @@ const AplicationForm = ({
               label="Email Address"
               name="guarantorTwoFullEmail"
               type="text"
-                // placeholder="Weekly Rapayment"
+              // placeholder="Weekly Rapayment"
               register={register}
               validation={{
                 required: "Email Address is required",
@@ -398,7 +402,10 @@ const AplicationForm = ({
                 className="m-auto my-4"
                 alt=""
               />
-              <button className="bg-primary w-[100%] p-3 mt-6 rounded-lg text-white ">
+              <button
+                onClick={() => navigate("/user/contribution_plan")}
+                className="bg-primary w-[100%] p-3 mt-6 rounded-lg text-white "
+              >
                 Start Contribution Plan
               </button>
             </Box>
