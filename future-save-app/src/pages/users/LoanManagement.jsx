@@ -27,6 +27,8 @@ const style = {
   borderRadius: "20px",
 };
 
+//
+
 const LoanManagement = () => {
   const [state, setState] = useState(false);
   const {
