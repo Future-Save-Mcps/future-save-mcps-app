@@ -43,7 +43,7 @@ const OngoingCompletedCard = ({
             </div>
             <div
               className={`font-[500] text-[16px] ${
-                status === "completed" ? "text-[#24bd5f]" : "text-[#FF790C]"
+                status === "completed" ? "text-[#24bd5f]"  : status === "inProgress"? "text-[#FF790C]" :"text-[#ff5858]"
               } `}
             >
               {status}

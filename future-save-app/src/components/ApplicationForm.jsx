@@ -1,5 +1,5 @@
 import { Box, FormControlLabel, Modal } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import WarningImg from "../assets/warning.svg";
 import NotFound from "../assets/notfound.svg";
@@ -9,6 +9,9 @@ import FormFieldComp from "./form/FormFieldComp";
 import Switch from "@mui/material/Switch";
 import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
+import { calculateLoanDetails } from "../utils/calculateLoanDetails";
+import { useApiPost } from "../hooks/useApi";
+import { formatCurrency } from "../utils/currencyFormatter";
 
 const style = {
   position: "absolute",
@@ -67,6 +70,7 @@ const AplicationForm = ({
   open,
   // navigate,
 }) => {
+  const { post } = useApiPost();
   //error type is either NoPlanYet or runningLoan
 
   const {
@@ -79,25 +83,78 @@ const AplicationForm = ({
     reset,
   } = useForm();
 
+  const [loanAmount, setLoanAmount] = useState();
+  const [loanCalculation, setLoanCalculation] = useState({});
+
+  const paymentDuration = watch("paymentDuration");
+  // calculateLoanDetails
+  useEffect(() => {
+    console.log("loan amount", loanAmount);
+    console.log("loan paymentDuration", paymentDuration);
+
+    const monthlyInterestRate = 0.042;
+    const calculate = calculateLoanDetails(
+      loanAmount,
+      paymentDuration,
+      monthlyInterestRate
+    );
+
+    setLoanCalculation(calculate);
+  }, [loanAmount, paymentDuration]);
+
+  useEffect(() => {
+    console.log(loanCalculation);
+    // setValue(
+    //   "interest",
+    // loanCalculation.monthlyInterestAmount === "NaN"
+    //   ? 0
+    //   : loanCalculation.monthlyInterestAmount
+    // );
+    // setValue(
+    // "totalRapayment",
+    // loanCalculation.totalRepaymentAmount === "NaN"
+    //   ? 0
+    //   : loanCalculation.totalRepaymentAmount
+    // );
+    // setValue(
+    //   "WeeklyRapayment",
+    // loanCalculation.weeklyRepayment === "NaN" ||
+    //   loanCalculation.weeklyRepayment === "Infinity"
+    //   ? 0
+    //   : loanCalculation.weeklyRepayment
+    // );
+  }, [loanCalculation]);
+
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
-    console.log(data);
+    // event.preventDefault();
+    // console.log(data); // You can log the form data to check
 
-    // const formData = {
-    //   savingsPlanName: data.nameOfSavings,
-    //   savingsPlan: data.savingsPlan,
-    //   weeklyAmount: data.weeklyAmount,
-    //   targetAmount: data.targetAmount,
-    //   startDate: data.startDate,
-    // };
+    const requestBody = {
+      loanType: loanType,
+      loanAmount: loanAmount,
+      repaymentStartDate: new Date(data.repaymentStartDate).toISOString(),
+      guarantor1SubscriptionCode: data.guarantorOneSubscriptionCode,
+      guarantor1SubscriptionFullName: data.guarantorOneFullName,
+      guarantor1SubscriptionEmail: data.guarantorOneFullEmail,
+      guarantor2SubscriptionCode: data.guarantorTwoSubscriptionCode,
+      guarantor2SubscriptionFullName: data.guarantorTwoFullName,
+      guarantor2SubscriptionEmail: data.guarantorTwoFullEmail,
+      bankAccountId: "34567hbjv", // Assuming a bank account ID input field in your form
+      loanReason: data.reason,
+    };
+    console.log(requestBody);
 
-    // const result = await post(`savingsplan`, formData);
-    // if (result.success && result.data) {
-    //   refetchContribution();
-    //   refetch();
-    //   handleClose();
-    // }
+    try {
+      const result = await post("/loan", requestBody);
+      if (result.success) {
+        console.log("Loan created successfully:", result.data);
+        // Handle success (refetch data, close modal, etc.)
+      }
+    } catch (err) {
+      console.error("Error creating loan:", err);
+    }
   };
 
   return (
@@ -131,6 +188,8 @@ const AplicationForm = ({
               label="Loan Amount (Max. of NGN 375,000.00)"
               name="loanAmount"
               type="number"
+              onchange={true}
+              setOnChangeValue={setLoanAmount}
               //   placeholder="Amount"
               register={register}
               validation={{
@@ -142,50 +201,57 @@ const AplicationForm = ({
             <FormFieldComp
               label="Repayment Duration"
               name="paymentDuration"
-              type="text"
-              //   placeholder="Payment Duration"
+              setValue={setValue}
+              type="select"
               register={register}
               validation={{
                 required: "Name of savings is required",
               }}
+              options={[
+                { label: "25 weeks", value: 25 },
+                { label: "50 weeks", value: 50 },
+              ]}
               errors={errors}
             />
 
-            <FormFieldComp
+            {/* <FormFieldComp
               label="Interest (4.2% per month)"
               name="interest"
               type="text"
+              // readOnly
               //   placeholder="interest"
               register={register}
               validation={{
                 required: "Name of savings is required",
               }}
               errors={errors}
-            />
+            /> */}
 
-            <FormFieldComp
+            {/* <FormFieldComp
               label="Total Repayment Amount"
               name="totalRapayment"
               type="text"
+              // readOnly
               //   placeholder="Total Rapayment"
               register={register}
               validation={{
                 required: "Name of savings is required",
               }}
               errors={errors}
-            />
+            /> */}
 
-            <FormFieldComp
+            {/* <FormFieldComp
               label="Weekly Repayment"
               name="WeeklyRapayment"
               type="text"
+              // readOnly
               //   placeholder="Weekly Rapayment"
               register={register}
               validation={{
                 required: "Name of savings is required",
               }}
               errors={errors}
-            />
+            /> */}
 
             <FormFieldComp
               //   setValue={setValue}
@@ -196,17 +262,6 @@ const AplicationForm = ({
               register={register}
               validation={{
                 required: "Repayment Start Date is required",
-              }}
-              errors={errors}
-            />
-
-            <FormFieldComp
-              label="Repayment End Date"
-              name="repaymentEndDate"
-              type="date"
-              register={register}
-              validation={{
-                required: "Repayment End Date is required",
               }}
               errors={errors}
             />
@@ -298,6 +353,49 @@ const AplicationForm = ({
             />
 
             <div className="mb-4 f">
+              <div className=" mt-8 bg-[#edf0ff] p-2 rounded-lg ">
+                <div className="flex mb-2 justify-between">
+                  <div className="flex justify-between w-full">
+                    Interest (4.2% per month) :{" "}
+                    <span className="font-semibold">
+                      {formatCurrency(
+                        loanCalculation.monthlyInterestAmount === "NaN"
+                          ? 0
+                          : loanCalculation.monthlyInterestAmount
+                      )}
+                    </span>{" "}
+                  </div>
+                </div>
+
+                <div className="flex mb-2 justify-between">
+                  <div className="flex justify-between w-full">
+                    Weekly Repayment :{" "}
+                    <span className="font-semibold">
+                      {" "}
+                      {formatCurrency(
+                        loanCalculation.weeklyRepayment === "NaN" ||
+                          loanCalculation.weeklyRepayment === "Infinity"
+                          ? 0
+                          : loanCalculation.weeklyRepayment
+                      )}
+                    </span>{" "}
+                  </div>
+                </div>
+
+                <div className="flex mb-2 justify-between">
+                  <div className="flex justify-between w-full">
+                    Total Repayment Amount :{" "}
+                    <span className="font-semibold">
+                      {" "}
+                      {formatCurrency(
+                        loanCalculation.totalRepaymentAmount === "NaN"
+                          ? 0
+                          : loanCalculation.totalRepaymentAmount
+                      )}
+                    </span>{" "}
+                  </div>
+                </div>
+              </div>
               <div className="lex items-center">
                 <Controller
                   name="terms"

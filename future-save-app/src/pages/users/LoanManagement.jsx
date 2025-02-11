@@ -69,6 +69,7 @@ const LoanManagement = () => {
   }
   const [open, setOpen] = useState(false);
   const [loanType, setLoanType] = useState(null);
+  const [activeTab, setActiveTab] = useState("ongoing");
   const [eligible, setEligible] = useState(false);
   const [errorType, setErrorType] = useState(null);
   const handleOpen = () => {
@@ -142,6 +143,64 @@ const LoanManagement = () => {
     console.log("thi is eligibleData", eligibleData);
   }, [eligibleData]);
 
+  const tabs = [
+    { id: "ongoing", label: "OnGoing" },
+    { id: "completed", label: "Completed" },
+    { id: "rejected", label: "Rejected" },
+  ];
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "ongoing":
+        return (
+          <>
+            <OngoingCompletedCard
+              onClick={toggleDrawer(true)}
+              percentage={0}
+              cardType="Loan"
+              loanAmount="₦375,000.00"
+              loanBalance="₦ 15,650.00"
+              status="inProgress"
+              cardTitle="Premium Loan"
+              remainingDays="299 days remaining"
+            />
+          </>
+        );
+      case "completed":
+        return (
+          <>
+            <OngoingCompletedCard
+              onClick={toggleDrawer(true)}
+              percentage={20}
+              cardType="Loan"
+              loanAmount="₦375,000.00"
+              loanBalance="₦ 15,650.00"
+              status="completed"
+              cardTitle="Thrift Loan"
+              remainingDays="299 days remaining"
+            />
+          </>
+        ); // Replace with actual completed loans content
+      case "rejected":
+        return (
+          <>
+            <OngoingCompletedCard
+              onClick={toggleDrawer(true)}
+              percentage={20}
+              cardType="Loan"
+              loanAmount="₦375,000.00"
+              loanBalance="₦ 15,650.00"
+              status="rejected"
+              cardTitle="Thrift Loan"
+              remainingDays="299 days remaining"
+            />
+          </>
+        ); // Replace with actual rejected loans content
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
       <div>
@@ -196,7 +255,26 @@ const LoanManagement = () => {
           </div>{" "}
         </div>
         <h2 className="text-[24px] font-[600] mb-4 ">My Loans</h2>
-        <div className=" max-w-[550px] border min-h-[500px] p-4 rounded-2xl ">
+
+        <div className="max-w-[550px] border min-h-[500px] p-4 rounded-2xl">
+          <div className="flex border-b">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`flex-1 text-[20px] font-[600] p-4 ${
+                  activeTab === tab.id
+                    ? "border-b-2 border-primary text-primary"
+                    : "text-[#717171]"
+                }`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <div className="mt-4">{renderTabContent()}</div>
+        </div>
+        {/* <div className=" max-w-[550px] border min-h-[500px] p-4 rounded-2xl ">
           <div className="flex border-b ">
             <button className="flex-1 text-[20px] font-[600] p-4 border-b-2 border-primary">
               OnGoing
@@ -230,7 +308,7 @@ const LoanManagement = () => {
               remainingDays={" 299 days remaining"}
             />
           </div>
-        </div>
+        </div> */}
       </div>
       <Drawer anchor="right" open={state}>
         <div className="p-4 w-[100vw] max-w-[700px]">
