@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import UserLayout from "../layouts/UserLayout";
 import { LazyRoute } from "../App";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 const Dashboard = React.lazy(() => import("../pages/users/Dashboard"));
 const Account = React.lazy(() => import("../pages/users/Account"));
@@ -15,7 +16,11 @@ const LoanManagement = React.lazy(() =>
 const UserRoutes = () => (
   <Routes>
     <Route path="/" element={<UserLayout />}>
-      <Route index element={<LazyRoute Component={Dashboard} />} />
+      <Route index element={
+          <ProtectedRoute>
+             <LazyRoute Component={Dashboard} />
+          </ProtectedRoute>
+       } />
       <Route
         path="contribution_plan"
         element={<LazyRoute Component={ContributionPplan} />}

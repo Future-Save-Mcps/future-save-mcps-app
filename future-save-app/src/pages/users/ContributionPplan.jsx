@@ -76,8 +76,8 @@ const IOSSwitch = styled((props) => (
 }));
 
 const ContributionPplan = () => {
-    const userData = getUserData();
-  
+  const userData = getUserData();
+
   const [state, setState] = useState(false);
   const [planId, setPlanId] = useState(null);
   const {
@@ -91,7 +91,7 @@ const ContributionPplan = () => {
     data: contributionPlan,
     isLoading: isLoadingContributionPlan,
     isFetching,
-    refetch:refetchContributionPlan
+    refetch: refetchContributionPlan,
   } = useApiGet(`savingsplan?PlanId=${planId}`);
 
   const {
@@ -154,8 +154,6 @@ const ContributionPplan = () => {
   };
 
   const onSubmitWithdrawal = async (data) => {
-   
- 
     const formData = {
       savingsPlanId: planId,
       amount: data.weeklyAmount,
@@ -166,9 +164,9 @@ const ContributionPplan = () => {
 
     const result = await post(`savingsplan/withdraw-savings-fund`, formData);
     if (result.success && result.data) {
-      refetchContribution()
-      refetchContributionPlan()
-      refetch()
+      refetchContribution();
+      refetchContributionPlan();
+      refetch();
       handleClosePaymentModal();
     }
   };
@@ -329,10 +327,14 @@ const ContributionPplan = () => {
                   status={plan.planStatus}
                   remainingDays={` ${plan.daysRemaining} days remaining`}
                   onClick={toggleDrawer(true, plan.planId)}
-                  percentage={calculatePercentage(
-                    plan.currentBalance,
-                    plan.targetAmount
-                  )}
+                  percentage={
+                    plan.planStatus === "completed"
+                      ? 100
+                      : calculatePercentage(
+                          plan.currentBalance,
+                          plan.targetAmount
+                        )
+                  }
                 />
               ))
             )}
@@ -367,7 +369,9 @@ const ContributionPplan = () => {
                 remainingDays={` ${contributionPlan?.data?.daysRemaining} days remaining`}
                 onClick={toggleDrawer(true)}
                 percentage={
-                  contributionPlan?.data?.currentBalance < 1
+                  contributionPlan?.data?.planStatus === "completed"
+                    ? 100
+                    : contributionPlan?.data?.currentBalance < 1
                     ? 0
                     : (contributionPlan?.data?.currentBalance /
                         contributionPlan?.data?.targetAmount) *
@@ -831,8 +835,12 @@ const ContributionPplan = () => {
                   }}
                   className=" bg-[#72109D] rounded-2xl p-6 flex flex-col justify-center items-center gap-1 "
                 >
-                  <div className="font-bold text-xl text-white">{userData?.data?.bankName}</div>
-                  <div className="font-bold text-xl text-white">{userData?.data?.bankAccountNumber}</div>
+                  <div className="font-bold text-xl text-white">
+                    {userData?.data?.bankName}
+                  </div>
+                  <div className="font-bold text-xl text-white">
+                    {userData?.data?.bankAccountNumber}
+                  </div>
                   <div className="font-bold text-base text-white">
                     {`(${userData?.data?.accountName})`}
                   </div>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   AccountIcon,
   ContributionIcon,
@@ -10,27 +10,35 @@ import {
 import Logo from "../assets/logo.svg";
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, Modal, Typography } from "@mui/material";
+import { useDispatch } from "react-redux";
 const style = {
   position: "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: "90vw",
-  maxWidth:400,
+  maxWidth: 400,
   bgcolor: "background.paper",
   border: "none",
   outline: "none",
   p: 4,
-  borderRadius:2
+  borderRadius: 2,
 };
 
 const SideBar = ({ toggleSidebar }) => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
   const handleOpen = () => {
     setOpen(true);
     toggleSidebar();
   };
   const handleClose = () => setOpen(false);
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.replace("/");
+    // dispatch(setUser)
+  };
   return (
     <>
       <div className=" text-white sticky p-4  w-fit bg-white  top-0 h-screen border md:border-none">
@@ -140,8 +148,12 @@ const SideBar = ({ toggleSidebar }) => {
             Are you sure you want to logout?
           </p>
           <div className="flex flex-col gap-6 mt-6">
-          <button className="bg-[red] p-2 rounded-lg text-white">Yes, Continue</button>
-          <button className="border border-[red] p-2 rounded-lg text-[red]">Cancel</button>
+            <button onClick={handleLogout} className="bg-[red] p-2 rounded-lg text-white">
+              Yes, Continue
+            </button>
+            <button className="border border-[red] p-2 rounded-lg text-[red]">
+              Cancel
+            </button>
           </div>
         </Box>
       </Modal>
