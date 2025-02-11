@@ -36,7 +36,7 @@ const Subscription = () => {
         </div>
         <button
           onClick={copyToClipboard}
-          className="   text-[18px] font-[600] text-[#fff] bg-[#0000001F] py-2 w-[60%] flex items-center justify-center rounded-lg"
+          className="   text-[18px] font-[600] text-[#fff] bg-[#0000001F] py-2 w-[40%] flex items-center justify-center rounded-lg"
         >
           <span className="px-2">
             <img src={Copy} alt="copy" />
