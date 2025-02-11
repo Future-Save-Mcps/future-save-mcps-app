@@ -113,7 +113,7 @@ const ContributionPplan = () => {
 
   // Watch the selected savings plan
   const savingsPlan = watch("savingsPlan", "25");
-  const paymentType = watch("paymentType", "thisWeek");
+  const paymentType = watch("paymentType", "CurrentWeekPayment");
   const numberOfWeeks = watch("Weeks", "");
   // Default to '25' weeks plan
 
@@ -137,20 +137,20 @@ const ContributionPplan = () => {
   const onSubmitPayment = async (data) => {
     console.log(data);
 
-    // const formData = {
-    //   savingsPlanName: data.nameOfSavings,
-    //   savingsPlan: data.savingsPlan,
-    //   weeklyAmount: data.weeklyAmount,
-    //   targetAmount: data.targetAmount,
-    //   startDate: data.startDate,
-    // };
+    const formData = {
+      
+      savingsPlanId: planId,
+      amount: data.weeklyAmount,
+      paymentType: data.paymentType,
+      
+    };
 
-    // const result = await post(`savingsplan`, formData);
-    // if (result.success && result.data) {
-    //   refetchContribution();
-    //   refetch();
-    //   handleClose();
-    // }
+    const result = await post(`savingsplan/add-savings-fund`, formData);
+    if (result.success && result.data) {
+      refetchContribution();
+      refetch();
+      handleClose();
+    }
   };
 
   const onSubmitWithdrawal = async (data) => {
@@ -178,7 +178,7 @@ const ContributionPplan = () => {
     useState("");
   const [onChangeValue, setOnChangeValue] = useState(5000);
   const [onChangeValuePaymentType, setOnChangeValuePaymentType] =
-    useState("thisWeek");
+    useState("CurrentWeekPayment");
   const handleOpen = () => {
     setOpen(true);
   };
@@ -237,8 +237,8 @@ const ContributionPplan = () => {
   }, [savingsPlan, onChangeValue]);
 
   useEffect(() => {
-    console.log(paymentType === "advance");
-    if (paymentType === "thisWeek") {
+    console.log(paymentType === "AdvancePayment");
+    if (paymentType === "CurrentWeekPayment") {
       setValue("Weeks", 1);
     }
     // setValue("targetAmount", onChangeValuePaymentType);
@@ -695,13 +695,13 @@ const ContributionPplan = () => {
                 <Controller
                   name="paymentType"
                   control={control}
-                  defaultValue="thisWeek"
+                  defaultValue="CurrentWeekPayment"
                   rules={{ required: "payment type is required" }}
                   render={({ field }) => (
                     <div className="flex gap-4">
                       <label
                         className={`flex items-center space-x-2 flex-1 p-3 rounded-md border ${
-                          field.value === "thisWeek"
+                          field.value === "CurrentWeekPayment"
                             ? "border-primary"
                             : "border-gray-300"
                         }`}
@@ -709,15 +709,15 @@ const ContributionPplan = () => {
                         <input
                           {...field}
                           type="radio"
-                          value="thisWeek"
-                          checked={field.value === "thisWeek"}
+                          value="CurrentWeekPayment"
+                          checked={field.value === "CurrentWeekPayment"}
                           className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                         />
                         <span>This week payment</span>
                       </label>
                       <label
                         className={`flex items-center space-x-2 flex-1 p-3 rounded-md border ${
-                          field.value === "advance"
+                          field.value === "AdvancePayment"
                             ? "border-primary"
                             : "border-gray-300"
                         }`}
@@ -725,8 +725,8 @@ const ContributionPplan = () => {
                         <input
                           {...field}
                           type="radio"
-                          value="advance"
-                          checked={field.value === "advance"}
+                          value="AdvancePayment"
+                          checked={field.value === "AdvancePayment"}
                           className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                         />
                         <span>Advance Payment</span>
@@ -740,7 +740,7 @@ const ContributionPplan = () => {
                   </p>
                 )}
               </div>
-              {paymentType === "advance" && (
+              {paymentType === "AdvancePayment" && (
                 <FormFieldComp
                   label="Number of weeks (25 weeks Plan)"
                   name="Weeks"
@@ -764,7 +764,7 @@ const ContributionPplan = () => {
                 defaultValueAttachment={
                   numberOfWeeks === ""
                     ? 5000
-                    : paymentType === "thisWeek"
+                    : paymentType === "CurrentWeekPayment"
                     ? 5000
                     : 5000 * numberOfWeeks
                 }
