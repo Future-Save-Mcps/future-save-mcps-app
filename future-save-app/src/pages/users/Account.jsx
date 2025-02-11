@@ -10,8 +10,10 @@ import Profile from "../../assets/profile.svg";
 import ReferIcon from "../../assets/referIcon.svg";
 import AccountIcon from "../../assets/account.svg";
 import Contact from "../../assets/contact.svg";
+import SubscriptionIcon from "../../assets/subIcon.svg";
 import Bank from "../../assets/bank.svg";
 import { useApiGet } from "../../hooks/useApi";
+import Subscription from "../../components/AccountPages/Subscription";
 
 const Account = () => {
   const [activeTab, setActiveTab] = useState("Profile");
@@ -37,6 +39,7 @@ const Account = () => {
     },
     { name: "Refer and Earn", Icon: ReferIcon, component: <ReferAndEarn /> },
     { name: "Contact Us", Icon: Contact, component: <ContactUs /> },
+    {name: "Subscription", Icon: SubscriptionIcon, component: <Subscription />}
   ];
 
   const renderContent = () => {
