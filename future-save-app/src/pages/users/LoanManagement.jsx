@@ -31,12 +31,26 @@ const style = {
 
 const LoanManagement = () => {
   const [state, setState] = useState(false);
+  const [loanId, setLoanId] = useState(null);
   const {
     data: eligibleData,
     isLoading,
     error,
     refetch,
   } = useApiGet("loan/eligible");
+
+  const {
+    data: loanPlan,
+    isLoading: isLoadingLoanPlan,
+    isFetching,
+    refetch: refetchLoanPlan,
+  } = useApiGet(`loan?LoanId=${loanId}`);
+
+  const {
+    data: loan,
+    isLoading: isLoadingLoan,
+    refetch: refetchLoan,
+  } = useApiGet(`loan/all?PageNumber=1&PageSize=100`);
 
   const [modalType, setModalType] = useState("Success"); // Success or Error
   function checkEligibility() {
@@ -149,53 +163,101 @@ const LoanManagement = () => {
     { id: "rejected", label: "Rejected" },
   ];
 
+  const filterLoans = (status) => {
+    return loan?.data?.items?.filter((plan) => plan.loanStatus === status);
+  };
+
   const renderTabContent = () => {
+    if (!loan?.data?.items) {
+      return <p>No loan data available</p>;
+    }
+
+    const filterLoans = (status) => {
+      return loan.data.items.filter((plan) => plan.loanStatus === status);
+    };
+
+    const calculatePercentage = (loan) => {
+      // This is a placeholder calculation. Adjust according to your actual data structure
+      const totalAmount = Number.parseFloat(loan.loanAmount);
+      const balance = Number.parseFloat(loan.loanBalance);
+      return Math.round(((totalAmount - balance) / totalAmount) * 100);
+    };
+
+    const getRemainingDays = (loan) => {
+      // This is a placeholder calculation. Adjust according to your actual data structure
+      const endDate = new Date(loan.endDate);
+      const today = new Date();
+      const remainingDays = Math.ceil(
+        (endDate - today) / (1000 * 60 * 60 * 24)
+      );
+      return `${remainingDays} days remaining`;
+    };
+
     switch (activeTab) {
       case "ongoing":
-        return (
-          <>
+        const ongoingLoans = filterLoans("PendingApproval");
+        return ongoingLoans?.length > 0 ? (
+          ongoingLoans.map((loan) => (
             <OngoingCompletedCard
-              onClick={toggleDrawer(true)}
-              percentage={0}
+              key={loan.id}
+              onClick={() => toggleDrawer(true, loan)}
+              percentage={
+                loan.loanStatus === "completed"
+                  ? 100
+                  : calculatePercentage(
+                     loan.remainingBalance - loan.totalRepaymentAmount  ,
+                      loan.totalRepaymentAmount
+                    )
+              }
               cardType="Loan"
-              loanAmount="₦375,000.00"
-              loanBalance="₦ 15,650.00"
+              loanAmount={loan.loanAmount}
+              loanBalance={loan.loanBalance}
               status="inProgress"
-              cardTitle="Premium Loan"
-              remainingDays="299 days remaining"
+              cardTitle={loan.loanType}
+              remainingDays={` ${loan.remainingDays} days remaining`}
             />
-          </>
+          ))
+        ) : (
+          <p>No ongoing loans</p>
         );
       case "completed":
-        return (
-          <>
+        const completedLoans = filterLoans("Completed");
+        return completedLoans?.length > 0 ? (
+          completedLoans.map((loan) => (
             <OngoingCompletedCard
-              onClick={toggleDrawer(true)}
-              percentage={20}
+              key={loan.id}
+              onClick={() => toggleDrawer(true, loan)}
+              percentage={100}
               cardType="Loan"
-              loanAmount="₦375,000.00"
-              loanBalance="₦ 15,650.00"
+              loanAmount={loan.loanAmount}
+              loanBalance="₦0.00"
               status="completed"
-              cardTitle="Thrift Loan"
-              remainingDays="299 days remaining"
+              cardTitle={loan.loanType}
+              remainingDays="Completed"
             />
-          </>
-        ); // Replace with actual completed loans content
+          ))
+        ) : (
+          <p>No completed loans</p>
+        );
       case "rejected":
-        return (
-          <>
+        const rejectedLoans = filterLoans("Rejected");
+        return rejectedLoans?.length > 0 ? (
+          rejectedLoans.map((loan) => (
             <OngoingCompletedCard
-              onClick={toggleDrawer(true)}
-              percentage={20}
+              key={loan.id}
+              onClick={() => toggleDrawer(true, loan)}
+              percentage={0}
               cardType="Loan"
-              loanAmount="₦375,000.00"
-              loanBalance="₦ 15,650.00"
+              loanAmount={loan.loanAmount}
+              loanBalance={loan.loanAmount}
               status="rejected"
-              cardTitle="Thrift Loan"
-              remainingDays="299 days remaining"
+              cardTitle={loan.loanType}
+              remainingDays="Rejected"
             />
-          </>
-        ); // Replace with actual rejected loans content
+          ))
+        ) : (
+          <p>No rejected loans</p>
+        );
       default:
         return null;
     }
