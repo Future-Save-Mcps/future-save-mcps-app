@@ -70,7 +70,7 @@ const AplicationForm = ({
   open,
   // navigate,
 }) => {
-  const { post } = useApiPost();
+  const { post, isLoading } = useApiPost();
   //error type is either NoPlanYet or runningLoan
 
   const {
@@ -89,8 +89,7 @@ const AplicationForm = ({
   const paymentDuration = watch("paymentDuration");
   // calculateLoanDetails
   useEffect(() => {
-    console.log("loan amount", loanAmount);
-    console.log("loan paymentDuration", paymentDuration);
+  
 
     const monthlyInterestRate = 0.042;
     const calculate = calculateLoanDetails(
@@ -101,29 +100,6 @@ const AplicationForm = ({
 
     setLoanCalculation(calculate);
   }, [loanAmount, paymentDuration]);
-
-  useEffect(() => {
-    console.log(loanCalculation);
-    // setValue(
-    //   "interest",
-    // loanCalculation.monthlyInterestAmount === "NaN"
-    //   ? 0
-    //   : loanCalculation.monthlyInterestAmount
-    // );
-    // setValue(
-    // "totalRapayment",
-    // loanCalculation.totalRepaymentAmount === "NaN"
-    //   ? 0
-    //   : loanCalculation.totalRepaymentAmount
-    // );
-    // setValue(
-    //   "WeeklyRapayment",
-    // loanCalculation.weeklyRepayment === "NaN" ||
-    //   loanCalculation.weeklyRepayment === "Infinity"
-    //   ? 0
-    //   : loanCalculation.weeklyRepayment
-    // );
-  }, [loanCalculation]);
 
   const navigate = useNavigate();
 
@@ -141,15 +117,17 @@ const AplicationForm = ({
       guarantor2SubscriptionCode: data.guarantorTwoSubscriptionCode,
       guarantor2SubscriptionFullName: data.guarantorTwoFullName,
       guarantor2SubscriptionEmail: data.guarantorTwoFullEmail,
-      bankAccountId: "34567hbjv", // Assuming a bank account ID input field in your form
+      totalRepaymentAmount: loanCalculation.totalRepaymentAmount, // Assuming a bank account ID input field in your form
       loanReason: data.reason,
     };
     console.log(requestBody);
 
     try {
+     
       const result = await post("/loan", requestBody);
       if (result.success) {
-        console.log("Loan created successfully:", result.data);
+        handleClose();
+
         // Handle success (refetch data, close modal, etc.)
       }
     } catch (err) {
@@ -437,8 +415,8 @@ const AplicationForm = ({
               type="submit"
               text="Create Plan"
               width="100%"
-              //   isLoading={isLoading}
-              //   disabled={isLoading}
+              isLoading={isLoading}
+              disabled={isLoading}
             />
           </form>
         </Box>
