@@ -76,8 +76,8 @@ const IOSSwitch = styled((props) => (
 }));
 
 const ContributionPplan = () => {
-    const userData = getUserData();
-  
+  const userData = getUserData();
+
   const [state, setState] = useState(false);
   const [planId, setPlanId] = useState(null);
   const {
@@ -91,7 +91,7 @@ const ContributionPplan = () => {
     data: contributionPlan,
     isLoading: isLoadingContributionPlan,
     isFetching,
-    refetch:refetchContributionPlan
+    refetch: refetchContributionPlan,
   } = useApiGet(`savingsplan?PlanId=${planId}`);
 
   const {
@@ -113,7 +113,7 @@ const ContributionPplan = () => {
 
   // Watch the selected savings plan
   const savingsPlan = watch("savingsPlan", "25");
-  const paymentType = watch("paymentType", "thisWeek");
+  const paymentType = watch("paymentType", "CurrentWeekPayment");
   const numberOfWeeks = watch("Weeks", "");
   // Default to '25' weeks plan
 
@@ -137,25 +137,21 @@ const ContributionPplan = () => {
   const onSubmitPayment = async (data) => {
     console.log(data);
 
-    // const formData = {
-    //   savingsPlanName: data.nameOfSavings,
-    //   savingsPlan: data.savingsPlan,
-    //   weeklyAmount: data.weeklyAmount,
-    //   targetAmount: data.targetAmount,
-    //   startDate: data.startDate,
-    // };
+    const formData = {
+      savingsPlanId: planId,
+      amount: data.weeklyAmount,
+      paymentType: data.paymentType,
+    };
 
-    // const result = await post(`savingsplan`, formData);
-    // if (result.success && result.data) {
-    //   refetchContribution();
-    //   refetch();
-    //   handleClose();
-    // }
+    const result = await post(`savingsplan/add-savings-fund`, formData);
+    if (result.success && result.data) {
+      refetchContribution();
+      refetch();
+      handleClose();
+    }
   };
 
   const onSubmitWithdrawal = async (data) => {
-   
- 
     const formData = {
       savingsPlanId: planId,
       amount: data.weeklyAmount,
@@ -166,9 +162,9 @@ const ContributionPplan = () => {
 
     const result = await post(`savingsplan/withdraw-savings-fund`, formData);
     if (result.success && result.data) {
-      refetchContribution()
-      refetchContributionPlan()
-      refetch()
+      refetchContribution();
+      refetchContributionPlan();
+      refetch();
       handleClosePaymentModal();
     }
   };
@@ -178,7 +174,7 @@ const ContributionPplan = () => {
     useState("");
   const [onChangeValue, setOnChangeValue] = useState(5000);
   const [onChangeValuePaymentType, setOnChangeValuePaymentType] =
-    useState("thisWeek");
+    useState("CurrentWeekPayment");
   const handleOpen = () => {
     setOpen(true);
   };
@@ -237,8 +233,8 @@ const ContributionPplan = () => {
   }, [savingsPlan, onChangeValue]);
 
   useEffect(() => {
-    console.log(paymentType === "advance");
-    if (paymentType === "thisWeek") {
+    console.log(paymentType === "AdvancePayment");
+    if (paymentType === "CurrentWeekPayment") {
       setValue("Weeks", 1);
     }
     // setValue("targetAmount", onChangeValuePaymentType);
@@ -329,10 +325,14 @@ const ContributionPplan = () => {
                   status={plan.planStatus}
                   remainingDays={` ${plan.daysRemaining} days remaining`}
                   onClick={toggleDrawer(true, plan.planId)}
-                  percentage={calculatePercentage(
-                    plan.currentBalance,
-                    plan.targetAmount
-                  )}
+                  percentage={
+                    plan.planStatus === "completed"
+                      ? 100
+                      : calculatePercentage(
+                          plan.currentBalance,
+                          plan.targetAmount
+                        )
+                  }
                 />
               ))
             )}
@@ -340,8 +340,8 @@ const ContributionPplan = () => {
         </div>
       </div>
       <Drawer anchor="right" open={state}>
-        <div className="p-4 w-[100vw] max-w-[700px]">
-          <div className=" flex justify-between mb-8 items-center ">
+        <div className=" w-[100vw] max-w-[700px]">
+          <div className=" flex  p-4  bg-white sticky top-0 justify-between mb-8 items-center ">
             <h2 className="text-[24px] font-[700]">Plan Details</h2>
             <CloseIcon
               onClick={toggleDrawer(false)}
@@ -355,118 +355,125 @@ const ContributionPplan = () => {
               }}
             />
           </div>
-          {isLoadingContributionPlan || isFetching ? (
-            <Spinner />
-          ) : (
-            <>
-              <OngoingCompletedCard
-                cardTitle={contributionPlan?.data?.planName}
-                contrubutionBalance={`₦ ${contributionPlan?.data?.currentBalance}`}
-                contributionWeekPlan={`${contributionPlan?.data?.durationInWeeks} weeks Plan`}
-                status={contributionPlan?.data?.planStatus}
-                remainingDays={` ${contributionPlan?.data?.daysRemaining} days remaining`}
-                onClick={toggleDrawer(true)}
-                percentage={
-                  contributionPlan?.data?.currentBalance < 1
-                    ? 0
-                    : (contributionPlan?.data?.currentBalance /
-                        contributionPlan?.data?.targetAmount) *
-                      100
-                }
-              />
+          <div className="p-4">
+            {isLoadingContributionPlan || isFetching ? (
+              <Spinner />
+            ) : (
+              <>
+                <OngoingCompletedCard
+                  cardTitle={contributionPlan?.data?.planName}
+                  contrubutionBalance={`₦ ${contributionPlan?.data?.currentBalance}`}
+                  contributionWeekPlan={`${contributionPlan?.data?.durationInWeeks} weeks Plan`}
+                  status={contributionPlan?.data?.planStatus}
+                  remainingDays={` ${contributionPlan?.data?.daysRemaining} days remaining`}
+                  onClick={toggleDrawer(true)}
+                  percentage={
+                    contributionPlan?.data?.planStatus === "completed"
+                      ? 100
+                      : contributionPlan?.data?.currentBalance < 1
+                      ? 0
+                      : (contributionPlan?.data?.currentBalance /
+                          contributionPlan?.data?.targetAmount) *
+                        100
+                  }
+                />
 
-              <div className="flex justify-center gap-6 flex-wrap items-center">
-                {contributionPlan?.data?.planStatus === "completed" && (
-                  <button
-                    onClick={() => handleOpenPaymentModal("withdrawFund")}
-                    className="flex my-6 justify-center items-center gap-4 px-6 py-3 rounded-xl text-[#fff] bg-primary "
-                  >
-                    {" "}
-                    <img src={WithdrawIcon} /> Withdraw funds
-                  </button>
-                )}
-
-                {contributionPlan?.data?.planStatus === "inProgress" && (
-                  <>
+                <div className="flex justify-center gap-6 flex-wrap items-center">
+                  {contributionPlan?.data?.planStatus === "completed" && (
                     <button
-                      onClick={() => handleOpenPaymentModal("addFund")}
+                      onClick={() => handleOpenPaymentModal("withdrawFund")}
                       className="flex my-6 justify-center items-center gap-4 px-6 py-3 rounded-xl text-[#fff] bg-primary "
                     >
                       {" "}
-                      <AddIcon
-                        sx={{
-                          color: "white",
-                        }}
-                      />{" "}
-                      Make Repayment
+                      <img src={WithdrawIcon} /> Withdraw funds
                     </button>
+                  )}
 
-                    <button
-                      onClick={() => handleOpenPaymentModal("deactivatePlan")}
-                      className="flex my-6 justify-center items-center gap-4 px-6 py-3 rounded-xl text-[#fff] bg-[#FB0300] "
-                    >
-                      {" "}
-                      <CloseIcon
-                        sx={{
-                          color: "white",
-                        }}
-                      />{" "}
-                      De-activate Plan
-                    </button>
-                  </>
-                )}
-              </div>
+                  {contributionPlan?.data?.planStatus === "inProgress" && (
+                    <>
+                      <button
+                        onClick={() => handleOpenPaymentModal("addFund")}
+                        className="flex my-6 justify-center items-center gap-4 px-6 py-3 rounded-xl text-[#fff] bg-primary "
+                      >
+                        {" "}
+                        <AddIcon
+                          sx={{
+                            color: "white",
+                          }}
+                        />{" "}
+                        Make Repayment
+                      </button>
 
-              <div style={styles.card}>
-                <div style={styles.row}>
-                  <div style={styles.column}>
-                    <div className="w-fit m-auto">
-                      <p>
-                        <strong>Weekly Amount</strong>
-                      </p>
-                      <p>NGN {contributionPlan?.data?.weeklyAmount}</p>
+                      <button
+                        onClick={() => handleOpenPaymentModal("deactivatePlan")}
+                        className="flex my-6 justify-center items-center gap-4 px-6 py-3 rounded-xl text-[#fff] bg-[#FB0300] "
+                      >
+                        {" "}
+                        <CloseIcon
+                          sx={{
+                            color: "white",
+                          }}
+                        />{" "}
+                        De-activate Plan
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                <div style={styles.card}>
+                  <div style={styles.row}>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>Weekly Amount</strong>
+                        </p>
+                        <p>NGN {contributionPlan?.data?.weeklyAmount}</p>
+                      </div>
+                    </div>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>Target Amount</strong>
+                        </p>
+                        <p>NGN {contributionPlan?.data?.targetAmount}</p>
+                      </div>
+                    </div>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>Start Date</strong>
+                        </p>
+                        <p>{formatDate(contributionPlan?.data?.startDate)}</p>
+                      </div>
                     </div>
                   </div>
-                  <div style={styles.column}>
-                    <div className="w-fit m-auto">
-                      <p>
-                        <strong>Target Amount</strong>
-                      </p>
-                      <p>NGN {contributionPlan?.data?.targetAmount}</p>
+                  <div style={styles.row}>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>End Date</strong>
+                        </p>
+                        <p> {formatDate(contributionPlan?.data?.endDate)}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div style={styles.column}>
-                    <div className="w-fit m-auto">
-                      <p>
-                        <strong>Start Date</strong>
-                      </p>
-                      <p>{formatDate(contributionPlan?.data?.startDate)}</p>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>Dividend</strong>
+                        </p>
+                        <p>NGN {contributionPlan?.data?.dividends}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div style={styles.row}>
-                  <div style={styles.column}>
-                    <div className="w-fit m-auto">
-                      <p>
-                        <strong>End Date</strong>
-                      </p>
-                      <p> {formatDate(contributionPlan?.data?.endDate)}</p>
-                    </div>
-                  </div>
-                  <div style={styles.column}>
-                    <div className="w-fit m-auto">
-                      <p>
-                        <strong>Dividend</strong>
-                      </p>
-                      <p>NGN {contributionPlan?.data?.dividends}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              <LoanTabs activities={contributionPlan?.data?.activities} />
-            </>
-          )}
+                <LoanTabs
+                  transactions={contributionPlan?.data?.transactions}
+                  activities={contributionPlan?.data?.activities}
+                />
+              </>
+            )}
+          </div>
         </div>
       </Drawer>
       <Modal
@@ -695,13 +702,13 @@ const ContributionPplan = () => {
                 <Controller
                   name="paymentType"
                   control={control}
-                  defaultValue="thisWeek"
+                  defaultValue="CurrentWeekPayment"
                   rules={{ required: "payment type is required" }}
                   render={({ field }) => (
                     <div className="flex gap-4">
                       <label
                         className={`flex items-center space-x-2 flex-1 p-3 rounded-md border ${
-                          field.value === "thisWeek"
+                          field.value === "CurrentWeekPayment"
                             ? "border-primary"
                             : "border-gray-300"
                         }`}
@@ -709,15 +716,15 @@ const ContributionPplan = () => {
                         <input
                           {...field}
                           type="radio"
-                          value="thisWeek"
-                          checked={field.value === "thisWeek"}
+                          value="CurrentWeekPayment"
+                          checked={field.value === "CurrentWeekPayment"}
                           className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                         />
                         <span>This week payment</span>
                       </label>
                       <label
                         className={`flex items-center space-x-2 flex-1 p-3 rounded-md border ${
-                          field.value === "advance"
+                          field.value === "AdvancePayment"
                             ? "border-primary"
                             : "border-gray-300"
                         }`}
@@ -725,8 +732,8 @@ const ContributionPplan = () => {
                         <input
                           {...field}
                           type="radio"
-                          value="advance"
-                          checked={field.value === "advance"}
+                          value="AdvancePayment"
+                          checked={field.value === "AdvancePayment"}
                           className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                         />
                         <span>Advance Payment</span>
@@ -740,7 +747,7 @@ const ContributionPplan = () => {
                   </p>
                 )}
               </div>
-              {paymentType === "advance" && (
+              {paymentType === "AdvancePayment" && (
                 <FormFieldComp
                   label="Number of weeks (25 weeks Plan)"
                   name="Weeks"
@@ -764,7 +771,7 @@ const ContributionPplan = () => {
                 defaultValueAttachment={
                   numberOfWeeks === ""
                     ? 5000
-                    : paymentType === "thisWeek"
+                    : paymentType === "CurrentWeekPayment"
                     ? 5000
                     : 5000 * numberOfWeeks
                 }
@@ -831,8 +838,12 @@ const ContributionPplan = () => {
                   }}
                   className=" bg-[#72109D] rounded-2xl p-6 flex flex-col justify-center items-center gap-1 "
                 >
-                  <div className="font-bold text-xl text-white">{userData?.data?.bankName}</div>
-                  <div className="font-bold text-xl text-white">{userData?.data?.bankAccountNumber}</div>
+                  <div className="font-bold text-xl text-white">
+                    {userData?.data?.bankName}
+                  </div>
+                  <div className="font-bold text-xl text-white">
+                    {userData?.data?.bankAccountNumber}
+                  </div>
                   <div className="font-bold text-base text-white">
                     {`(${userData?.data?.accountName})`}
                   </div>

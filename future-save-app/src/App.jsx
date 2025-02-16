@@ -9,6 +9,7 @@ import { Provider } from "react-redux";
 const Login = React.lazy(() => import("./pages/Login"));
 import { ThemeProvider, createTheme } from "@mui/material";
 import { store } from "./app/store";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const Loader = () => {
   return <span className="loader"></span>;
@@ -20,6 +21,14 @@ export const Fallback = () => (
   </div>
 );
 export const LazyRoute = ({ Component }) => (
+  <ProtectedRoute>
+    <React.Suspense fallback={<Fallback />}>
+      <Component />
+    </React.Suspense>
+  </ProtectedRoute>
+);
+
+export const NonProtectedLazyRoute = ({ Component }) => (
   <React.Suspense fallback={<Fallback />}>
     <Component />
   </React.Suspense>
@@ -82,8 +91,14 @@ function App() {
         <Router>
           <Routes>
             {/* Home route */}
-            <Route path="/" element={<LazyRoute Component={Login} />} />
-            <Route path="/register" element={<LazyRoute Component={Home} />} />
+            <Route
+              path="/"
+              element={<NonProtectedLazyRoute Component={Login} />}
+            />
+            <Route
+              path="/register"
+              element={<NonProtectedLazyRoute Component={Home} />}
+            />
 
             {/* User and Admin routes */}
             <Route path="user/*" element={<UserRoutes />} />

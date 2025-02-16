@@ -87,17 +87,21 @@ export const AccountIcon = ({ color = "currentColor" }) => (
   </svg>
 );
 
-export const LogoutIcon = () => (
+export const LogoutIcon = ({
+  color = "white",
+  width = "20",
+  height = "20",
+}) => (
   <svg
-    width="20"
-    height="20"
+    width={width}
+    height={height}
     viewBox="0 0 20 20"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
       d="M7 19H3C2.46957 19 1.96086 18.7893 1.58579 18.4142C1.21071 18.0391 1 17.5304 1 17V3C1 2.46957 1.21071 1.96086 1.58579 1.58579C1.96086 1.21071 2.46957 1 3 1H7M14 15L19 10M19 10L14 5M19 10H7"
-      stroke="white"
+      stroke={color}
       stroke-width="1.5"
       stroke-linecap="round"
       stroke-linejoin="round"
@@ -138,6 +142,41 @@ export const WarningIcon = ({ color = "currentColor" }) => (
       stroke={color}
       stroke-width="1.5"
       stroke-linecap="round"
+    />
+  </svg>
+);
+
+export const SettingsIcon = ({ color = "currentColor" }) => (
+  <svg
+    width="24"
+    height="25"
+    viewBox="0 0 24 25"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M3 8.67992C3 7.52279 3.66548 6.46882 4.7102 5.97133L10.7102 3.11419C11.5262 2.72563 12.4738 2.72563 13.2898 3.11419L19.2898 5.97133C20.3345 6.46882 21 7.52279 21 8.67992V16.3201C21 17.4772 20.3345 18.5312 19.2898 19.0287L13.2898 21.8858C12.4738 22.2744 11.5262 22.2744 10.7102 21.8858L4.7102 19.0287C3.66548 18.5312 3 17.4772 3 16.3201V8.67992Z"
+      stroke={color}
+      stroke-width="1.5"
+    />
+    <circle cx="12" cy="12.5" r="3" stroke={color} stroke-width="1.5" />
+  </svg>
+);
+
+export const UserIcon = ({ color = "currentColor" }) => (
+  <svg
+    width="24"
+    height="25"
+    viewBox="0 0 24 25"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M5 20.1001V19.1001C5 17.2436 5.7375 15.4631 7.05025 14.1504C8.36301 12.8376 10.1435 12.1001 12 12.1001M12 12.1001C13.8565 12.1001 15.637 12.8376 16.9497 14.1504C18.2625 15.4631 19 17.2436 19 19.1001V20.1001M12 12.1001C13.0609 12.1001 14.0783 11.6787 14.8284 10.9285C15.5786 10.1784 16 9.16096 16 8.1001C16 7.03923 15.5786 6.02182 14.8284 5.27167C14.0783 4.52152 13.0609 4.1001 12 4.1001C10.9391 4.1001 9.92172 4.52152 9.17157 5.27167C8.42143 6.02182 8 7.03923 8 8.1001C8 9.16096 8.42143 10.1784 9.17157 10.9285C9.92172 11.6787 10.9391 12.1001 12 12.1001Z"
+      stroke={color}
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
     />
   </svg>
 );

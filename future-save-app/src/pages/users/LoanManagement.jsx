@@ -13,6 +13,9 @@ import LoanTabs from "../../components/LoanTabs";
 import { Controller, useForm } from "react-hook-form";
 import { useApiGet } from "../../hooks/useApi";
 import AplicationForm from "../../components/ApplicationForm";
+import NoLoan from "../../assets/NoLoan.svg";
+import Spinner from "../../components/Spinner";
+import { formatCurrency } from "../../utils/currencyFormatter";
 const style = {
   position: "absolute",
   top: "50%",
@@ -31,12 +34,30 @@ const style = {
 
 const LoanManagement = () => {
   const [state, setState] = useState(false);
+  const [loanId, setLoanId] = useState(null);
   const {
     data: eligibleData,
     isLoading,
     error,
     refetch,
   } = useApiGet("loan/eligible");
+
+  const {
+    data: loanPlan,
+    isLoading: isLoadingLoanPlan,
+    isFetching,
+    refetch: refetchLoanPlan,
+  } = useApiGet(`loan?LoanId=${loanId}`);
+
+  useEffect(() => {
+    console.log("this is load details", loanPlan);
+  }, [loanPlan, loanId]);
+
+  const {
+    data: loan,
+    isLoading: isLoadingLoan,
+    refetch: refetchLoan,
+  } = useApiGet(`loan/all?PageNumber=1&PageSize=100`);
 
   const [modalType, setModalType] = useState("Success"); // Success or Error
   function checkEligibility() {
@@ -69,6 +90,7 @@ const LoanManagement = () => {
   }
   const [open, setOpen] = useState(false);
   const [loanType, setLoanType] = useState(null);
+  const [activeTab, setActiveTab] = useState("ongoing");
   const [eligible, setEligible] = useState(false);
   const [errorType, setErrorType] = useState(null);
   const handleOpen = () => {
@@ -107,15 +129,18 @@ const LoanManagement = () => {
   };
   const handleClosePaymentModal = () => setOpenPaymentModal(false);
 
-  const toggleDrawer = (open) => (event) => {
-    if (
-      event.type === "keydown" &&
-      (event.key === "Tab" || event.key === "Shift")
-    ) {
-      return;
-    }
-    setState(open);
-  };
+  const toggleDrawer =
+    (open, id = null) =>
+    (event) => {
+      if (
+        event.type === "keydown" &&
+        (event.key === "Tab" || event.key === "Shift")
+      ) {
+        return;
+      }
+      setLoanId(id);
+      setState(open);
+    };
 
   const ggg = () => {
     console.log(hello);
@@ -141,6 +166,133 @@ const LoanManagement = () => {
   useEffect(() => {
     console.log("thi is eligibleData", eligibleData);
   }, [eligibleData]);
+
+  const tabs = [
+    { id: "ongoing", label: "OnGoing" },
+    { id: "completed", label: "Completed" },
+    { id: "rejected", label: "Rejected" },
+  ];
+
+  const filterLoans = (status) => {
+    return loan?.data?.items?.filter((plan) => plan.loanStatus === status);
+  };
+
+  const renderTabContent = () => {
+    if (!loan?.data?.items) {
+      return (
+        <div className="flex mt-12 justify-center items-center">
+          <img src={NoLoan} alt="" />
+        </div>
+      );
+    }
+
+    const filterLoans = (status) => {
+      return loan.data.items.filter((plan) => plan.loanStatus === status);
+    };
+
+    const calculatePercentage = (loan) => {
+      // This is a placeholder calculation. Adjust according to your actual data structure
+      const totalAmount = Number.parseFloat(loan.loanAmount);
+      const balance = Number.parseFloat(loan.loanBalance);
+      return Math.round(((totalAmount - balance) / totalAmount) * 100);
+    };
+
+    const getRemainingDays = (loan) => {
+      // This is a placeholder calculation. Adjust according to your actual data structure
+      const endDate = new Date(loan.endDate);
+      const today = new Date();
+      const remainingDays = Math.ceil(
+        (endDate - today) / (1000 * 60 * 60 * 24)
+      );
+      return `${remainingDays} days remaining`;
+    };
+
+    switch (activeTab) {
+      case "ongoing":
+        const ongoingLoans = filterLoans("PendingApproval");
+        return ongoingLoans?.length > 0 ? (
+          ongoingLoans.map((loan) => (
+            <OngoingCompletedCard
+              key={loan.loanApplicationId}
+              onClick={toggleDrawer(true, loan.loanApplicationId)}
+              percentage={
+                loan.loanStatus === "completed"
+                  ? 100
+                  : ((loan.totalRepaymentAmount - loan.remainingBalance) /
+                      loan.totalRepaymentAmount) *
+                    100
+              }
+              cardType="Loan"
+              loanAmount={loan.loanAmount}
+              loanBalance={loan.loanBalance}
+              status="inProgress"
+              cardTitle={loan.loanType}
+              remainingDays={` ${loan.remainingDays} days remaining`}
+            />
+          ))
+        ) : (
+          <div className="flex mt-12 justify-center items-center">
+            <img src={NoLoan} alt="" />
+          </div>
+        );
+      case "completed":
+        const completedLoans = filterLoans("Completed");
+        return completedLoans?.length > 0 ? (
+          completedLoans.map((loan) => (
+            <OngoingCompletedCard
+              key={loan.loanApplicationId}
+              onClick={toggleDrawer(true, loan.loanApplicationId)}
+              percentage={
+                loan.loanStatus === "completed"
+                  ? 100
+                  : ((loan.totalRepaymentAmount - loan.remainingBalance) /
+                      loan.totalRepaymentAmount) *
+                    100
+              }
+              cardType="Loan"
+              loanAmount={loan.loanAmount}
+              loanBalance="₦0.00"
+              status="completed"
+              cardTitle={loan.loanType}
+              remainingDays="Completed"
+            />
+          ))
+        ) : (
+          <div className="flex mt-12 justify-center items-center">
+            <img src={NoLoan} alt="" />
+          </div>
+        );
+      case "rejected":
+        const rejectedLoans = filterLoans("Rejected");
+        return rejectedLoans?.length > 0 ? (
+          rejectedLoans.map((loan) => (
+            <OngoingCompletedCard
+              key={loan.loanApplicationId}
+              onClick={toggleDrawer(true, loan.loanApplicationId)}
+              percentage={
+                loan.loanStatus === "completed"
+                  ? 100
+                  : ((loan.totalRepaymentAmount - loan.remainingBalance) /
+                      loan.totalRepaymentAmount) *
+                    100
+              }
+              cardType="Loan"
+              loanAmount={loan.loanAmount}
+              loanBalance={loan.loanAmount}
+              status="rejected"
+              cardTitle={loan.loanType}
+              remainingDays="Rejected"
+            />
+          ))
+        ) : (
+          <div className="flex mt-12 justify-center items-center">
+            <img src={NoLoan} alt="" />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <>
@@ -196,7 +348,26 @@ const LoanManagement = () => {
           </div>{" "}
         </div>
         <h2 className="text-[24px] font-[600] mb-4 ">My Loans</h2>
-        <div className=" max-w-[550px] border min-h-[500px] p-4 rounded-2xl ">
+
+        <div className="max-w-[550px] border min-h-[500px] p-4 rounded-2xl">
+          <div className="flex border-b">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`flex-1 text-[20px] font-[600] p-4 ${
+                  activeTab === tab.id
+                    ? "border-b-2 border-primary text-primary"
+                    : "text-[#717171]"
+                }`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <div className="mt-4">{renderTabContent()}</div>
+        </div>
+        {/* <div className=" max-w-[550px] border min-h-[500px] p-4 rounded-2xl ">
           <div className="flex border-b ">
             <button className="flex-1 text-[20px] font-[600] p-4 border-b-2 border-primary">
               OnGoing
@@ -230,11 +401,11 @@ const LoanManagement = () => {
               remainingDays={" 299 days remaining"}
             />
           </div>
-        </div>
+        </div> */}
       </div>
       <Drawer anchor="right" open={state}>
-        <div className="p-4 w-[100vw] max-w-[700px]">
-          <div className=" flex justify-between mb-8 items-center ">
+        <div className=" w-[100vw] relative max-w-[700px]">
+          <div className=" p-4  bg-white  sticky top-0 flex justify-between mb-8 items-center ">
             <h2 className="text-[24px] font-[700]">Loan Details</h2>
             <CloseIcon
               onClick={toggleDrawer(false)}
@@ -248,103 +419,146 @@ const LoanManagement = () => {
               }}
             />
           </div>
-          <Warning WarningType="Yellow" text="You Loan is being processed " />
-          <OngoingCompletedCard
-            percentage={90}
-            cardType={"Loan"}
-            loanAmount={"₦375,000.00 "}
-            loanBalance={"₦ 15,650.00"}
-            status={"In Progress"}
-            cardTitle={"Premium Loan"}
-            remainingDays={" 299 days remaining"}
-          />
 
-          <div className="flex justify-center items-center">
-            <button
-              onClick={handleOpenPaymentModal}
-              className="flex my-6 justify-center items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-primary "
-            >
-              {" "}
-              <img src={SendImg} alt="" /> Make Repayment
-            </button>
-          </div>
+          <div className="p-4">
+            {isLoadingLoan || isFetching ? (
+              <Spinner />
+            ) : (
+              <>
+                {loanPlan?.data?.loanStatus === "PendingApproval" && (
+                  <Warning
+                    WarningType="Yellow"
+                    text="You Loan is being processed "
+                  />
+                )}
 
-          <div style={styles.card}>
-            <div style={styles.row}>
-              <div style={styles.column}>
+                <OngoingCompletedCard
+                  percentage={
+                    loanPlan?.data?.loanStatus === "completed"
+                      ? 100
+                      : ((loanPlan?.data?.totalRepaymentAmount -
+                          loanPlan?.data?.remainingBalance) /
+                          loanPlan?.data?.totalRepaymentAmount) *
+                        100
+                  }
+                  cardType={"Loan"}
+                  loanAmount={formatCurrency(
+                    loanPlan?.data?.totalRepaymentAmount
+                  )}
+                  loanBalance={formatCurrency(loanPlan?.data?.remainingBalance)}
+                  status={loanPlan?.data?.loanStatus}
+                  cardTitle={loanPlan?.data?.loanType}
+                  remainingDays={` ${loanPlan?.data?.remainingDays} days remaining`}
+                />
+
+                <div className="flex justify-center items-center">
+                  {/* {loanPlan?.data?.loanStatus !== "PendingApproval" ||
+                  loanPlan?.data?.loanStatus !== "completed" ||
+                  (loanPlan?.data?.loanStatus !== "rejected" && ( */}
+                  <button
+                    onClick={handleOpenPaymentModal}
+                    className="flex my-6 justify-center items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-primary "
+                  >
+                    {" "}
+                    <img src={SendImg} alt="" /> Make Repayment
+                  </button>
+                  {/* ))} */}
+                </div>
+
+                <div style={styles.card}>
+                  <div style={styles.row}>
+                    {/* <div style={styles.column}>
                 <div className="w-fit m-auto">
                   <p>
                     <strong>Weekly Repayment</strong>
                   </p>
                   <p>NGN 15,650.00</p>
                 </div>
-              </div>
-              <div style={styles.column}>
-                <div className="w-fit m-auto">
-                  <p>
-                    <strong>Target Amount</strong>
-                  </p>
-                  <p>NGN 125,000.00</p>
+              </div> */}
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>Target Amount</strong>
+                        </p>
+                        <p>
+                          {formatCurrency(loanPlan?.data?.totalRepaymentAmount)}
+                        </p>
+                      </div>
+                    </div>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>Start Date</strong>
+                        </p>
+                        <p>{loanPlan?.data?.userRepaymentStartDate}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={styles.row}>
+                    {/* <div style={styles.column}>
+                    <div className="w-fit m-auto">
+                      <p>
+                        <strong>End Date</strong>
+                      </p>
+                      <p>{loanPlan?.data?.endDate}</p>
+                    </div>
+                  </div> */}
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>Interest Payable</strong>
+                        </p>
+                        <p>
+                          {formatCurrency(
+                            (
+                              loanPlan?.data?.interestAmount *
+                              loanPlan?.data?.repaymentDurationInMonth
+                            ).toFixed()
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>Duration</strong>
+                        </p>
+                        <p>{loanPlan?.data?.repaymentDurationInMonth} Months</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={styles.row}>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>1st Guarantor</strong>
+                        </p>
+                        <p>
+                          {loanPlan?.data?.guarantors[0].fullName +
+                            ` (${loanPlan?.data?.guarantors[0].subscriptionCode})`}
+                        </p>
+                        <p>{`(${loanPlan?.data?.guarantors[0].email})`}</p>
+                      </div>
+                    </div>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>2nd Guarantor</strong>
+                        </p>
+                        <p>
+                          {loanPlan?.data?.guarantors[1].fullName +
+                            ` (${loanPlan?.data?.guarantors[1].subscriptionCode})`}
+                        </p>
+                        <p>{`(${loanPlan?.data?.guarantors[1].email})`}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div style={styles.column}>
-                <div className="w-fit m-auto">
-                  <p>
-                    <strong>Start Date</strong>
-                  </p>
-                  <p>01/01/2025</p>
-                </div>
-              </div>
-            </div>
-            <div style={styles.row}>
-              <div style={styles.column}>
-                <div className="w-fit m-auto">
-                  <p>
-                    <strong>End Date</strong>
-                  </p>
-                  <p>01/07/2025</p>
-                </div>
-              </div>
-              <div style={styles.column}>
-                <div className="w-fit m-auto">
-                  <p>
-                    <strong>Interest Payable</strong>
-                  </p>
-                  <p>NGN 75,600.00</p>
-                </div>
-              </div>
-              <div style={styles.column}>
-                <div className="w-fit m-auto">
-                  <p>
-                    <strong>Duration</strong>
-                  </p>
-                  <p>6 Months</p>
-                </div>
-              </div>
-            </div>
-            <div style={styles.row}>
-              <div style={styles.column}>
-                <div className="w-fit m-auto">
-                  <p>
-                    <strong>1st Guarantor</strong>
-                  </p>
-                  <p>Nonso Udo</p>
-                  <p>(udononso@gmail.com)</p>
-                </div>
-              </div>
-              <div style={styles.column}>
-                <div className="w-fit m-auto">
-                  <p>
-                    <strong>2nd Guarantor</strong>
-                  </p>
-                  <p>Taiwo Moyo (23#456)</p>
-                  <p>(taiwomoyo@gmail.com)</p>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <LoanTabs />
+                <LoanTabs activities={loanPlan?.data?.activities} />
+              </>
+            )}
+          </div>
         </div>
       </Drawer>
       {/* <Modal

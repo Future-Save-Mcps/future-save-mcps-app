@@ -6,6 +6,8 @@ import {
   DashboardIcon,
   LoanIcon,
   LogoutIcon,
+  SettingsIcon,
+  UserIcon,
 } from "./icons/Icons";
 import Logo from "../assets/logo.svg";
 import CloseIcon from "@mui/icons-material/Close";
@@ -25,7 +27,7 @@ const style = {
   borderRadius: 2,
 };
 
-const SideBar = ({ toggleSidebar }) => {
+const AdminSideBar = ({ toggleSidebar }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -48,7 +50,7 @@ const SideBar = ({ toggleSidebar }) => {
         >
           <CloseIcon className="text-primary" />
         </div>
-        <div className=" w-72 flex flex-col gap-8  bg-primary h-[100%] rounded-xl p-8">
+        <div className=" w-72 flex flex-col gap-8  bg-[#F5F5F5] h-[100%] rounded-xl p-8">
           <div className="bg-white w-fit p-2 rounded-xl font-bold text-xl mb-6">
             <img src={Logo} alt="" />
           </div>
@@ -60,13 +62,13 @@ const SideBar = ({ toggleSidebar }) => {
             >
               <NavLink
                 onClick={toggleSidebar}
-                to="/user"
+                to="/admin"
                 end
                 className={({ isActive }) =>
                   `  py-3 font-[500] px-4 rounded-xl flex items-center gap-4 ${
                     isActive
                       ? "bg-white text-primary"
-                      : "text-white hover:bg-[#1e3774]"
+                      : "text-[#939393] hover:bg-[#e8efff]"
                   }`
                 }
               >
@@ -76,27 +78,42 @@ const SideBar = ({ toggleSidebar }) => {
 
               <NavLink
                 onClick={toggleSidebar}
-                to="/user/contribution_plan"
+                to="/admin/user_management"
                 className={({ isActive }) =>
                   ` py-3 font-[500] px-4 rounded-xl flex items-center gap-4 ${
                     isActive
                       ? "bg-white text-primary"
-                      : "text-white hover:bg-[#1e3774]"
+                      : "text-[#939393] hover:bg-[#e8efff]"
                   }`
                 }
               >
-                <ContributionIcon color="currentColor" />
-                Contribution Plan
+                <UserIcon color="currentColor" />
+                User Management
               </NavLink>
 
               <NavLink
                 onClick={toggleSidebar}
-                to="/user/loan_management"
+                to="/admin/savings_management"
                 className={({ isActive }) =>
                   ` py-3 font-[500] px-4 rounded-xl flex items-center gap-4 ${
                     isActive
                       ? "bg-white text-primary"
-                      : "text-white hover:bg-[#1e3774]"
+                      : "text-[#939393] hover:bg-[#e8efff]"
+                  }`
+                }
+              >
+                <ContributionIcon color="currentColor" />
+                Savings Management
+              </NavLink>
+
+              <NavLink
+                onClick={toggleSidebar}
+                to="/admin/loan_management"
+                className={({ isActive }) =>
+                  ` py-3 font-[500] px-4 rounded-xl flex items-center gap-4 ${
+                    isActive
+                      ? "bg-white text-primary"
+                      : "text-[#939393] hover:bg-[#e8efff]"
                   }`
                 }
               >
@@ -106,26 +123,26 @@ const SideBar = ({ toggleSidebar }) => {
 
               <NavLink
                 onClick={toggleSidebar}
-                to="/user/account"
+                to="/admin/settings"
                 className={({ isActive }) =>
                   ` py-3 font-[500] px-4 rounded-xl flex items-center gap-4 ${
                     isActive
                       ? "bg-white text-primary"
-                      : "text-white hover:bg-[#1e3774]"
+                      : "text-[#939393] hover:bg-[#e8efff]"
                   }`
                 }
               >
-                <AccountIcon color="currentColor" />
-                Account
+                <SettingsIcon color="currentColor" />
+                Settings
               </NavLink>
             </div>
 
             <div
               onClick={handleOpen}
               className={` py-3 cursor-pointer font-[500] px-4 rounded-xl flex items-center gap-4  
-            text-white hover:bg-[#fc242b]`}
+            text-[#fc242b] `}
             >
-              <LogoutIcon color="white" />
+              <LogoutIcon color="#fc242b" />
               Log Out
             </div>
           </div>
@@ -161,4 +178,4 @@ const SideBar = ({ toggleSidebar }) => {
   );
 };
 
-export default SideBar;
+export default AdminSideBar;
