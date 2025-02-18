@@ -1,7 +1,7 @@
 import React from "react";
 import Bg from "../../assets/cardBd.svg";
-import Copy from "../../assets/copy.svg";
-import Upload from "../../assets/WithdrawIcon.svg";
+import Copy from "../../assets/Copy.svg";
+import Upload from "../../assets/withdrawIcon.svg";
 const ReferAndEarn = () => {
   return (
     <div>

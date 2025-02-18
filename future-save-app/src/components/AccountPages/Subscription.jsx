@@ -1,6 +1,6 @@
 import React from "react";
 import Bg from "../../assets/cardBd.svg";
-import Copy from "../../assets/copy.svg";
+import Copy from "../../assets/Copy.svg";
 const Subscription = () => {
   const userdata = localStorage.getItem("userInfo");
   const code = JSON.parse(userdata);
