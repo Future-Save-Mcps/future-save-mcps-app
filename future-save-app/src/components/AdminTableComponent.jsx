@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Search, Clock, FileText, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -12,15 +15,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { FilterDropdown } from "./FilterDropdown";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import TableContainer from "@mui/material/TableContainer";
 import { ExportIcon, FilterIcon } from "./icons/Icons";
+import { Drawer } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+
 const initialData = [
   {
     id: 1,
@@ -49,14 +60,38 @@ export default function AdminTableComponent({
   onFilter,
   onExport,
   onAuditTrail,
+  view,
 }) {
   // const [data, setData] = useState(initialData);
   const [activeFilter, setActiveFilter] = useState(null);
+  const [state, setState] = useState(false);
+  const [dateValue, setDateValue] = useState();
+
+  const toggleDrawer = (open) => (event) => {
+    if (
+      event.type === "keydown" &&
+      (event.key === "Tab" || event.key === "Shift")
+    ) {
+      return;
+    }
+    // setPlanId(id);
+    setState(open);
+  };
 
   const handleFilterChange = (filter) => {
     onFilter();
     // setActiveFilter(filter);
   };
+
+
+
+  const handleValueChange = (value) => {
+  
+        setDateValue(value);
+        // onFilterChange({ type: "date", value });
+       
+    }
+
 
   return (
     <div className=" border p-4 rounded-2xl ">
@@ -71,7 +106,7 @@ export default function AdminTableComponent({
         </div>
         <div className="flex items-center gap-4">
           <Button
-            onClick={onAuditTrail}
+            onClick={toggleDrawer(true)}
             variant="outline"
             className="flex items-center gap-2"
           >
@@ -127,6 +162,7 @@ export default function AdminTableComponent({
                   <TableCell>{item.status}</TableCell>
                   <TableCell>
                     <Button
+                      onClick={view(true, item.id)}
                       size="small"
                       variant="default"
                       className="bg-primary py-1 text-white px-4 min-w-[80px] hover:bg-[#1e3f99]"
@@ -140,6 +176,60 @@ export default function AdminTableComponent({
           </Table>
         </TableContainer>
       </div>
+
+      <Drawer anchor="right" open={state}>
+        <div className=" w-[100vw] relative max-w-[600px]">
+          <div className=" p-4  bg-white  sticky top-0 flex justify-between mb-4 items-center ">
+            <h2 className="text-[24px] font-[700]">Audit Trail</h2>
+            <CloseIcon
+              onClick={toggleDrawer(false)}
+              sx={{
+                cursor: "pointer",
+                padding: "5px",
+                width: "35px",
+                height: "35px",
+                borderRadius: "50%",
+                backgroundColor: "#F8F8FA",
+              }}
+            />
+          </div>
+
+          <div className="p-4 border">
+
+            <div className="border">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !dateValue && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateValue ? (
+                    format(dateValue, "PPP")
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="single"
+                  selected={dateValue}
+                  onSelect={handleValueChange}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            </div>
+          
+
+            {/* {isLoadingLoan || isFetching ? <Spinner /> : <>hrllo</>} */}
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 }
