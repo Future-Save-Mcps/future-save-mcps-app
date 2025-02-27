@@ -1,5 +1,5 @@
 import AdminTableComponent from "@/components/AdminTableComponent";
-import { Drawer } from "@mui/material";
+import { Box, Drawer, Modal } from "@mui/material";
 import React, { useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import Spinner from "@/components/Spinner";
@@ -10,7 +10,6 @@ import LoanTabs from "@/components/LoanTabs";
 import { formatCurrency } from "@/utils/currencyFormatter";
 import SendImg from "../../assets/send.svg";
 import Warning from "@/components/Cards/Warning";
-
 
 const style = {
   position: "absolute",
@@ -27,24 +26,24 @@ const style = {
 };
 
 const LoanManagement = () => {
-
   const [state, setState] = useState(false);
   const [loanId, setLoanId] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [modalType, setModalType] = useState(null);
 
   const toggleDrawer =
-  (open, id = null) =>
-  (event) => {
-    if (
-      event.type === "keydown" &&
-      (event.key === "Tab" || event.key === "Shift")
-    ) {
-      return;
-    }
-    // setPlanId(id);
-    setState(open);
-  };
+    (open, id = null) =>
+    (event) => {
+      if (
+        event.type === "keydown" &&
+        (event.key === "Tab" || event.key === "Shift")
+      ) {
+        return;
+      }
+      console.log("btn clicked");
 
-
+      setState(open);
+    };
 
   const handleOpenPaymentModal = (type) => {
     setPaymentModalType(type);
@@ -59,7 +58,7 @@ const LoanManagement = () => {
     isLoading: isLoadingLoan,
     refetch: refetchLoan,
   } = useApiGet(`loan/all?PageNumber=1&PageSize=100`);
-  
+
   const {
     data: loanPlan,
     isLoading: isLoadingLoanPlan,
@@ -132,6 +131,15 @@ const LoanManagement = () => {
     ),
   }));
 
+  const handleOpen = (type) => {
+    setOpen(true);
+    setModalType(type);
+  };
+  const handleClose = () => {
+    setOpen(false);
+    setModalType(null);
+  };
+
   // Search Function
   const handleSearch = (query, data) => {
     console.log(query);
@@ -170,7 +178,7 @@ const LoanManagement = () => {
         view={toggleDrawer}
       />
 
-{/* <Drawer anchor="right" open={state}>
+      {/* <Drawer anchor="right" open={state}>
         <div className=" w-[100vw] max-w-[700px]">
           <div className=" flex  p-4  bg-white sticky top-0 justify-between mb-8 items-center ">
             <h2 className="text-[24px] font-[700]">Loan Details</h2>
@@ -308,7 +316,7 @@ const LoanManagement = () => {
         </div>
       </Drawer> */}
 
-<Drawer anchor="right" open={state}>
+      <Drawer anchor="right" open={state}>
         <div className=" w-[100vw] relative max-w-[700px]">
           <div className=" p-4  bg-white  sticky top-0 flex justify-between mb-8 items-center ">
             <h2 className="text-[24px] font-[700]">Loan Details</h2>
@@ -331,10 +339,10 @@ const LoanManagement = () => {
             ) : (
               <>
                 {/* {loanPlan?.data?.loanStatus === "PendingApproval" && ( */}
-                  <Warning
-                    WarningType="Yellow"
-                    text="You Loan is being processed "
-                  />
+                <Warning
+                  WarningType="Yellow"
+                  text="You Loan is being processed "
+                />
                 {/* )} */}
 
                 <OngoingCompletedCard
@@ -356,107 +364,103 @@ const LoanManagement = () => {
                   remainingDays={` ${loanPlan?.data?.remainingDays} days remaining`}
                 />
 
-                <div className="flex justify-center items-center">
-                  {/* {loanPlan?.data?.loanStatus !== "PendingApproval" ||
-                  loanPlan?.data?.loanStatus !== "completed" ||
-                  (loanPlan?.data?.loanStatus !== "rejected" && ( */}
+                <div className="flex justify-center flex-wrap gap-4 items-center">
                   <button
-                    onClick={handleOpenPaymentModal}
-                    className="flex my-6 justify-center items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-primary "
+                    onClick={() => handleOpen("Approval")}
+                    className="flex my-6 justify-center min-w-[200px] items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-primary "
                   >
                     {" "}
-                    <img src={SendImg} alt="" /> Make Repayment
+                    Approve
                   </button>
-                  {/* ))} */}
+
+                  <button
+                    onClick={() => handleOpen("Rejection")}
+                    className="flex my-6 justify-center min-w-[200px] items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-[#FB0300] "
+                  >
+                    {" "}
+                    Reject
+                  </button>
+
+                  <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
+                    {" "}
+                    <div className="text-[#FF770E] rounded-md px-6 py-1  w-full h-full bg-[#FF770E1A]">
+                      In progress
+                    </div>
+                  </button>
+
+                  <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
+                    {" "}
+                    <div className="text-[#FB0300] rounded-md px-6 py-1  w-full h-full bg-[#FB030029]">
+                      Rejected
+                    </div>
+                  </button>
+                  <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
+                    {" "}
+                    <div className="text-[#34C759] rounded-md px-6 py-1  w-full h-full bg-[#34C75929]">
+                      Completed
+                    </div>
+                  </button>
                 </div>
 
-                <div style={styles.card}>
-                  <div style={styles.row}>
-                    {/* <div style={styles.column}>
-                <div className="w-fit m-auto">
-                  <p>
-                    <strong>Weekly Repayment</strong>
-                  </p>
-                  <p>NGN 15,650.00</p>
-                </div>
-              </div> */}
-                    <div style={styles.column}>
-                      <div className="w-fit m-auto">
-                        <p>
-                          <strong>Target Amount</strong>
-                        </p>
-                        <p>
-                          {formatCurrency(loanPlan?.data?.totalRepaymentAmount)}
-                        </p>
-                      </div>
-                    </div>
-                    <div style={styles.column}>
-                      <div className="w-fit m-auto">
-                        <p>
-                          <strong>Start Date</strong>
-                        </p>
-                        <p>{loanPlan?.data?.userRepaymentStartDate}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div style={styles.row}>
-                    {/* <div style={styles.column}>
-                    <div className="w-fit m-auto">
-                      <p>
-                        <strong>End Date</strong>
+                <div className="max-w-4xl mx-auto p-6">
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-2">
+                      Personal Info
+                    </h2>
+                    <div className="grid grid-cols-3 gap-4">
+                      <p className=" flex flex-col">
+                        <strong>Name</strong> Nonso Williams
                       </p>
-                      <p>{loanPlan?.data?.endDate}</p>
-                    </div>
-                  </div> */}
-                    <div style={styles.column}>
-                      <div className="w-fit m-auto">
-                        <p>
-                          <strong>Interest Payable</strong>
-                        </p>
-                        <p>
-                          {formatCurrency(
-                            (
-                              loanPlan?.data?.interestAmount *
-                              loanPlan?.data?.repaymentDurationInMonth
-                            ).toFixed()
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                    <div style={styles.column}>
-                      <div className="w-fit m-auto">
-                        <p>
-                          <strong>Duration</strong>
-                        </p>
-                        <p>{loanPlan?.data?.repaymentDurationInMonth} Months</p>
-                      </div>
+                      <p className=" flex flex-col">
+                        <strong>Email</strong> nons@mail.com
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>Phone No</strong> 0987654339
+                      </p>
                     </div>
                   </div>
-                  <div style={styles.row}>
-                    <div style={styles.column}>
-                      <div className="w-fit m-auto">
-                        <p>
-                          <strong>1st Guarantor</strong>
-                        </p>
-                        <p>
-                          {loanPlan?.data?.guarantors[0].fullName +
-                            ` (${loanPlan?.data?.guarantors[0].subscriptionCode})`}
-                        </p>
-                        <p>{`(${loanPlan?.data?.guarantors[0].email})`}</p>
-                      </div>
+
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-2">Plan Info</h2>
+                    <div className="grid grid-cols-3 gap-4">
+                      <p className=" flex flex-col">
+                        <strong>Weekly Repayment</strong> NGN 15,650.00
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>Target Amount</strong> NGN 125,000.00
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>Start Date</strong> 01/01/2025
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>End Date</strong> 01/07/2025
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>Interest Payable</strong> NGN 75,600.00
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>Duration</strong> 6 Months
+                      </p>
                     </div>
-                    <div style={styles.column}>
-                      <div className="w-fit m-auto">
-                        <p>
-                          <strong>2nd Guarantor</strong>
-                        </p>
-                        <p>
-                          {loanPlan?.data?.guarantors[1].fullName +
-                            ` (${loanPlan?.data?.guarantors[1].subscriptionCode})`}
-                        </p>
-                        <p>{`(${loanPlan?.data?.guarantors[1].email})`}</p>
-                      </div>
+                  </div>
+
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-2">Guarantors</h2>
+                    <div className="grid grid-cols-2 gap-4">
+                      <p className=" flex flex-col">
+                        <strong>1st Guarantor</strong> Nonso Udo
+                        (udononso@gmail.com)
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>2nd Guarantor</strong> Taiwo Moyo (23r456)
+                        (taiwomoyo@gmail.com)
+                      </p>
                     </div>
+                  </div>
+
+                  <div>
+                    <h2 className="text-xl font-semibold mb-2">Reason</h2>
+                    <p>I need it to pay my tuition fee</p>
                   </div>
                 </div>
 
@@ -466,12 +470,51 @@ const LoanManagement = () => {
           </div>
         </div>
       </Drawer>
+
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className="flex justify-center items-center mb-4">
+            <h2 className="text-xl font-semibold">
+              Loan {modalType} Confirmation
+            </h2>
+            
+          </div>
+
+          <div className="">
+            <p className="text-[#B0B0B0] my-4 text-center">
+              Are you sure you want to{" "}
+              {modalType === "Approval" ? "approve" : "reject"} this loan?
+            </p>
+
+            <div className="flex  gap-4 ">
+              <button onClick={handleClose} className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#000] bg-[#F8F8FA] ">
+                {" "}
+                No, I’m not
+              </button>
+
+              {modalType === "Approval" ? (
+                <button className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#fff] bg-[#041F62] ">
+                  {" "}
+                  Yes, I am
+                </button>
+              ) : (
+                <button className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#fff] bg-[#FB0300] ">
+                  {" "}
+                  Yes, I am
+                </button>
+              )}
+            </div>
+          </div>
+        </Box>
+      </Modal>
     </div>
   );
 };
-
-
-
 
 const styles = {
   card: {

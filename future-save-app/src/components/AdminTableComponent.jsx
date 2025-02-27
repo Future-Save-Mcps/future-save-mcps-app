@@ -1,10 +1,7 @@
-"use client";
-
 import { useState } from "react";
-import { Search, Clock, FileText, Filter } from "lucide-react";
+import { Search, Clock, Calendar as CalendarIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
@@ -31,29 +28,9 @@ import TableContainer from "@mui/material/TableContainer";
 import { ExportIcon, FilterIcon } from "./icons/Icons";
 import { Drawer } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import DatePickerComponent from "./DatePickerComponent";
 
-const initialData = [
-  {
-    id: 1,
-    name: "Williams Elum",
-    plan: "25 Weeks",
-    targetAmount: "₦ 300,000.00",
-    dateCreated: "12/05/2025",
-    weeklyAmount: "₦ 5,000.00",
-    status: "completed",
-  },
-  {
-    id: 2,
-    name: "Williams Elum",
-    plan: "50 Weeks",
-    targetAmount: "₦ 300,000.00",
-    dateCreated: "12/05/2025",
-    weeklyAmount: "₦ 5,000.00",
-    status: "in-progress",
-  },
-];
-
-export default function AdminTableComponent({
+const AdminTableComponent = ({
   headers,
   data,
   onSearch,
@@ -61,46 +38,58 @@ export default function AdminTableComponent({
   onExport,
   onAuditTrail,
   view,
-}) {
-  // const [data, setData] = useState(initialData);
-  const [activeFilter, setActiveFilter] = useState(null);
+}) => {
   const [state, setState] = useState(false);
-  const [dateValue, setDateValue] = useState();
+  const [dateValue, setDateValue] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
 
-  const toggleDrawer = (open) => (event) => {
-    if (
-      event.type === "keydown" &&
-      (event.key === "Tab" || event.key === "Shift")
-    ) {
-      return;
-    }
-    // setPlanId(id);
+  const toggleDrawer = (open) => () => {
     setState(open);
   };
 
   const handleFilterChange = (filter) => {
-    onFilter();
-    // setActiveFilter(filter);
+    if (onFilter) onFilter(filter);
   };
 
-
-
   const handleValueChange = (value) => {
-  
-        setDateValue(value);
-        // onFilterChange({ type: "date", value });
-       
-    }
+    setDateValue(value);
+  };
 
+  const notifications = [
+    {
+      id: 1,
+      message: "David Agama approved a Thrift Loan of N300,000 for Nonso Udo",
+      timeAgo: "5hrs ago",
+      isNew: true,
+    },
+    {
+      id: 2,
+      message: "Musa Huga rejected a Thrift Loan of N300,000 for Nonso Udo",
+      timeAgo: "5hrs ago",
+      isNew: true,
+    },
+    {
+      id: 3,
+      message: "David Agama approved a Premium Loan of N300,000 for Nonso Udo",
+      timeAgo: "5hrs ago",
+      isNew: false,
+    },
+    {
+      id: 4,
+      message: "David Agama rejected a Premium Loan of N300,000 for Nonso Udo",
+      timeAgo: "5hrs ago",
+      isNew: false,
+    },
+  ];
 
   return (
-    <div className=" border p-4 rounded-2xl ">
+    <div className="border p-4 rounded-2xl">
       <div className="flex items-center justify-between mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            onChange={(e) => onSearch(e.target.value)}
-            placeholder="Search for savings plan by Users name"
+            onChange={(e) => onSearch?.(e.target.value)}
+            placeholder="Search for savings plan by User's name"
             className="pl-10 w-[300px]"
           />
         </div>
@@ -121,7 +110,7 @@ export default function AdminTableComponent({
                 Filters
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="max-w-[400px] w-[90vw]  p-0" align="end">
+            <PopoverContent className="max-w-[400px] w-[90vw] p-0" align="end">
               <FilterDropdown onFilterChange={handleFilterChange} />
             </PopoverContent>
           </Popover>
@@ -137,17 +126,13 @@ export default function AdminTableComponent({
         </div>
       </div>
 
-      <div className="border  w-[100%]  rounded-lg">
-        <TableContainer
-          style={{
-            overflow: "auto",
-          }}
-        >
+      <div className="border w-full rounded-lg">
+        <TableContainer style={{ overflow: "auto" }}>
           <Table>
             <TableHeader>
               <TableRow>
-                {headers.map((item) => (
-                  <TableHead>{item}</TableHead>
+                {headers.map((item, index) => (
+                  <TableHead key={index}>{item}</TableHead>
                 ))}
               </TableRow>
             </TableHeader>
@@ -177,9 +162,16 @@ export default function AdminTableComponent({
         </TableContainer>
       </div>
 
-      <Drawer anchor="right" open={state}>
-        <div className=" w-[100vw] relative max-w-[600px]">
-          <div className=" p-4  bg-white  sticky top-0 flex justify-between mb-4 items-center ">
+      <Drawer
+        anchor="right"
+        sx={{
+          zIndex: 50,
+        }}
+        open={state}
+        onClose={toggleDrawer(false)}
+      >
+        <div className="w-[100vw] relative max-w-[600px]">
+          <div className="p-4 bg-white sticky top-0 flex justify-between items-center">
             <h2 className="text-[24px] font-[700]">Audit Trail</h2>
             <CloseIcon
               onClick={toggleDrawer(false)}
@@ -194,42 +186,45 @@ export default function AdminTableComponent({
             />
           </div>
 
-          <div className="p-4 border">
-
-            <div className="border">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !dateValue && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateValue ? (
-                    format(dateValue, "PPP")
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                  mode="single"
-                  selected={dateValue}
-                  onSelect={handleValueChange}
-                  initialFocus
+          <div className="p-4">
+            <div className="">
+              <div className="flex items-center justify-end gap-1">
+                <p className=" text-base font-normal">Filter by</p>
+                <DatePickerComponent
+                  selectedDate={selectedDate}
+                  onDateChange={setSelectedDate}
                 />
-              </PopoverContent>
-            </Popover>
+              </div>
+              {selectedDate && (
+                <p className="mt-2">
+                  Selected Date: {selectedDate.toDateString()}
+                </p>
+              )}
             </div>
-          
-
-            {/* {isLoadingLoan || isFetching ? <Spinner /> : <>hrllo</>} */}
+            <div className="max-w-2xl mx-auto p-4">
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className="mb-6 flex justify-between items-center"
+                >
+                  <div>
+                    <p className="text-sm font-medium">
+                      {notification.message}
+                    </p>
+                    <p className="text-gray-500 text-xs">
+                      {notification.timeAgo}
+                    </p>
+                  </div>
+                  {notification.isNew && (
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </Drawer>
     </div>
   );
-}
+};
+export default AdminTableComponent;
