@@ -49,6 +49,8 @@ export default function AdminTableComponent({
   onFilter,
   onExport,
   onAuditTrail,
+  onAddUser, // Function to handle adding a user
+  showAddUserButton = false,
 }) {
   // const [data, setData] = useState(initialData);
   const [activeFilter, setActiveFilter] = useState(null);
@@ -99,6 +101,17 @@ export default function AdminTableComponent({
             <ExportIcon />
             Export
           </Button>
+
+          {showAddUserButton && (
+            <Button
+              onClick={onAddUser}
+              variant="default"
+              className="bg-[#041F62] text-white px-4 hover:bg-[#041F62]"
+            >
+              <span>+</span>
+              Add User
+            </Button>
+          )}
         </div>
       </div>
 
