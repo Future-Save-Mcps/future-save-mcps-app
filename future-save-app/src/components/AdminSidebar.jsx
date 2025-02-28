@@ -168,7 +168,7 @@ const AdminSideBar = ({ toggleSidebar }) => {
             <button onClick={handleLogout} className="bg-[red] p-2 rounded-lg text-white">
               Yes, Continue
             </button>
-            <button className="border border-[red] p-2 rounded-lg text-[red]">
+            <button  onClick={handleClose}  className="border border-[red] p-2 rounded-lg text-[red]">
               Cancel
             </button>
           </div>

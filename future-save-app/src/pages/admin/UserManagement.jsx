@@ -1,7 +1,19 @@
+import AddUser from "@/components/AddUser";
 import AdminTableComponent from "@/components/AdminTableComponent";
-import React from "react";
+import SuccessModal from "@/components/SuccessModal";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const UserManagement = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleUserAdded = () => {
+    setIsModalOpen(false);
+    setIsSuccessOpen(true);
+    // setTimeout(() => setIsSuccessOpen(false), 4000);
+  };
   const tableHeaders = [
     "Name",
     "Loan Type",
@@ -11,7 +23,6 @@ const UserManagement = () => {
     "Account Status",
     "Action",
   ];
-
   const rawTableData = [
     {
       id: 1,
@@ -32,7 +43,7 @@ const UserManagement = () => {
       status: "Rejected",
     },
     {
-      id: 2,
+      id: 3,
       name: "Williams Elum",
       plan: "Premium Loan",
       targetAmount: "₦ 300,000.00",
@@ -62,7 +73,7 @@ const UserManagement = () => {
               ? "bg-[#FB0300]"
               : "bg-[#FF790C]"
           }`}
-        ></div>{" "}
+        ></div>
         {item.status}
       </span>
     ),
@@ -89,13 +100,17 @@ const UserManagement = () => {
     console.log("Exporting data...");
   };
 
+  const userDetails = (user) => {
+    navigate(`/user-management/${user.id}`, { state: user });
+  };
+
   // Audit Trail Function (Dummy Example)
   const handleAuditTrail = () => {
     console.log("Viewing audit trail...");
   };
-const handleAddUser = ( ) => {
-  console.log("Adding user...");
-}
+  const handleAddUser = () => {
+    setIsModalOpen(true); // Open the modal
+  };
   return (
     <div>
       <AdminTableComponent
@@ -105,9 +120,22 @@ const handleAddUser = ( ) => {
         onFilter={handleFilter}
         onExport={handleExport}
         onAuditTrail={handleAuditTrail}
+        view={userDetails}
         onAddUser={handleAddUser} // Function to handle adding a user
         showAddUserButton={true}
       />
+
+      {isModalOpen && (
+        <AddUser
+          open={isModalOpen}
+          setOpen={setIsModalOpen}
+          onUserAdded={handleUserAdded}
+        />
+      )}
+
+      {isSuccessOpen && (
+        <SuccessModal open={isSuccessOpen} setOpen={setIsSuccessOpen} />
+      )}
     </div>
   );
 };

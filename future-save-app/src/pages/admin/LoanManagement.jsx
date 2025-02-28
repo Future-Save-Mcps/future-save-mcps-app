@@ -1,7 +1,70 @@
 import AdminTableComponent from "@/components/AdminTableComponent";
-import React from "react";
+import { Box, Drawer, Modal } from "@mui/material";
+import React, { useState } from "react";
+import CloseIcon from "@mui/icons-material/Close";
+import Spinner from "@/components/Spinner";
+import OngoingCompletedCard from "@/components/Cards/OngoingCompletedCard";
+import { useApiGet } from "@/hooks/useApi";
+import { formatDate } from "@/utils/formatDate";
+import LoanTabs from "@/components/LoanTabs";
+import { formatCurrency } from "@/utils/currencyFormatter";
+import SendImg from "../../assets/send.svg";
+import Warning from "@/components/Cards/Warning";
+
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "95vw",
+  bgcolor: "white",
+  border: "none",
+  outline: "none",
+  p: 3,
+  maxWidth: "500px",
+  borderRadius: "20px",
+};
 
 const LoanManagement = () => {
+  const [state, setState] = useState(false);
+  const [loanId, setLoanId] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [modalType, setModalType] = useState(null);
+
+  const toggleDrawer =
+    (open, id = null) =>
+    (event) => {
+      if (
+        event.type === "keydown" &&
+        (event.key === "Tab" || event.key === "Shift")
+      ) {
+        return;
+      }
+      console.log("btn clicked");
+
+      setState(open);
+    };
+
+  const handleOpenPaymentModal = (type) => {
+    setPaymentModalType(type);
+    setOpenPaymentModal(true);
+  };
+  const handleClosePaymentModal = () => {
+    setOpenPaymentModal(false);
+    setPaymentModalType(null);
+  };
+  const {
+    data: loan,
+    isLoading: isLoadingLoan,
+    refetch: refetchLoan,
+  } = useApiGet(`loan/all?PageNumber=1&PageSize=100`);
+
+  const {
+    data: loanPlan,
+    isLoading: isLoadingLoanPlan,
+    isFetching,
+    refetch: refetchLoanPlan,
+  } = useApiGet(`loan?LoanId=${loanId}`);
   const tableHeaders = [
     "Name",
     "Loan Type",
@@ -68,6 +131,15 @@ const LoanManagement = () => {
     ),
   }));
 
+  const handleOpen = (type) => {
+    setOpen(true);
+    setModalType(type);
+  };
+  const handleClose = () => {
+    setOpen(false);
+    setModalType(null);
+  };
+
   // Search Function
   const handleSearch = (query, data) => {
     console.log(query);
@@ -103,9 +175,363 @@ const LoanManagement = () => {
         onFilter={handleFilter}
         onExport={handleExport}
         onAuditTrail={handleAuditTrail}
+        view={toggleDrawer}
       />
+
+      {/* <Drawer anchor="right" open={state}>
+        <div className=" w-[100vw] max-w-[700px]">
+          <div className=" flex  p-4  bg-white sticky top-0 justify-between mb-8 items-center ">
+            <h2 className="text-[24px] font-[700]">Loan Details</h2>
+            <CloseIcon
+              onClick={toggleDrawer(false)}
+              sx={{
+                cursor: "pointer",
+                padding: "5px",
+                width: "35px",
+                height: "35px",
+                borderRadius: "50%",
+                backgroundColor: "#F8F8FA",
+              }}
+            />
+          </div>
+          <div className="p-4">
+            {isLoadingContributionPlan || isFetching ? (
+              <Spinner />
+            ) : (
+              <>
+                <OngoingCompletedCard
+                  cardTitle={contributionPlan?.data?.planName}
+                  contrubutionBalance={`₦ ${contributionPlan?.data?.currentBalance}`}
+                  contributionWeekPlan={`${contributionPlan?.data?.durationInWeeks} weeks Plan`}
+                  status={contributionPlan?.data?.planStatus}
+                  remainingDays={` ${contributionPlan?.data?.daysRemaining} days remaining`}
+                  onClick={toggleDrawer(true)}
+                  percentage={
+                    contributionPlan?.data?.planStatus === "completed"
+                      ? 100
+                      : contributionPlan?.data?.currentBalance < 1
+                      ? 0
+                      : (contributionPlan?.data?.currentBalance /
+                          contributionPlan?.data?.targetAmount) *
+                        100
+                  }
+                />
+
+                <div className="flex justify-center gap-6 flex-wrap items-center">
+                  {contributionPlan?.data?.planStatus === "completed" && (
+                    <button
+                      onClick={() => handleOpenPaymentModal("withdrawFund")}
+                      className="flex my-6 justify-center items-center gap-4 px-6 py-3 rounded-xl text-[#fff] bg-primary "
+                    >
+                      {" "}
+                      <img src={WithdrawIcon} /> Withdraw funds
+                    </button>
+                  )}
+
+                  {contributionPlan?.data?.planStatus === "inProgress" && (
+                    <>
+                      <button
+                        onClick={() => handleOpenPaymentModal("addFund")}
+                        className="flex my-6 justify-center items-center gap-4 px-6 py-3 rounded-xl text-[#fff] bg-primary "
+                      >
+                        {" "}
+                        <AddIcon
+                          sx={{
+                            color: "white",
+                          }}
+                        />{" "}
+                        Make Repayment
+                      </button>
+
+                      <button
+                        onClick={() => handleOpenPaymentModal("deactivatePlan")}
+                        className="flex my-6 justify-center items-center gap-4 px-6 py-3 rounded-xl text-[#fff] bg-[#FB0300] "
+                      >
+                        {" "}
+                        <CloseIcon
+                          sx={{
+                            color: "white",
+                          }}
+                        />{" "}
+                        De-activate Plan
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                <div style={styles.card}>
+                  <div style={styles.row}>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>Weekly Amount</strong>
+                        </p>
+                        <p>NGN {contributionPlan?.data?.weeklyAmount}</p>
+                      </div>
+                    </div>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>Target Amount</strong>
+                        </p>
+                        <p>NGN {contributionPlan?.data?.targetAmount}</p>
+                      </div>
+                    </div>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>Start Date</strong>
+                        </p>
+                        <p>{formatDate(contributionPlan?.data?.startDate)}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={styles.row}>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>End Date</strong>
+                        </p>
+                        <p> {formatDate(contributionPlan?.data?.endDate)}</p>
+                      </div>
+                    </div>
+                    <div style={styles.column}>
+                      <div className="w-fit m-auto">
+                        <p>
+                          <strong>Dividend</strong>
+                        </p>
+                        <p>NGN {contributionPlan?.data?.dividends}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <LoanTabs
+                  transactions={contributionPlan?.data?.transactions}
+                  activities={contributionPlan?.data?.activities}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      </Drawer> */}
+
+      <Drawer anchor="right" open={state}>
+        <div className=" w-[100vw] relative max-w-[700px]">
+          <div className=" p-4  bg-white  sticky top-0 flex justify-between mb-8 items-center ">
+            <h2 className="text-[24px] font-[700]">Loan Details</h2>
+            <CloseIcon
+              onClick={toggleDrawer(false)}
+              sx={{
+                cursor: "pointer",
+                padding: "5px",
+                width: "35px",
+                height: "35px",
+                borderRadius: "50%",
+                backgroundColor: "#F8F8FA",
+              }}
+            />
+          </div>
+
+          <div className="p-4">
+            {isLoadingLoan || isFetching ? (
+              <Spinner />
+            ) : (
+              <>
+                {/* {loanPlan?.data?.loanStatus === "PendingApproval" && ( */}
+                <Warning
+                  WarningType="Yellow"
+                  text="You Loan is being processed "
+                />
+                {/* )} */}
+
+                <OngoingCompletedCard
+                  percentage={
+                    loanPlan?.data?.loanStatus === "completed"
+                      ? 100
+                      : ((loanPlan?.data?.totalRepaymentAmount -
+                          loanPlan?.data?.remainingBalance) /
+                          loanPlan?.data?.totalRepaymentAmount) *
+                        100
+                  }
+                  cardType={"Loan"}
+                  loanAmount={formatCurrency(
+                    loanPlan?.data?.totalRepaymentAmount
+                  )}
+                  loanBalance={formatCurrency(loanPlan?.data?.remainingBalance)}
+                  status={loanPlan?.data?.loanStatus}
+                  cardTitle={loanPlan?.data?.loanType}
+                  remainingDays={` ${loanPlan?.data?.remainingDays} days remaining`}
+                />
+
+                <div className="flex justify-center flex-wrap gap-4 items-center">
+                  <button
+                    onClick={() => handleOpen("Approval")}
+                    className="flex my-6 justify-center min-w-[200px] items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-primary "
+                  >
+                    {" "}
+                    Approve
+                  </button>
+
+                  <button
+                    onClick={() => handleOpen("Rejection")}
+                    className="flex my-6 justify-center min-w-[200px] items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-[#FB0300] "
+                  >
+                    {" "}
+                    Reject
+                  </button>
+
+                  <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
+                    {" "}
+                    <div className="text-[#FF770E] rounded-md px-6 py-1  w-full h-full bg-[#FF770E1A]">
+                      In progress
+                    </div>
+                  </button>
+
+                  <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
+                    {" "}
+                    <div className="text-[#FB0300] rounded-md px-6 py-1  w-full h-full bg-[#FB030029]">
+                      Rejected
+                    </div>
+                  </button>
+                  <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
+                    {" "}
+                    <div className="text-[#34C759] rounded-md px-6 py-1  w-full h-full bg-[#34C75929]">
+                      Completed
+                    </div>
+                  </button>
+                </div>
+
+                <div className="max-w-4xl mx-auto p-6">
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-2">
+                      Personal Info
+                    </h2>
+                    <div className="grid grid-cols-3 gap-4">
+                      <p className=" flex flex-col">
+                        <strong>Name</strong> Nonso Williams
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>Email</strong> nons@mail.com
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>Phone No</strong> 0987654339
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-2">Plan Info</h2>
+                    <div className="grid grid-cols-3 gap-4">
+                      <p className=" flex flex-col">
+                        <strong>Weekly Repayment</strong> NGN 15,650.00
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>Target Amount</strong> NGN 125,000.00
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>Start Date</strong> 01/01/2025
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>End Date</strong> 01/07/2025
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>Interest Payable</strong> NGN 75,600.00
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>Duration</strong> 6 Months
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-2">Guarantors</h2>
+                    <div className="grid grid-cols-2 gap-4">
+                      <p className=" flex flex-col">
+                        <strong>1st Guarantor</strong> Nonso Udo
+                        (udononso@gmail.com)
+                      </p>
+                      <p className=" flex flex-col">
+                        <strong>2nd Guarantor</strong> Taiwo Moyo (23r456)
+                        (taiwomoyo@gmail.com)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h2 className="text-xl font-semibold mb-2">Reason</h2>
+                    <p>I need it to pay my tuition fee</p>
+                  </div>
+                </div>
+
+                <LoanTabs activities={loanPlan?.data?.activities} />
+              </>
+            )}
+          </div>
+        </div>
+      </Drawer>
+
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className="flex justify-center items-center mb-4">
+            <h2 className="text-xl font-semibold">
+              Loan {modalType} Confirmation
+            </h2>
+            
+          </div>
+
+          <div className="">
+            <p className="text-[#B0B0B0] my-4 text-center">
+              Are you sure you want to{" "}
+              {modalType === "Approval" ? "approve" : "reject"} this loan?
+            </p>
+
+            <div className="flex  gap-4 ">
+              <button onClick={handleClose} className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#000] bg-[#F8F8FA] ">
+                {" "}
+                No, I’m not
+              </button>
+
+              {modalType === "Approval" ? (
+                <button className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#fff] bg-[#041F62] ">
+                  {" "}
+                  Yes, I am
+                </button>
+              ) : (
+                <button className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#fff] bg-[#FB0300] ">
+                  {" "}
+                  Yes, I am
+                </button>
+              )}
+            </div>
+          </div>
+        </Box>
+      </Modal>
     </div>
   );
+};
+
+const styles = {
+  card: {
+    margin: "20px auto",
+  },
+  row: {
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: "15px",
+  },
+  column: {
+    flex: 1,
+    padding: "auto",
+    width: "fit-content",
+    margin: "20px 10px",
+  },
 };
 
 export default LoanManagement;

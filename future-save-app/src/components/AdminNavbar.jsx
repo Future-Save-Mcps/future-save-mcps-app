@@ -1,16 +1,68 @@
-import React, { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Bell from "../assets/bellIcon.svg";
-import { Drawer } from "@mui/material";
+import { Box, Drawer, Modal } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { getUserData } from "../utils/getUserData";
-import { useApiGet } from "../hooks/useApi";
+import { useApiGet, useApiPatch } from "../hooks/useApi";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { LogoutIcon, SettingsIcon, UserIcon } from "./icons/Icons";
+import FormFieldComp from "./form/FormFieldComp";
+import FormButton from "./FormBtn";
+import { useForm } from "react-hook-form";
+
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "90vw",
+  maxWidth: 400,
+  bgcolor: "background.paper",
+  border: "none",
+  outline: "none",
+  p: 4,
+  borderRadius: 2,
+};
 
 const AdminNavbar = ({ refresh }) => {
+  const navigate = useNavigate();
   const location = useLocation();
-  const [state, setState] = React.useState(false);
+  const { patch, isLoadingPatch } = useApiPatch();
+
+  const [state, setState] = useState(false);
   const { data: userData, isLoading, error, refetch } = useApiGet("user");
   console.log(userData?.data);
+  const [open, setOpen] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
+
+  const handleOpen = () => {
+    setOpen(true);
+    toggleSidebar();
+  };
+  const handleClose = () => setOpen(false);
+
+  const [openProfile, setOpenProfile] = useState(false);
+
+  const handleOpenProfile = () => {
+    setOpenProfile(true);
+  };
+  const handleCloseProfile = () => {
+    setOpenProfile(false);
+    setOpenEdit(false)
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.replace("/");
+    // dispatch(setUser)
+  };
 
   useEffect(() => {
     refetch();
@@ -24,6 +76,14 @@ const AdminNavbar = ({ refresh }) => {
       return;
     }
     setState(open);
+  };
+  const onSubmit = async (data) => {
+    const result = await patch(`user`, data);
+    if (result.success && result.data) {
+      fetchAndStoreUserData();
+      refetch();
+      handleClose();
+    }
   };
 
   const getGreetingText = () => {
@@ -61,11 +121,36 @@ const AdminNavbar = ({ refresh }) => {
               />
               <div className="absolute w-[10px] h-[10px] right-0 rounded-full top-0 bg-[#FF5555] border-2 border-white"></div>
             </div>
-            <div className="bg-[#CD2280]  rounded-full p-2">
-              <span className="text-sm aspect-square h-[2.5em] text-white flex items-center justify-center">
-                {userData?.data?.firstName.charAt(0)}
-              </span>
-            </div>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <div className="bg-[#CD2280] cursor-pointer  rounded-full p-2">
+                  <span className="text-sm aspect-square h-[2.5em] text-white flex items-center justify-center">
+                    {userData?.data?.firstName.charAt(0)}
+                  </span>
+                </div>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-fit p-2">
+                <div
+                  onClick={handleOpenProfile}
+                  className="flex  gap-6 py-3 px-4 text-base font-medium mb-2 hover:bg-[#fdf8f8]"
+                >
+                  <UserIcon color="currentColor" /> Profile
+                </div>
+                <div
+                  onClick={() => navigate("/admin/settings")}
+                  className="flex  gap-6 py-3 px-4 text-base font-medium mb-2 hover:bg-[#fdf8f8]"
+                >
+                  <SettingsIcon color="currentColor" /> Account Settings
+                </div>
+                <div
+                  onClick={handleOpen}
+                  className="flex  gap-6 py-3 px-4 text-[#fc242b] text-base font-medium mb-2 hover:bg-[#fdf8f8]"
+                >
+                  <LogoutIcon color="#fc242b" /> Logout
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </div>
@@ -87,6 +172,186 @@ const AdminNavbar = ({ refresh }) => {
           </div>
         </div>
       </Drawer>
+
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className="w-14 h-14 rounded-full m-auto bg-[#f7e2e2] border  flex justify-center items-center">
+            <LogoutIcon color="red" />
+          </div>
+          <h2 className="m-auto font-semibold text-2xl text-center mt-4">
+            Logout
+          </h2>
+          <p className="m-auto text-center mt-2">
+            Are you sure you want to logout?
+          </p>
+          <div className="flex flex-col gap-6 mt-6">
+            <button
+              onClick={handleLogout}
+              className="bg-[red] p-2 rounded-lg text-white"
+            >
+              Yes, Continue
+            </button>
+            <button
+              onClick={handleClose}
+              className="border border-[red] p-2 rounded-lg text-[red]"
+            >
+              Cancel
+            </button>
+          </div>
+        </Box>
+      </Modal>
+
+      <Modal
+        open={openProfile}
+        onClose={handleCloseProfile}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          {openEdit ? (
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="  h-[100%] overflow-auto hide-scrollbar max-h-[80vh]"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Edit Profile</h2>
+                <CloseIcon
+                  onClick={handleCloseProfile}
+                  sx={{
+                    cursor: "pointer",
+                    padding: "5px",
+                    width: "35px",
+                    height: "35px",
+                    borderRadius: "50%",
+                    backgroundColor: "#F8F8FA",
+                  }}
+                />
+              </div>
+
+              <FormFieldComp
+                defaultValueAttachment={userData?.data?.firstName}
+                setValue={setValue}
+                label="First Name"
+                name="firstName"
+                type="text"
+                placeholder="Enter First Name"
+                register={register}
+                validation={{ required: "First Name is required" }}
+                errors={errors}
+              />
+
+              <FormFieldComp
+                defaultValueAttachment={userData?.data?.lastName}
+                setValue={setValue}
+                label="Last Name"
+                name="lastName"
+                type="text"
+                placeholder="Enter Last Name"
+                register={register}
+                validation={{ required: "Last Name is required" }}
+                errors={errors}
+              />
+
+              {/* <FormFieldComp
+              defaultValueAttachment={userData?.data?.gender}
+              label="Gender"
+              name="gender"
+              type="select"
+              setValue={setValue}
+              register={register}
+              validation={{ required: "Gender is required" }}
+              errors={errors}
+              options={[
+                { label: "Male", value: "male" },
+                { label: "Female", value: "female" },
+              ]}
+            /> */}
+
+              {/* <FormFieldComp
+              defaultValueAttachment={userData?.data?.dateOfBirth}
+              setValue={setValue}
+              label="Date of Birth"
+              name="dateOfBirth"
+              type="date"
+              register={register}
+              validation={{ required: "Date of Birth is required" }}
+              errors={errors}
+            /> */}
+
+              <FormFieldComp
+                defaultValueAttachment={userData?.data?.phoneNumber}
+                setValue={setValue}
+                label="Phone Number"
+                name="phoneNumber"
+                type="tel"
+                placeholder="Enter Phone Number"
+                register={register}
+                validation={{
+                  required: "Phone Number is required",
+                  pattern: {
+                    value: /^[0-9]{10,11}$/,
+                    message: "Phone number must be 10-11 digits",
+                  },
+                }}
+                errors={errors}
+              />
+
+              <FormButton
+                isLoading={isLoadingPatch}
+                type="submit"
+                text="Update"
+                width="100%"
+              />
+            </form>
+          ) : (
+            <div>
+              <div className="flex justify-between items-center">
+                <div className="font-[600] text-[22px]">Profile</div>
+                <button
+                  onClick={()=>setOpenEdit(true)}
+                  className="border px-4 py-1 rounded-2xl"
+                >
+                  Edit
+                </button>
+              </div>
+              <div className="flex mt-6 justify-center items-start gap-8">
+                <div className="w-[80px] h-[80px] rounded-full flex justify-center items-center font-[600] bg-[#CD2280] text-[30px] text-[#fff]">
+                  {userData?.data?.firstName.charAt(0)}
+                </div>
+
+                <div className=" flex-1  ">
+                  <div className=" flex flex-col flex-wrap gap-6">
+                    <div className=" ">
+                      <h3 className="font-bold">Name</h3>
+                      <p>
+                        {" "}
+                        {(userData?.data?.lastName || "--") +
+                          " " +
+                          (userData?.data?.firstName || "--")}
+                      </p>
+                    </div>
+
+                    <div className=" ">
+                      <h3 className="font-bold">Email</h3>
+                      <p>{userData?.data?.email || "---"}</p>
+                    </div>
+
+                    <div className=" ">
+                      <h3 className="font-bold">Phone Number</h3>
+                      <p>{userData?.data?.phoneNumber || "---"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </Box>
+      </Modal>
     </>
   );
 };
