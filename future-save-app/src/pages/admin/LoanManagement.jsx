@@ -41,7 +41,7 @@ const LoanManagement = () => {
         return;
       }
       console.log("btn clicked");
-
+      setLoanId(id);
       setState(open);
     };
 
@@ -57,7 +57,7 @@ const LoanManagement = () => {
     data: loan,
     isLoading: isLoadingLoan,
     refetch: refetchLoan,
-  } = useApiGet(`loan/all?PageNumber=1&PageSize=100`);
+  } = useApiGet(`admin/loan/all?PageNumber=1&PageSize=100`);
 
   const {
     data: loanPlan,
@@ -65,14 +65,17 @@ const LoanManagement = () => {
     isFetching,
     refetch: refetchLoanPlan,
   } = useApiGet(`loan?LoanId=${loanId}`);
+
+  console.log("loanPlan", loanPlan);
+
   const tableHeaders = [
-    "Name",
-    "Loan Type",
-    "Target Amount",
-    "Date Created",
-    "Weekly Amount",
-    "Account Status",
-    "Action",
+    { label: "Name", value: "name" },
+    { label: "Loan Type", value: "loanType" },
+    { label: "Target Amount", value: "totalRepaymentAmount" },
+    { label: "Date Created", value: "userRepaymentStartDate" },
+    { label: "Weekly Amount", value: "weeklyAmount" },
+    { label: "Account Status", value: "loanStatus" },
+    // { label: "Action", value: "action" },
   ];
 
   const rawTableData = [
@@ -105,28 +108,31 @@ const LoanManagement = () => {
     },
   ];
 
-  const tableData = rawTableData.map((item) => ({
+  const tableData = loan?.data?.items?.map((item) => ({
     ...item,
-    status: (
+    id: item.loanApplicationId,
+    name: "--",
+    weeklyAmount: "-----",
+    loanStatus: (
       <span
         className={`px-3 py-1 flex w-fit items-center gap-2 rounded-2xl  ${
-          item.status === "Approved"
+          item.loanStatus === "Approved"
             ? "bg-[#34C7591F]  text-[#34C759]"
-            : item.status === "Rejected"
+            : item.loanStatus === "Rejected"
             ? "bg-[#FB03001F]  text-[#FB0300]"
             : "bg-[#FF790C1F]  text-[#FF790C]"
         }`}
       >
         <div
           className={`w-2 h-2 rounded-full ${
-            item.status === "Approved"
+            item.loanStatus === "Approved"
               ? "bg-[#34C759]"
-              : item.status === "Rejected"
+              : item.loanStatus === "Rejected"
               ? "bg-[#FB0300]"
               : "bg-[#FF790C]"
           }`}
         ></div>{" "}
-        {item.status}
+        {item.loanStatus}
       </span>
     ),
   }));
@@ -178,144 +184,6 @@ const LoanManagement = () => {
         view={toggleDrawer}
       />
 
-      {/* <Drawer anchor="right" open={state}>
-        <div className=" w-[100vw] max-w-[700px]">
-          <div className=" flex  p-4  bg-white sticky top-0 justify-between mb-8 items-center ">
-            <h2 className="text-[24px] font-[700]">Loan Details</h2>
-            <CloseIcon
-              onClick={toggleDrawer(false)}
-              sx={{
-                cursor: "pointer",
-                padding: "5px",
-                width: "35px",
-                height: "35px",
-                borderRadius: "50%",
-                backgroundColor: "#F8F8FA",
-              }}
-            />
-          </div>
-          <div className="p-4">
-            {isLoadingContributionPlan || isFetching ? (
-              <Spinner />
-            ) : (
-              <>
-                <OngoingCompletedCard
-                  cardTitle={contributionPlan?.data?.planName}
-                  contrubutionBalance={`₦ ${contributionPlan?.data?.currentBalance}`}
-                  contributionWeekPlan={`${contributionPlan?.data?.durationInWeeks} weeks Plan`}
-                  status={contributionPlan?.data?.planStatus}
-                  remainingDays={` ${contributionPlan?.data?.daysRemaining} days remaining`}
-                  onClick={toggleDrawer(true)}
-                  percentage={
-                    contributionPlan?.data?.planStatus === "completed"
-                      ? 100
-                      : contributionPlan?.data?.currentBalance < 1
-                      ? 0
-                      : (contributionPlan?.data?.currentBalance /
-                          contributionPlan?.data?.targetAmount) *
-                        100
-                  }
-                />
-
-                <div className="flex justify-center gap-6 flex-wrap items-center">
-                  {contributionPlan?.data?.planStatus === "completed" && (
-                    <button
-                      onClick={() => handleOpenPaymentModal("withdrawFund")}
-                      className="flex my-6 justify-center items-center gap-4 px-6 py-3 rounded-xl text-[#fff] bg-primary "
-                    >
-                      {" "}
-                      <img src={WithdrawIcon} /> Withdraw funds
-                    </button>
-                  )}
-
-                  {contributionPlan?.data?.planStatus === "inProgress" && (
-                    <>
-                      <button
-                        onClick={() => handleOpenPaymentModal("addFund")}
-                        className="flex my-6 justify-center items-center gap-4 px-6 py-3 rounded-xl text-[#fff] bg-primary "
-                      >
-                        {" "}
-                        <AddIcon
-                          sx={{
-                            color: "white",
-                          }}
-                        />{" "}
-                        Make Repayment
-                      </button>
-
-                      <button
-                        onClick={() => handleOpenPaymentModal("deactivatePlan")}
-                        className="flex my-6 justify-center items-center gap-4 px-6 py-3 rounded-xl text-[#fff] bg-[#FB0300] "
-                      >
-                        {" "}
-                        <CloseIcon
-                          sx={{
-                            color: "white",
-                          }}
-                        />{" "}
-                        De-activate Plan
-                      </button>
-                    </>
-                  )}
-                </div>
-
-                <div style={styles.card}>
-                  <div style={styles.row}>
-                    <div style={styles.column}>
-                      <div className="w-fit m-auto">
-                        <p>
-                          <strong>Weekly Amount</strong>
-                        </p>
-                        <p>NGN {contributionPlan?.data?.weeklyAmount}</p>
-                      </div>
-                    </div>
-                    <div style={styles.column}>
-                      <div className="w-fit m-auto">
-                        <p>
-                          <strong>Target Amount</strong>
-                        </p>
-                        <p>NGN {contributionPlan?.data?.targetAmount}</p>
-                      </div>
-                    </div>
-                    <div style={styles.column}>
-                      <div className="w-fit m-auto">
-                        <p>
-                          <strong>Start Date</strong>
-                        </p>
-                        <p>{formatDate(contributionPlan?.data?.startDate)}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div style={styles.row}>
-                    <div style={styles.column}>
-                      <div className="w-fit m-auto">
-                        <p>
-                          <strong>End Date</strong>
-                        </p>
-                        <p> {formatDate(contributionPlan?.data?.endDate)}</p>
-                      </div>
-                    </div>
-                    <div style={styles.column}>
-                      <div className="w-fit m-auto">
-                        <p>
-                          <strong>Dividend</strong>
-                        </p>
-                        <p>NGN {contributionPlan?.data?.dividends}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <LoanTabs
-                  transactions={contributionPlan?.data?.transactions}
-                  activities={contributionPlan?.data?.activities}
-                />
-              </>
-            )}
-          </div>
-        </div>
-      </Drawer> */}
-
       <Drawer anchor="right" open={state}>
         <div className=" w-[100vw] relative max-w-[700px]">
           <div className=" p-4  bg-white  sticky top-0 flex justify-between mb-8 items-center ">
@@ -338,12 +206,12 @@ const LoanManagement = () => {
               <Spinner />
             ) : (
               <>
-                {/* {loanPlan?.data?.loanStatus === "PendingApproval" && ( */}
-                <Warning
-                  WarningType="Yellow"
-                  text="You Loan is being processed "
-                />
-                {/* )} */}
+                {loanPlan?.data?.loanStatus === "PendingApproval" && (
+                  <Warning
+                    WarningType="Yellow"
+                    text="You Loan is being processed "
+                  />
+                )}
 
                 <OngoingCompletedCard
                   percentage={
@@ -365,41 +233,56 @@ const LoanManagement = () => {
                 />
 
                 <div className="flex justify-center flex-wrap gap-4 items-center">
-                  <button
-                    onClick={() => handleOpen("Approval")}
-                    className="flex my-6 justify-center min-w-[200px] items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-primary "
-                  >
-                    {" "}
-                    Approve
-                  </button>
+                  {loanPlan?.data?.isLoanEligibleForAdminApproval &&
+                    loanPlan?.data?.isLoanEligibleForAdminApproval && (
+                      <>
+                        <button
+                          onClick={() => handleOpen("Approval")}
+                          className="flex my-6 justify-center min-w-[200px] items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-primary "
+                        >
+                          {" "}
+                          Approve
+                        </button>
 
-                  <button
-                    onClick={() => handleOpen("Rejection")}
-                    className="flex my-6 justify-center min-w-[200px] items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-[#FB0300] "
-                  >
-                    {" "}
-                    Reject
-                  </button>
+                        <button
+                          onClick={() => handleOpen("Rejection")}
+                          className="flex my-6 justify-center min-w-[200px] items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-[#FB0300] "
+                        >
+                          {" "}
+                          Reject
+                        </button>
+                      </>
+                    )}
 
-                  <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
-                    {" "}
-                    <div className="text-[#FF770E] rounded-md px-6 py-1  w-full h-full bg-[#FF770E1A]">
-                      In progress
-                    </div>
-                  </button>
-
-                  <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
-                    {" "}
-                    <div className="text-[#FB0300] rounded-md px-6 py-1  w-full h-full bg-[#FB030029]">
-                      Rejected
-                    </div>
-                  </button>
-                  <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
-                    {" "}
-                    <div className="text-[#34C759] rounded-md px-6 py-1  w-full h-full bg-[#34C75929]">
-                      Completed
-                    </div>
-                  </button>
+                  {loanPlan?.data?.loanStatus === "Approved" ? (
+                    <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
+                      {" "}
+                      <div className="text-[#FF770E] rounded-md px-6 py-1  w-full h-full bg-[#FF770E1A]">
+                        In progress
+                      </div>
+                    </button>
+                  ) : loanPlan?.data?.loanStatus === "Rejected" ? (
+                    <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
+                      {" "}
+                      <div className="text-[#FB0300] rounded-md px-6 py-1  w-full h-full bg-[#FB030029]">
+                        Rejected
+                      </div>
+                    </button>
+                  ) : loanPlan?.data?.loanStatus === "Completed" ? (
+                    <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
+                      {" "}
+                      <div className="text-[#34C759] rounded-md px-6 py-1  w-full h-full bg-[#34C75929]">
+                        Completed
+                      </div>
+                    </button>
+                  ) : loanPlan?.data?.loanStatus === "PendingApproval" ? (
+                    <button className="flex my-6 justify-center p-[8px] min-w-[200px] items-center gap-6  rounded-xl text-[#fff] bg-[#F8F8FA] ">
+                      {" "}
+                      <div className="text-[#FF770E] rounded-md px-6 py-1  w-full h-full bg-[#FF770E1A]">
+                        In progress
+                      </div>
+                    </button>
+                  ) : null}
                 </div>
 
                 <div className="max-w-4xl mx-auto p-6">
@@ -409,13 +292,13 @@ const LoanManagement = () => {
                     </h2>
                     <div className="grid grid-cols-3 gap-4">
                       <p className=" flex flex-col">
-                        <strong>Name</strong> Nonso Williams
+                        <strong>Name</strong> ----
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Email</strong> nons@mail.com
+                        <strong>Email</strong> ----
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Phone No</strong> 0987654339
+                        <strong>Phone No</strong> ----
                       </p>
                     </div>
                   </div>
@@ -424,22 +307,25 @@ const LoanManagement = () => {
                     <h2 className="text-xl font-semibold mb-2">Plan Info</h2>
                     <div className="grid grid-cols-3 gap-4">
                       <p className=" flex flex-col">
-                        <strong>Weekly Repayment</strong> NGN 15,650.00
+                        <strong>Weekly Repayment</strong> ---
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Target Amount</strong> NGN 125,000.00
+                        <strong>Target Amount</strong>{" "}
+                        {formatCurrency(loanPlan?.data?.totalRepaymentAmount)}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Start Date</strong> 01/01/2025
+                        <strong>Start Date</strong>----
                       </p>
                       <p className=" flex flex-col">
-                        <strong>End Date</strong> 01/07/2025
+                        <strong>End Date</strong>----
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Interest Payable</strong> NGN 75,600.00
+                        <strong>Interest Payable</strong>
+                        {formatCurrency(loanPlan?.data?.interestAmount)}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Duration</strong> 6 Months
+                        <strong>Duration</strong>{" "}
+                        {loanPlan?.data?.repaymentDurationInMonth} Months
                       </p>
                     </div>
                   </div>
@@ -448,19 +334,23 @@ const LoanManagement = () => {
                     <h2 className="text-xl font-semibold mb-2">Guarantors</h2>
                     <div className="grid grid-cols-2 gap-4">
                       <p className=" flex flex-col">
-                        <strong>1st Guarantor</strong> Nonso Udo
-                        (udononso@gmail.com)
+                        <strong>1st Guarantor</strong>{" "}
+                        {loanPlan?.data?.guarantors[0].fullName} (
+                        {loanPlan?.data?.guarantors[0].subscriptionCode}) <br />
+                        ({loanPlan?.data?.guarantors[0].email})
                       </p>
                       <p className=" flex flex-col">
-                        <strong>2nd Guarantor</strong> Taiwo Moyo (23r456)
-                        (taiwomoyo@gmail.com)
+                        <strong>2nd Guarantor</strong>{" "}
+                        {loanPlan?.data?.guarantors[1].fullName} (
+                        {loanPlan?.data?.guarantors[1].subscriptionCode}) <br />
+                        ({loanPlan?.data?.guarantors[1].email})
                       </p>
                     </div>
                   </div>
 
                   <div>
                     <h2 className="text-xl font-semibold mb-2">Reason</h2>
-                    <p>I need it to pay my tuition fee</p>
+                    <p>{loanPlan?.data?.loanReason}</p>
                   </div>
                 </div>
 
@@ -482,7 +372,6 @@ const LoanManagement = () => {
             <h2 className="text-xl font-semibold">
               Loan {modalType} Confirmation
             </h2>
-            
           </div>
 
           <div className="">
@@ -492,7 +381,10 @@ const LoanManagement = () => {
             </p>
 
             <div className="flex  gap-4 ">
-              <button onClick={handleClose} className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#000] bg-[#F8F8FA] ">
+              <button
+                onClick={handleClose}
+                className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#000] bg-[#F8F8FA] "
+              >
                 {" "}
                 No, I’m not
               </button>

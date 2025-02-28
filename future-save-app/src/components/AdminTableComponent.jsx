@@ -29,6 +29,7 @@ import { ExportIcon, FilterIcon } from "./icons/Icons";
 import { Drawer } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import DatePickerComponent from "./DatePickerComponent";
+import { useApiGet } from "@/hooks/useApi";
 
 const AdminTableComponent = ({
   headers,
@@ -39,6 +40,16 @@ const AdminTableComponent = ({
   onAuditTrail,
   view,
 }) => {
+
+
+  const {
+    data: auditTrail,
+    isLoading: isLoadingAuditTrail,
+    isFetching,
+    refetch: refetchAuditTrail,
+  } = useApiGet(`admin/audit-trail/all`);
+
+  ///admin/audit-trail/all
   const [state, setState] = useState(false);
   const [dateValue, setDateValue] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -132,19 +143,18 @@ const AdminTableComponent = ({
             <TableHeader>
               <TableRow>
                 {headers.map((item, index) => (
-                  <TableHead key={index}>{item}</TableHead>
+                  <TableHead key={index}>{item.label}</TableHead>
                 ))}
+                <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((item) => (
+              {data?.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.plan}</TableCell>
-                  <TableCell>{item.targetAmount}</TableCell>
-                  <TableCell>{item.dateCreated}</TableCell>
-                  <TableCell>{item.weeklyAmount}</TableCell>
-                  <TableCell>{item.status}</TableCell>
+                  {headers?.map((column, colIndex) => (
+                    <TableCell className="font-semibold text-[#5b5b5b]" key={colIndex}>{item[column.value]}</TableCell>
+                  ))}
+
                   <TableCell>
                     <Button
                       onClick={view(true, item.id)}

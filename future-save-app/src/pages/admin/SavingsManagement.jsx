@@ -81,7 +81,7 @@ const SavingsManagement = () => {
         return;
       }
       console.log("btn clicked");
-
+      setLoanId(id);
       setState(open);
     };
 
@@ -97,7 +97,7 @@ const SavingsManagement = () => {
     data: loan,
     isLoading: isLoadingLoan,
     refetch: refetchLoan,
-  } = useApiGet(`loan/all?PageNumber=1&PageSize=100`);
+  } = useApiGet(`admin/savings/all?PageNumber=1&PageSize=100`);
 
   // const {
   //   data: loanPlan,
@@ -112,16 +112,21 @@ const SavingsManagement = () => {
     isFetching,
     refetch: refetchContributionPlan,
   } = useApiGet(`savingsplan?PlanId=${loanId}`);
-  const tableHeaders = [
-    "Name",
-    "Loan Type",
-    "Target Amount",
-    "Date Created",
-    "Weekly Amount",
-    "Account Status",
-    "Action",
-  ];
 
+
+
+
+
+  console.log("loanPlan", contributionPlan);
+  const tableHeaders = [
+    { label: "Name", value: "name" },
+    { label: "Contribution Plans", value: "durationInWeeks" },
+    { label: "Target Amount", value: "targetAmount" },
+    { label: "Date Created", value: "startDate" },
+    { label: "Weekly Amount", value: "weeklyAmount" },
+    { label: "Account Status", value: "planStatus" },
+    // { label: "Action", value: "action" },
+  ];
   const rawTableData = [
     {
       id: 1,
@@ -152,28 +157,33 @@ const SavingsManagement = () => {
     },
   ];
 
-  const tableData = rawTableData.map((item) => ({
+  const tableData = loan?.data?.items?.map((item) => ({
     ...item,
-    status: (
+    id: item.planId,
+    name: "--",
+    durationInWeeks: item.durationInWeeks + " Weeks",
+    targetAmount: formatCurrency(item.targetAmount),
+    weeklyAmount: formatCurrency(item.weeklyAmount),
+    planStatus: (
       <span
         className={`px-3 py-1 flex w-fit items-center gap-2 rounded-2xl  ${
-          item.status === "Approved"
+          item.planStatus === "completed"
             ? "bg-[#34C7591F]  text-[#34C759]"
-            : item.status === "Rejected"
+            : item.planStatus === "Rejected"
             ? "bg-[#FB03001F]  text-[#FB0300]"
             : "bg-[#FF790C1F]  text-[#FF790C]"
         }`}
       >
         <div
           className={`w-2 h-2 rounded-full ${
-            item.status === "Approved"
+            item.planStatus === "completed"
               ? "bg-[#34C759]"
-              : item.status === "Rejected"
+              : item.planStatus === "Rejected"
               ? "bg-[#FB0300]"
               : "bg-[#FF790C]"
           }`}
         ></div>{" "}
-        {item.status}
+        {item.planStatus}
       </span>
     ),
   }));
@@ -273,13 +283,13 @@ const SavingsManagement = () => {
                     </h2>
                     <div className="grid grid-cols-3 gap-4">
                       <p className=" flex flex-col">
-                        <strong>Name</strong> Nonso Williams
+                        <strong>Name</strong> ----
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Email</strong> nons@mail.com
+                        <strong>Email</strong> ----
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Phone No</strong> 0987654339
+                        <strong>Phone No</strong> ----
                       </p>
                     </div>
                   </div>
@@ -288,19 +298,19 @@ const SavingsManagement = () => {
                     <h2 className="text-xl font-semibold mb-2">Plan Info</h2>
                     <div className="grid grid-cols-3 gap-4">
                       <p className=" flex flex-col">
-                        <strong>Weekly Repayment</strong> NGN 15,650.00
+                        <strong>Weekly Repayment</strong> {formatCurrency(contributionPlan?.data?.weeklyAmount)}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Target Amount</strong> NGN 125,000.00
+                        <strong>Target Amount</strong>{formatCurrency(contributionPlan?.data?.targetAmount)}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Start Date</strong> 01/01/2025
+                        <strong>Start Date</strong> {contributionPlan?.data?.startDate}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>End Date</strong> 01/07/2025
+                        <strong>End Date</strong> {contributionPlan?.data?.endDate}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Dividend</strong> NGN 75,600.00
+                        <strong>Dividend</strong> {formatCurrency(contributionPlan?.data?.dividends)}
                       </p>
                     </div>
                   </div>
