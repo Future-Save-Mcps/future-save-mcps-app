@@ -11,11 +11,8 @@ import PaymentTag from "./PaymentTag";
 const LoanTabs = ({ activities = [], transactions = [] }) => {
   const [activeTab, setActiveTab] = useState("activities");
 
-  // const activities = [
-  //   { icon: "👤", text: "Your 1st Guarantor accepted", time: "1 hour ago" },
-  //   { icon: "👤", text: "Your 2nd Guarantor accepted", time: "1 day ago" },
-  //   { icon: "🎯", text: "You applied for a loan", time: "1 week ago" },
-  // ];
+  
+  
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);

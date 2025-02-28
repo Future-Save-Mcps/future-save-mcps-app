@@ -56,7 +56,7 @@ const LoginForm = () => {
       const result = await verifyOtp(watch("email"), otp);
 
       if (result.success) {
-        setLoading(true)
+        setLoading(true);
         const { accessToken } = result.data;
 
         axios.defaults.headers.common[
@@ -68,12 +68,16 @@ const LoginForm = () => {
           .then((response) => {
             localStorage.setItem("userInfo", JSON.stringify(response.data));
 
-            navigate("/user");
+            if (response.data.data.role === "Admin") {
+              window.location.href = "/admin";
+            } else {
+              window.location.href = "/user";
+            }
           })
           .catch((error) => {
             console.error("API Error:", error);
           });
-          setLoading(false)
+        setLoading(false);
       }
     } catch (error) {
       console.error("OTP verification error:", error);

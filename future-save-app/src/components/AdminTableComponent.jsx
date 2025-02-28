@@ -29,6 +29,7 @@ import { ExportIcon, FilterIcon } from "./icons/Icons";
 import { Drawer } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import DatePickerComponent from "./DatePickerComponent";
+import { useApiGet } from "@/hooks/useApi";
 
 const AdminTableComponent = ({
   headers,
@@ -43,6 +44,16 @@ const AdminTableComponent = ({
 })  => {
   // const [data, setData] = useState(initialData);
   const [activeFilter, setActiveFilter] = useState(null);
+
+
+  const {
+    data: auditTrail,
+    isLoading: isLoadingAuditTrail,
+    isFetching,
+    refetch: refetchAuditTrail,
+  } = useApiGet(`admin/audit-trail/all`);
+
+  ///admin/audit-trail/all
   const [state, setState] = useState(false);
   const [dateValue, setDateValue] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -87,16 +98,16 @@ const AdminTableComponent = ({
 
   return (
     <div className="border p-4 rounded-2xl">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap gap-4 items-center justify-between mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             onChange={(e) => onSearch?.(e.target.value)}
             placeholder="Search for savings plan by User's name"
-            className="pl-10 w-[300px]"
+            className="pl-10 max-w-[300px]"
           />
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <Button
             onClick={toggleDrawer(true)}
             variant="outline"
@@ -140,25 +151,24 @@ const AdminTableComponent = ({
         </div>
       </div>
 
-      <div className="border w-full rounded-lg">
+      <div className="border max-w-[80vw] w-full rounded-lg">
         <TableContainer style={{ overflow: "auto" }}>
           <Table>
             <TableHeader>
               <TableRow>
                 {headers.map((item, index) => (
-                  <TableHead key={index}>{item}</TableHead>
+                  <TableHead key={index}>{item.label}</TableHead>
                 ))}
+                <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((item) => (
+              {data?.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.plan}</TableCell>
-                  <TableCell>{item.targetAmount}</TableCell>
-                  <TableCell>{item.dateCreated}</TableCell>
-                  <TableCell>{item.weeklyAmount}</TableCell>
-                  <TableCell>{item.status}</TableCell>
+                  {headers?.map((column, colIndex) => (
+                    <TableCell className="font-semibold text-[#5b5b5b]" key={colIndex}>{item[column.value]}</TableCell>
+                  ))}
+
                   <TableCell>
                     <Button
                       onClick={view(true, item.id)}
