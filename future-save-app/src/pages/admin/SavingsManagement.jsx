@@ -119,7 +119,7 @@ const SavingsManagement = () => {
 
   console.log("loanPlan", contributionPlan);
   const tableHeaders = [
-    { label: "Name", value: "name" },
+    { label: "Name", value: "fullName" },
     { label: "Contribution Plans", value: "durationInWeeks" },
     { label: "Target Amount", value: "targetAmount" },
     { label: "Date Created", value: "startDate" },

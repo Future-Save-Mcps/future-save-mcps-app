@@ -45,6 +45,9 @@ const AdminTableComponent = ({
   // const [data, setData] = useState(initialData);
   const [activeFilter, setActiveFilter] = useState(null);
 
+  
+
+
 
   const {
     data: auditTrail,
@@ -171,7 +174,7 @@ const AdminTableComponent = ({
 
                   <TableCell>
                     <Button
-                      onClick={()=>view(true, item.id)}
+                      onClick={view(true, item.id)}
                       size="small"
                       variant="default"
                       className="bg-primary py-1 text-white px-4 min-w-[80px] hover:bg-[#1e3f99]"

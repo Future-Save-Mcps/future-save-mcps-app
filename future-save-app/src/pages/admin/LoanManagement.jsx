@@ -69,7 +69,7 @@ const LoanManagement = () => {
   console.log("loanPlan", loanPlan);
 
   const tableHeaders = [
-    { label: "Name", value: "name" },
+    { label: "Name", value: "fullName" },
     { label: "Loan Type", value: "loanType" },
     { label: "Target Amount", value: "totalRepaymentAmount" },
     { label: "Date Created", value: "userRepaymentStartDate" },
