@@ -28,7 +28,7 @@ const AddUser = ({ open, setOpen, onUserAdded }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div className="fixed z-50 inset-0 bg-black bg-opacity-50 flex justify-center items-center">
       <Box sx={style}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Add User</h2>

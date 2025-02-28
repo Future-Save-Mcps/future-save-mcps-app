@@ -101,7 +101,7 @@ const UserManagement = () => {
   };
 
   const userDetails = (user) => {
-    navigate(`user-management/${user.id}`, { state: user });
+    navigate(`/admin/user-management/${user.id}`, { state: user });
   };
 
   // Audit Trail Function (Dummy Example)
