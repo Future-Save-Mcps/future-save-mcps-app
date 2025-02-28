@@ -73,7 +73,7 @@ const LoanManagement = () => {
     { label: "Loan Type", value: "loanType" },
     { label: "Target Amount", value: "totalRepaymentAmount" },
     { label: "Date Created", value: "userRepaymentStartDate" },
-    { label: "Weekly Amount", value: "weeklyAmount" },
+    { label: "Weekly Amount", value: "weeklyRepaymentAmount" },
     { label: "Account Status", value: "loanStatus" },
     // { label: "Action", value: "action" },
   ];
@@ -182,6 +182,7 @@ const LoanManagement = () => {
         onExport={handleExport}
         onAuditTrail={handleAuditTrail}
         view={toggleDrawer}
+        loading={isLoadingLoan}
       />
 
       <Drawer anchor="right" open={state}>
@@ -292,13 +293,13 @@ const LoanManagement = () => {
                     </h2>
                     <div className="grid grid-cols-3 gap-4">
                       <p className=" flex flex-col">
-                        <strong>Name</strong> ----
+                        <strong>Name</strong> {loanPlan?.data?.fullName}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Email</strong> ----
+                        <strong>Email</strong> {loanPlan?.data?.emailAddress}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Phone No</strong> ----
+                        <strong>Phone No</strong> {loanPlan?.data?.phoneNumber}
                       </p>
                     </div>
                   </div>
@@ -307,17 +308,17 @@ const LoanManagement = () => {
                     <h2 className="text-xl font-semibold mb-2">Plan Info</h2>
                     <div className="grid grid-cols-3 gap-4">
                       <p className=" flex flex-col">
-                        <strong>Weekly Repayment</strong> ---
+                        <strong>Weekly Repayment</strong> {loanPlan?.data?.weeklyRepaymentAmount}
                       </p>
                       <p className=" flex flex-col">
                         <strong>Target Amount</strong>{" "}
                         {formatCurrency(loanPlan?.data?.totalRepaymentAmount)}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Start Date</strong>----
+                        <strong>Start Date</strong>{loanPlan?.data?.repaymentDurationInMonth}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>End Date</strong>----
+                        <strong>End Date</strong>{loanPlan?.data?.endDate}
                       </p>
                       <p className=" flex flex-col">
                         <strong>Interest Payable</strong>

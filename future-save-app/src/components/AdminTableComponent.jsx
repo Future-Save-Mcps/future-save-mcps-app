@@ -30,6 +30,7 @@ import { Drawer } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import DatePickerComponent from "./DatePickerComponent";
 import { useApiGet } from "@/hooks/useApi";
+import Spinner from "./Spinner";
 
 const AdminTableComponent = ({
   headers,
@@ -41,13 +42,10 @@ const AdminTableComponent = ({
   view,
   onAddUser, // Function to handle adding a user
   showAddUserButton = false,
-})  => {
+  loading ,
+}) => {
   // const [data, setData] = useState(initialData);
   const [activeFilter, setActiveFilter] = useState(null);
-
-  
-
-
 
   const {
     data: auditTrail,
@@ -100,7 +98,7 @@ const AdminTableComponent = ({
   ];
 
   return (
-    <div className="border p-4 rounded-2xl">
+    <div className="border min-h-[400px] p-4 rounded-2xl">
       <div className="flex flex-wrap gap-4 items-center justify-between mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -154,40 +152,51 @@ const AdminTableComponent = ({
         </div>
       </div>
 
-      <div className="border max-w-[80vw] w-full rounded-lg">
-        <TableContainer style={{ overflow: "auto" }}>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {headers.map((item, index) => (
-                  <TableHead key={index}>{item.label}</TableHead>
-                ))}
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data?.map((item) => (
-                <TableRow key={item.id}>
-                  {headers?.map((column, colIndex) => (
-                    <TableCell className="font-semibold text-[#5b5b5b]" key={colIndex}>{item[column.value]}</TableCell>
+      {loading ? (
+        <div className="  flex justify-center items-center min-h-[300px] ">
+          <Spinner />
+        </div>
+      ) : (
+        <div className="border max-w-[80vw] w-full rounded-lg">
+          <TableContainer style={{ overflow: "auto" }}>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {headers.map((item, index) => (
+                    <TableHead key={index}>{item.label}</TableHead>
                   ))}
-
-                  <TableCell>
-                    <Button
-                      onClick={view(true, item.id)}
-                      size="small"
-                      variant="default"
-                      className="bg-primary py-1 text-white px-4 min-w-[80px] hover:bg-[#1e3f99]"
-                    >
-                      View
-                    </Button>
-                  </TableCell>
+                  <TableHead>Action</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {data?.map((item) => (
+                  <TableRow key={item.id}>
+                    {headers?.map((column, colIndex) => (
+                      <TableCell
+                        className="font-semibold text-[#5b5b5b]"
+                        key={colIndex}
+                      >
+                        {item[column.value]}
+                      </TableCell>
+                    ))}
+
+                    <TableCell>
+                      <Button
+                        onClick={view(true, item.id)}
+                        size="small"
+                        variant="default"
+                        className="bg-primary py-1 text-white px-4 min-w-[80px] hover:bg-[#1e3f99]"
+                      >
+                        View
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
+      )}
 
       <Drawer
         anchor="right"
