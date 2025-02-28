@@ -6,12 +6,15 @@ import EmailVerification from "./EmailVerification";
 import AccountCompletion from "./AccountCompletion";
 import { useApiPost } from "../hooks/useApi";
 import FormButton from "./FormBtn";
+import { Button } from "./ui/button";
 
 const SignUpForm = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [step, setStep] = useState(Number(searchParams.get("step")) || 1);
   const email = searchParams.get("email") || "";
   const userId = searchParams.get("userId") || null;
+
+  const [selectedUserType, setSelectedUserType] = useState(null);
 
   const { post, isLoading } = useApiPost();
   const navigate = useNavigate();
@@ -33,7 +36,7 @@ const SignUpForm = () => {
 
     if (result.success && result.data) {
       setSearchParams((prevParams) => {
-        prevParams.set('step', '3');
+        prevParams.set("step", "3");
         return prevParams;
       });
       handleNext();
@@ -53,7 +56,7 @@ const SignUpForm = () => {
       lastName: formData.lastName,
       emailAddress: formData.email,
       password: formData.password,
-      role: "User",
+      role: selectedUserType,
       phoneNumber: formData.phoneNumber,
     });
 
@@ -82,92 +85,106 @@ const SignUpForm = () => {
                   Login
                 </a>
               </p>
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <FormFieldComp
-                    label="First Name"
-                    name="firstName"
-                    placeholder="First Name"
-                    register={register}
-                    validation={{ required: "First Name is required" }}
-                    errors={errors}
-                  />
-                  <FormFieldComp
-                    label="Last Name"
-                    name="lastName"
-                    placeholder="Last Name"
-                    register={register}
-                    validation={{ required: "Last Name is required" }}
-                    errors={errors}
-                  />
+
+              {!selectedUserType && (
+                <div className="flex gap-6">
+                  <Button onClick={()=>setSelectedUserType("Admin")} className="bg-white flex-1 text-xl border-2 min-h-[200px] rounded-2xl hover:bg-[#dce9f7]  border-primary p-8">
+                    Sign Up as an Admin
+                  </Button>
+                  <Button onClick={()=>setSelectedUserType("User")} className="bg-white flex-1 text-xl border-2 min-h-[200px] rounded-2xl hover:bg-[#dce9f7]  border-primary p-8">
+                    Sign Up as an User
+                  </Button>
                 </div>
-                <div className="grid grid-cols-2 gap-4 mb-4">
+              )}
+
+              {selectedUserType && (
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <FormFieldComp
+                      label="First Name"
+                      name="firstName"
+                      placeholder="First Name"
+                      register={register}
+                      validation={{ required: "First Name is required" }}
+                      errors={errors}
+                    />
+                    <FormFieldComp
+                      label="Last Name"
+                      name="lastName"
+                      placeholder="Last Name"
+                      register={register}
+                      validation={{ required: "Last Name is required" }}
+                      errors={errors}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <FormFieldComp
+                      label="Phone Number"
+                      name="phoneNumber"
+                      type="tel"
+                      placeholder="Phone Number"
+                      register={register}
+                      validation={{
+                        required: "Phone Number is required",
+                        pattern: {
+                          value: /^[0-9]{10,15}$/,
+                          message: "Phone number must be between 10-15 digits",
+                        },
+                      }}
+                      errors={errors}
+                    />
+                    <FormFieldComp
+                      label="Email"
+                      name="email"
+                      type="email"
+                      placeholder="Email"
+                      register={register}
+                      validation={{
+                        required: "Email is required",
+                        pattern: {
+                          value: /^[^@ ]+@[^@ ]+\.[^@ .]{2,}$/,
+                          message: "Enter a valid email address",
+                        },
+                      }}
+                      errors={errors}
+                    />
+                  </div>
                   <FormFieldComp
-                    label="Phone Number"
-                    name="phoneNumber"
-                    type="tel"
-                    placeholder="Phone Number"
+                    label="Password"
+                    name="password"
+                    type="password"
+                    placeholder="Password"
                     register={register}
                     validation={{
-                      required: "Phone Number is required",
-                      pattern: {
-                        value: /^[0-9]{10,15}$/,
-                        message: "Phone number must be between 10-15 digits",
+                      required: "Password is required",
+                      minLength: {
+                        value: 6,
+                        message: "Password must be at least 6 characters",
                       },
                     }}
                     errors={errors}
                   />
                   <FormFieldComp
-                    label="Email"
-                    name="email"
-                    type="email"
-                    placeholder="Email"
+                    label="Confirm Password"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Confirm Password"
                     register={register}
                     validation={{
-                      required: "Email is required",
-                      pattern: {
-                        value: /^[^@ ]+@[^@ ]+\.[^@ .]{2,}$/,
-                        message: "Enter a valid email address",
-                      },
+                      required: "Confirm Password is required",
+                      validate: (value) =>
+                        value === password || "Passwords do not match",
                     }}
                     errors={errors}
                   />
-                </div>
-                <FormFieldComp
-                  label="Password"
-                  name="password"
-                  type="password"
-                  placeholder="Password"
-                  register={register}
-                  validation={{
-                    required: "Password is required",
-                    minLength: {
-                      value: 6,
-                      message: "Password must be at least 6 characters",
-                    },
-                  }}
-                  errors={errors}
-                />
-                <FormFieldComp
-                  label="Confirm Password"
-                  name="confirmPassword"
-                  type="password"
-                  placeholder="Confirm Password"
-                  register={register}
-                  validation={{
-                    required: "Confirm Password is required",
-                    validate: (value) =>
-                      value === password || "Passwords do not match",
-                  }}
-                  errors={errors}
-                />
-                <FormButton
-                  type="submit"
-                  text="Next"
-                  isLoading={isLoading}
-                  disabled={isLoading}
-                />
-              </form>
+                  <FormButton
+                    type="submit"
+                    text="Next"
+                    isLoading={isLoading}
+                    disabled={isLoading}
+                  />
+                </form>
+              )}
             </>
           )}
           {step === 2 && (

@@ -68,7 +68,12 @@ const LoginForm = () => {
           .then((response) => {
             localStorage.setItem("userInfo", JSON.stringify(response.data));
 
-            navigate("/user");
+            if(response.data.data.role === "Admin"){
+              navigate("/admin");
+            }else{
+              navigate("/user");
+            }
+            
           })
           .catch((error) => {
             console.error("API Error:", error);

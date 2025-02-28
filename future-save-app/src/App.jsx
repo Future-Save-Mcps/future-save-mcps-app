@@ -1,10 +1,13 @@
-import React from "react";
+
+
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./Loader.css";
 
 const UserRoutes = React.lazy(() => import("./routes/UserRoutes"));
 const AdminRoutes = React.lazy(() => import("./routes/AdminRoutes"));
 const Home = React.lazy(() => import("./pages/Home"));
+const NotFound = React.lazy(() => import("./pages/NotFound")); // Import 404 Page
 import { Provider } from "react-redux";
 const Login = React.lazy(() => import("./pages/Login"));
 import { ThemeProvider, createTheme } from "@mui/material";
@@ -84,25 +87,32 @@ const theme = createTheme({
   },
 });
 
+const storedUserInfo = JSON.parse(localStorage.getItem("userInfo"));
+
 function App() {
+  useEffect(() => {
+    console.log("this is ", storedUserInfo);
+  }, [storedUserInfo]);
+
   return (
     <Provider store={store}>
       <ThemeProvider theme={theme}>
         <Router>
           <Routes>
             {/* Home route */}
-            <Route
-              path="/"
-              element={<NonProtectedLazyRoute Component={Login} />}
-            />
-            <Route
-              path="/register"
-              element={<NonProtectedLazyRoute Component={Home} />}
-            />
+            <Route path="/" element={<NonProtectedLazyRoute Component={Login} />} />
+            <Route path="/register" element={<NonProtectedLazyRoute Component={Home} />} />
 
-            {/* User and Admin routes */}
-            <Route path="user/*" element={<UserRoutes />} />
-            <Route path="admin/*" element={<AdminRoutes />} />
+            {/* Protected Routes */}
+            {storedUserInfo?.data?.role === "User" && (
+              <Route path="user/*" element={<UserRoutes />} />
+            )}
+            {storedUserInfo?.data?.role === "Admin" && (
+              <Route path="admin/*" element={<AdminRoutes />} />
+            )}
+
+            {/* 404 Not Found Page */}
+            <Route path="*" element={<NonProtectedLazyRoute Component={NotFound} />} />
           </Routes>
         </Router>
       </ThemeProvider>
