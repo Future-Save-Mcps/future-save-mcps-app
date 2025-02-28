@@ -1,6 +1,4 @@
-
-
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./Loader.css";
 
@@ -87,23 +85,45 @@ const theme = createTheme({
   },
 });
 
-const storedUserInfo = JSON.parse(localStorage.getItem("userInfo"));
+// const storedUserInfo = JSON.parse(localStorage.getItem("userInfo"));
 
 function App() {
-  useEffect(() => {
-    console.log("this is ", storedUserInfo);
-  }, [storedUserInfo]);
+  const [storedUserInfo, setStoredUserInfo] = useState(
+    JSON.parse(localStorage.getItem("userInfo"))
+  );
 
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setStoredUserInfo(JSON.parse(localStorage.getItem("userInfo")));
+      console.log(
+        " this is the ",
+        JSON.parse(localStorage.getItem("userInfo"))
+      );
+    };
+
+    // Listen for storage changes
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  console.log("Updated storedUserInfo:", storedUserInfo);
   return (
     <Provider store={store}>
       <ThemeProvider theme={theme}>
         <Router>
           <Routes>
-            {/* Home route */}
-            <Route path="/" element={<NonProtectedLazyRoute Component={Login} />} />
-            <Route path="/register" element={<NonProtectedLazyRoute Component={Home} />} />
+            <Route
+              path="/"
+              element={<NonProtectedLazyRoute Component={Login} />}
+            />
+            <Route
+              path="/register"
+              element={<NonProtectedLazyRoute Component={Home} />}
+            />
 
-            {/* Protected Routes */}
             {storedUserInfo?.data?.role === "User" && (
               <Route path="user/*" element={<UserRoutes />} />
             )}
@@ -111,8 +131,10 @@ function App() {
               <Route path="admin/*" element={<AdminRoutes />} />
             )}
 
-            {/* 404 Not Found Page */}
-            <Route path="*" element={<NonProtectedLazyRoute Component={NotFound} />} />
+            <Route
+              path="*"
+              element={<NonProtectedLazyRoute Component={NotFound} />}
+            />
           </Routes>
         </Router>
       </ThemeProvider>
