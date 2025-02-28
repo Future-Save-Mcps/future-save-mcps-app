@@ -1,4 +1,4 @@
-import { FilterIcon } from "@/components/icons/Icons";
+import { DashboardDlIcon, DashboardPendingIcon, DashboardReferIcon, DashboardTCIcon, DashboardTLIcon, DashboardTRIcon, FilterIcon } from "@/components/icons/Icons";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -144,7 +144,7 @@ const Dashboard = () => {
       subtitle: "Total Savings today",
       amount: "₦ 5,000,000.00",
       change: "+24%",
-      icon: "🎯",
+      icon: <DashboardTCIcon/>,
       color: "text-pink-500",
       bgColor: "bg-pink-100",
       changeColor: "text-green-600 bg-green-100",
@@ -154,7 +154,7 @@ const Dashboard = () => {
       subtitle: "Referral Success rate today",
       amount: "123",
       change: "-14%",
-      icon: "🔗",
+      icon: <DashboardReferIcon/>,
       color: "text-green-500",
       bgColor: "bg-green-100",
       changeColor: "text-red-600 bg-red-100",
@@ -164,7 +164,7 @@ const Dashboard = () => {
       subtitle: "Total loans disbursed today",
       amount: "₦ 1,200,000.00",
       change: "+24%",
-      icon: "💰",
+      icon: <DashboardTLIcon/>,
       color: "text-red-500",
       bgColor: "bg-red-100",
       changeColor: "text-green-600 bg-green-100",
@@ -174,7 +174,7 @@ const Dashboard = () => {
       subtitle: "Pending loan applications today",
       amount: "₦ 400,000.00",
       change: "-60%",
-      icon: "😕",
+      icon: <DashboardPendingIcon/>,
       color: "text-yellow-500",
       bgColor: "bg-yellow-100",
       changeColor: "text-red-600 bg-red-100",
@@ -184,7 +184,7 @@ const Dashboard = () => {
       subtitle: "Total registered users today",
       amount: "234",
       change: "+74%",
-      icon: "👤",
+      icon: <DashboardTRIcon/>,
       color: "text-blue-500",
       bgColor: "bg-blue-100",
       changeColor: "text-green-600 bg-green-100",
@@ -194,7 +194,7 @@ const Dashboard = () => {
       subtitle: "Defaulted loan amount today",
       amount: "₦ 100,000.00",
       change: "+90%",
-      icon: "ℹ️",
+      icon:<DashboardDlIcon/>,
       color: "text-gray-500",
       bgColor: "bg-gray-100",
       changeColor: "text-green-600 bg-green-100",
@@ -228,11 +228,13 @@ const Dashboard = () => {
           <div key={index} className="p-4 bg-white rounded-2xl border">
             <div className="flex items-center space-x-2">
               <span className={`text-xl ${stat.color}`}>{stat.icon}</span>
-              <h3 className="text-lg font-semibold">{stat.title}</h3>
+              <h3 className="text-base font-semibold">{stat.title}</h3>
             </div>
-            <p className="text-gray-500 text-sm">{stat.subtitle}</p>
+            <p className="text-[#939393] font-normal text-xs">
+              {stat.subtitle}
+            </p>
             <div className=" flex gap-4  flex-wrap mt-7 items-center">
-              <span className="text-2xl font-bold">{stat.amount}</span>
+              <span className="text-xl font-semibold">{stat.amount}</span>
               <span
                 className={`text-sm px-2 py-1 rounded-full ${stat.changeColor}`}
               >
