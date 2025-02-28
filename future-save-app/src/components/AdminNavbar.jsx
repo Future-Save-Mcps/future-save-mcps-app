@@ -10,6 +10,8 @@ import { LogoutIcon, SettingsIcon, UserIcon } from "./icons/Icons";
 import FormFieldComp from "./form/FormFieldComp";
 import FormButton from "./FormBtn";
 import { useForm } from "react-hook-form";
+import { DollarSign, Target, User } from "lucide-react";
+import clsx from "clsx";
 
 const style = {
   position: "absolute",
@@ -26,7 +28,66 @@ const style = {
 };
 
 const AdminNavbar = ({ refresh }) => {
+  const notificationsData = [
+    {
+      id: 1,
+      name: "Festus Chinonso",
+      message: "Created a savings plan",
+      type: "target",
+      read: false,
+      time: "5hrs ago",
+    },
+    {
+      id: 2,
+      name: "Chekube Rita",
+      message: "applied for a loan",
+      type: "dollar",
+      read: false,
+      time: "5hrs ago",
+    },
+    {
+      id: 3,
+      name: "Williams Chinonso",
+      message: "created an account",
+      type: "user",
+      read: true,
+      time: "5hrs ago",
+    },
+    {
+      id: 4,
+      name: "Williams Chinonso",
+      message: "created an account",
+      type: "dollar",
+      read: false,
+      time: "5hrs ago",
+    },
+  ];
+
+  const iconMap = {
+    target: <Target className="w-5 h-5" />,
+    dollar: <DollarSign className="w-5 h-5" />,
+    user: <User className="w-5 h-5" />,
+  };
+
   const navigate = useNavigate();
+  const [filter, setFilter] = useState("All");
+  const [notifications, setNotifications] = useState(notificationsData);
+
+  const filteredNotifications = notifications.filter((notification) => {
+    if (filter === "Read") return notification.read;
+    if (filter === "Unread") return !notification.read;
+    return true;
+  });
+
+  const toggleRead = (id) => {
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === id
+          ? { ...notification, read: !notification.read }
+          : notification
+      )
+    );
+  };
   const location = useLocation();
   const { patch, isLoadingPatch } = useApiPatch();
 
@@ -55,7 +116,7 @@ const AdminNavbar = ({ refresh }) => {
   };
   const handleCloseProfile = () => {
     setOpenProfile(false);
-    setOpenEdit(false)
+    setOpenEdit(false);
   };
 
   const handleLogout = () => {
@@ -169,6 +230,59 @@ const AdminNavbar = ({ refresh }) => {
                 backgroundColor: "#F8F8FA",
               }}
             />
+          </div>
+          <div className=" mt-4 w-full max-w-2xl">
+            {/* Filter Buttons */}
+            <div className="flex space-x-4 mb-4">
+              {["All", "Read", "Unread"].map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setFilter(option)}
+                  className={clsx(
+                    "px-4 py-2 rounded-full text-sm font-semibold border",
+                    filter === option
+                      ? "bg-blue-900 text-white"
+                      : "border-gray-300 text-gray-700"
+                  )}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+
+            {/* Notification List */}
+            <div className="space-y-4">
+              {filteredNotifications.length > 0 ? (
+                filteredNotifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    onClick={() => toggleRead(notification.id)}
+                    className="flex items-center justify-between p-3  cursor-pointer hover:bg-gray-100 rounded-md"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-blue-900 text-white p-3 rounded-full">
+                        {iconMap[notification.type]}
+                      </div>
+                      <p
+                        className={clsx(
+                          "text-sm",
+                          notification.read
+                            ? "text-gray-500"
+                            : "font-semibold text-gray-900"
+                        )}
+                      >
+                        {notification.name} {notification.message}
+                      </p>
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {notification.time}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-center">No notifications</p>
+              )}
+            </div>
           </div>
         </div>
       </Drawer>
@@ -313,7 +427,7 @@ const AdminNavbar = ({ refresh }) => {
               <div className="flex justify-between items-center">
                 <div className="font-[600] text-[22px]">Profile</div>
                 <button
-                  onClick={()=>setOpenEdit(true)}
+                  onClick={() => setOpenEdit(true)}
                   className="border px-4 py-1 rounded-2xl"
                 >
                   Edit
