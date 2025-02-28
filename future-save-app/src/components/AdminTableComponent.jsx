@@ -84,16 +84,16 @@ const AdminTableComponent = ({
 
   return (
     <div className="border p-4 rounded-2xl">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap gap-4 items-center justify-between mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             onChange={(e) => onSearch?.(e.target.value)}
             placeholder="Search for savings plan by User's name"
-            className="pl-10 w-[300px]"
+            className="pl-10 max-w-[300px]"
           />
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <Button
             onClick={toggleDrawer(true)}
             variant="outline"
@@ -126,7 +126,7 @@ const AdminTableComponent = ({
         </div>
       </div>
 
-      <div className="border w-full rounded-lg">
+      <div className="border max-w-[80vw] w-full rounded-lg">
         <TableContainer style={{ overflow: "auto" }}>
           <Table>
             <TableHeader>
