@@ -15,13 +15,13 @@ const UserManagement = () => {
     // setTimeout(() => setIsSuccessOpen(false), 4000);
   };
   const tableHeaders = [
-    "Name",
-    "Loan Type",
-    "Target Amount",
-    "Date Created",
-    "Weekly Amount",
-    "Account Status",
-    "Action",
+    { label: "Name", value: "name" },
+    { label: "Loan Type", value: "loanType" },
+    { label: "Target Amount", value: "totalRepaymentAmount" },
+    { label: "Date Created", value: "userRepaymentStartDate" },
+    { label: "Weekly Amount", value: "weeklyAmount" },
+    { label: "Account Status", value: "loanStatus" },
+    // { label: "Action", value: "action" },
   ];
   const rawTableData = [
     {
@@ -101,7 +101,7 @@ const UserManagement = () => {
   };
 
   const userDetails = (user) => {
-    navigate(`/user-management/${user.id}`, { state: user });
+    navigate(`user-management/${user.id}`, { state: user });
   };
 
   // Audit Trail Function (Dummy Example)
