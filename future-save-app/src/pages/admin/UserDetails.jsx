@@ -12,7 +12,7 @@ const UserDetails = () => {
   return (
     <div className="max-w-4xl mx-auto mt-8 p-6 bg-white shadow rounded-lg">
       <button onClick={() => navigate(-1)} className="text-blue-600">
-        ← Back to User Management
+         User Details
       </button>
 
       <h1 className="text-2xl font-bold mt-4">User Management</h1>
