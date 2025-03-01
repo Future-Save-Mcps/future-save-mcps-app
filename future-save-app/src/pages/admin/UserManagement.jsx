@@ -100,9 +100,24 @@ const UserManagement = () => {
     console.log("Exporting data...");
   };
 
-  const userDetails = (user) => {
-    navigate(`/admin/user-management/${user.id}`, { state: user });
-  };
+  const toggleDrawer =
+    ( open, id = null) =>
+    (event) => {
+      if (
+        event.type === "keydown" &&
+        (event.key === "Tab" || event.key === "Shift")
+      ) {
+        return;
+      }
+      console.log("btn clicked", id);
+        navigate(`/admin/user-management/${id}`);
+
+    };
+
+
+  // const userDetails = (user) => {
+  //   navigate(`/admin/user-management/${user.id}`, { state: user });
+  // };
 
   // Audit Trail Function (Dummy Example)
   const handleAuditTrail = () => {
@@ -120,7 +135,7 @@ const UserManagement = () => {
         onFilter={handleFilter}
         onExport={handleExport}
         onAuditTrail={handleAuditTrail}
-        view={userDetails}
+        view={toggleDrawer}
         onAddUser={handleAddUser} // Function to handle adding a user
         showAddUserButton={true}
       />

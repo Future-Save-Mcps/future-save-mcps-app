@@ -119,7 +119,7 @@ const SavingsManagement = () => {
 
   console.log("loanPlan", contributionPlan);
   const tableHeaders = [
-    { label: "Name", value: "name" },
+    { label: "Name", value: "fullName" },
     { label: "Contribution Plans", value: "durationInWeeks" },
     { label: "Target Amount", value: "targetAmount" },
     { label: "Date Created", value: "startDate" },
@@ -223,6 +223,7 @@ const SavingsManagement = () => {
         onExport={handleExport}
         onAuditTrail={handleAuditTrail}
         view={toggleDrawer}
+        loading={isLoadingLoan}
       />
 
       <Drawer anchor="right" open={state}>
@@ -283,13 +284,13 @@ const SavingsManagement = () => {
                     </h2>
                     <div className="grid grid-cols-3 gap-4">
                       <p className=" flex flex-col">
-                        <strong>Name</strong> ----
+                        <strong>Name</strong> {contributionPlan?.data?.fullName}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Email</strong> ----
+                        <strong>Email</strong> {contributionPlan?.data?.emailAddress}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Phone No</strong> ----
+                        <strong>Phone No</strong> {contributionPlan?.data?.phoneNumber}
                       </p>
                     </div>
                   </div>
