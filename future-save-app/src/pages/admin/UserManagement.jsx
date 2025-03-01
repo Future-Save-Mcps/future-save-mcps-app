@@ -101,7 +101,7 @@ const UserManagement = () => {
   };
 
   const toggleDrawer =
-    ( open, id = null) =>
+    (open, id = null) =>
     (event) => {
       if (
         event.type === "keydown" &&
@@ -110,10 +110,8 @@ const UserManagement = () => {
         return;
       }
       console.log("btn clicked", id);
-        navigate(`/admin/user-management/${id}`);
-
+      navigate(`/admin/user_management/${id}`, { state: id });
     };
-
 
   // const userDetails = (user) => {
   //   navigate(`/admin/user-management/${user.id}`, { state: user });
