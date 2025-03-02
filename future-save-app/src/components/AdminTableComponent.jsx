@@ -42,7 +42,7 @@ const AdminTableComponent = ({
   view,
   onAddUser, // Function to handle adding a user
   showAddUserButton = false,
-  loading ,
+  loading,
 }) => {
   // const [data, setData] = useState(initialData);
   const [activeFilter, setActiveFilter] = useState(null);
@@ -163,9 +163,11 @@ const AdminTableComponent = ({
               <TableHeader>
                 <TableRow>
                   {headers.map((item, index) => (
-                    <TableHead key={index}>{item.label}</TableHead>
+                    <TableHead className="whitespace-nowrap" key={index}>
+                      {item.label}
+                    </TableHead>
                   ))}
-                  <TableHead>Action</TableHead>
+                  <TableHead className="whitespace-nowrap">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -173,7 +175,7 @@ const AdminTableComponent = ({
                   <TableRow key={item.id}>
                     {headers?.map((column, colIndex) => (
                       <TableCell
-                        className="font-semibold text-[#5b5b5b]"
+                        className="font-semibold whitespace-nowrap text-[#5b5b5b]"
                         key={colIndex}
                       >
                         {item[column.value]}

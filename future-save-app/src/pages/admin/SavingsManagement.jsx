@@ -113,10 +113,6 @@ const SavingsManagement = () => {
     refetch: refetchContributionPlan,
   } = useApiGet(`savingsplan?PlanId=${loanId}`);
 
-
-
-
-
   console.log("loanPlan", contributionPlan);
   const tableHeaders = [
     { label: "Name", value: "fullName" },
@@ -160,7 +156,7 @@ const SavingsManagement = () => {
   const tableData = loan?.data?.items?.map((item) => ({
     ...item,
     id: item.planId,
-    name: "--",
+    startDate: formatDate(item.startDate),
     durationInWeeks: item.durationInWeeks + " Weeks",
     targetAmount: formatCurrency(item.targetAmount),
     weeklyAmount: formatCurrency(item.weeklyAmount),
@@ -287,10 +283,12 @@ const SavingsManagement = () => {
                         <strong>Name</strong> {contributionPlan?.data?.fullName}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Email</strong> {contributionPlan?.data?.emailAddress}
+                        <strong>Email</strong>{" "}
+                        {contributionPlan?.data?.emailAddress}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Phone No</strong> {contributionPlan?.data?.phoneNumber}
+                        <strong>Phone No</strong>{" "}
+                        {contributionPlan?.data?.phoneNumber}
                       </p>
                     </div>
                   </div>
@@ -299,19 +297,24 @@ const SavingsManagement = () => {
                     <h2 className="text-xl font-semibold mb-2">Plan Info</h2>
                     <div className="grid grid-cols-3 gap-4">
                       <p className=" flex flex-col">
-                        <strong>Weekly Repayment</strong> {formatCurrency(contributionPlan?.data?.weeklyAmount)}
+                        <strong>Weekly Repayment</strong>{" "}
+                        {formatCurrency(contributionPlan?.data?.weeklyAmount)}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Target Amount</strong>{formatCurrency(contributionPlan?.data?.targetAmount)}
+                        <strong>Target Amount</strong>
+                        {formatCurrency(contributionPlan?.data?.targetAmount)}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Start Date</strong> {contributionPlan?.data?.startDate}
+                        <strong>Start Date</strong>{" "}
+                        {contributionPlan?.data?.startDate}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>End Date</strong> {contributionPlan?.data?.endDate}
+                        <strong>End Date</strong>{" "}
+                        {contributionPlan?.data?.endDate}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Dividend</strong> {formatCurrency(contributionPlan?.data?.dividends)}
+                        <strong>Dividend</strong>{" "}
+                        {formatCurrency(contributionPlan?.data?.dividends)}
                       </p>
                     </div>
                   </div>

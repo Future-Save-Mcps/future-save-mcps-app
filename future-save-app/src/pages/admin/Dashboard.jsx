@@ -1,4 +1,13 @@
-import { DashboardDlIcon, DashboardPendingIcon, DashboardReferIcon, DashboardTCIcon, DashboardTLIcon, DashboardTRIcon, FilterIcon } from "@/components/icons/Icons";
+import {
+  DashboardDlIcon,
+  DashboardPendingIcon,
+  DashboardReferIcon,
+  DashboardTCIcon,
+  DashboardTLIcon,
+  DashboardTRIcon,
+  FilterIcon,
+} from "@/components/icons/Icons";
+import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,8 +20,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useApiGet } from "@/hooks/useApi";
+import { formatCurrency } from "@/utils/currencyFormatter";
 import { ChevronDown } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -124,27 +135,37 @@ const Dashboard = () => {
 
   const handleFilterChange = (option) => {
     setSelectedFilter(option);
+
     if (option === "This Year") setChartData(yearlyData);
     if (option === "This Month") setChartData(monthlyData);
     if (option === "This Week") setChartData(weeklyData);
   };
 
-  const options = [
-    "Today",
-    "Yesterday",
-    "Over the last week",
-    "Over the last month",
-    "Over the last 3 months",
-    "Over the last 1 year",
-    "Over the last 3 years",
-  ];
+  const options = ["Today", "This Week", "This Month", "This Year"];
+
+  const {
+    data: dashboardData,
+    isLoading: isLoadingDashboardData,
+    refetch: refetchDashboardData,
+    isFetching: isFerchingDashboardData,
+  } = useApiGet(`admin/dashboard?DateRange=${selected}`);
+
+  // "description": "Invalid DateRange. Allowed values are: Today, This Week, This Month, This Year."  //
+
+  useEffect(() => {
+    console.log("this", dashboardData?.data);
+  }, [dashboardData]);
+
+  // api/admin/dashboard
   const stats = [
     {
       title: "Total Contributions",
       subtitle: "Total Savings today",
-      amount: "₦ 5,000,000.00",
+      amount: formatCurrency(
+        dashboardData?.data?.metrics?.totalSavings?.value || 0
+      ),
       change: "+24%",
-      icon: <DashboardTCIcon/>,
+      icon: <DashboardTCIcon />,
       color: "text-pink-500",
       bgColor: "bg-pink-100",
       changeColor: "text-green-600 bg-green-100",
@@ -152,9 +173,9 @@ const Dashboard = () => {
     {
       title: "Refer Success Rate",
       subtitle: "Referral Success rate today",
-      amount: "123",
+      amount: dashboardData?.data?.metrics?.referralSuccessRate?.value || "0",
       change: "-14%",
-      icon: <DashboardReferIcon/>,
+      icon: <DashboardReferIcon />,
       color: "text-green-500",
       bgColor: "bg-green-100",
       changeColor: "text-red-600 bg-red-100",
@@ -162,9 +183,11 @@ const Dashboard = () => {
     {
       title: "Total Loans Disbursed",
       subtitle: "Total loans disbursed today",
-      amount: "₦ 1,200,000.00",
+      amount: formatCurrency(
+        dashboardData?.data?.metrics?.totalLoansDisbursed?.value || 0
+      ),
       change: "+24%",
-      icon: <DashboardTLIcon/>,
+      icon: <DashboardTLIcon />,
       color: "text-red-500",
       bgColor: "bg-red-100",
       changeColor: "text-green-600 bg-green-100",
@@ -172,9 +195,11 @@ const Dashboard = () => {
     {
       title: "Pending Loan Applications",
       subtitle: "Pending loan applications today",
-      amount: "₦ 400,000.00",
+      amount: formatCurrency(
+        dashboardData?.data?.metrics?.totalPendingLoan?.value || 0
+      ),
       change: "-60%",
-      icon: <DashboardPendingIcon/>,
+      icon: <DashboardPendingIcon />,
       color: "text-yellow-500",
       bgColor: "bg-yellow-100",
       changeColor: "text-red-600 bg-red-100",
@@ -182,9 +207,9 @@ const Dashboard = () => {
     {
       title: "Total Registered Users",
       subtitle: "Total registered users today",
-      amount: "234",
+      amount: dashboardData?.data?.metrics?.totalRegisteredUsers?.value || "0",
       change: "+74%",
-      icon: <DashboardTRIcon/>,
+      icon: <DashboardTRIcon />,
       color: "text-blue-500",
       bgColor: "bg-blue-100",
       changeColor: "text-green-600 bg-green-100",
@@ -192,9 +217,11 @@ const Dashboard = () => {
     {
       title: "Defaulted Loan Amount",
       subtitle: "Defaulted loan amount today",
-      amount: "₦ 100,000.00",
+      amount: formatCurrency(
+        dashboardData?.data?.metrics?.defaultedLoanAmount?.value || 0
+      ),
       change: "+90%",
-      icon:<DashboardDlIcon/>,
+      icon: <DashboardDlIcon />,
       color: "text-gray-500",
       bgColor: "bg-gray-100",
       changeColor: "text-green-600 bg-green-100",
@@ -233,14 +260,18 @@ const Dashboard = () => {
             <p className="text-[#939393] font-normal text-xs">
               {stat.subtitle}
             </p>
-            <div className=" flex gap-4  flex-wrap mt-7 items-center">
-              <span className="text-xl font-semibold">{stat.amount}</span>
-              <span
+            {isLoadingDashboardData || isFerchingDashboardData ? (
+              <Spinner />
+            ) : (
+              <div className=" flex gap-4  flex-wrap mt-7 items-center">
+                <span className="text-xl font-semibold">{stat.amount}</span>
+                {/* <span
                 className={`text-sm px-2 py-1 rounded-full ${stat.changeColor}`}
               >
                 {stat.change}
-              </span>
-            </div>
+              </span> */}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -248,7 +279,7 @@ const Dashboard = () => {
       <div className="p-4 bg-white rounded-lg mt-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Total Revenue</h2>
-          <DropdownMenu>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center space-x-2">
                 <FilterIcon className="w-4 h-4" />
@@ -266,7 +297,7 @@ const Dashboard = () => {
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
         </div>
 
         <div className="w-full h-80">
