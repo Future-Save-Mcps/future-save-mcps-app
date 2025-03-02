@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 const SuccessModal = ({ open, setOpen }) => {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div className="fixed z-30 inset-0 bg-black bg-opacity-50 flex justify-center items-center">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}

@@ -1,6 +1,7 @@
 import AddUser from "@/components/AddUser";
 import AdminTableComponent from "@/components/AdminTableComponent";
 import SuccessModal from "@/components/SuccessModal";
+import { useApiGet } from "@/hooks/useApi";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -9,18 +10,27 @@ const UserManagement = () => {
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const navigate = useNavigate();
 
+  const {
+    data: loan,
+    isLoading: isLoadingLoan,
+    refetch: refetchLoan,
+  } = useApiGet(`admin/user-management-all-users`);
+
+
   const handleUserAdded = () => {
     setIsModalOpen(false);
     setIsSuccessOpen(true);
     // setTimeout(() => setIsSuccessOpen(false), 4000);
   };
+
+  console.log(loan);
   const tableHeaders = [
-    { label: "Name", value: "name" },
-    { label: "Loan Type", value: "loanType" },
-    { label: "Target Amount", value: "totalRepaymentAmount" },
-    { label: "Date Created", value: "userRepaymentStartDate" },
-    { label: "Weekly Amount", value: "weeklyAmount" },
-    { label: "Account Status", value: "loanStatus" },
+    { label: "Name", value: "firstName" },
+    { label: "Email Address", value: "email" },
+    { label: "Phone Number", value: "phoneNumber" },
+    // { label: "Last login", value: "userRepaymentStartDate" },
+    // { label: "Weekly Amount", value: "weeklyAmount" },
+    { label: "Account Status", value: "isActive" },
     // { label: "Action", value: "action" },
   ];
   const rawTableData = [
@@ -53,28 +63,28 @@ const UserManagement = () => {
     },
   ];
 
-  const tableData = rawTableData.map((item) => ({
+  const tableData = loan?.data?.items.map((item) => ({
     ...item,
-    status: (
+    isActive: (
       <span
         className={`px-3 py-1 flex w-fit items-center gap-2 rounded-2xl  ${
-          item.status === "Approved"
+          item.isActive === true
             ? "bg-[#34C7591F]  text-[#34C759]"
-            : item.status === "Rejected"
-            ? "bg-[#FB03001F]  text-[#FB0300]"
-            : "bg-[#FF790C1F]  text-[#FF790C]"
+            // : item.isActive === "Rejected"
+            // ? "bg-[#FB03001F]  text-[#FB0300]"
+            : "bg-[#F7F7F7]  text-[#939393]"
         }`}
       >
         <div
           className={`w-2 h-2 rounded-full ${
-            item.status === "Approved"
+            item.isActive === true
               ? "bg-[#34C759]"
-              : item.status === "Rejected"
-              ? "bg-[#FB0300]"
-              : "bg-[#FF790C]"
+              // : item.isActive === "Rejected"
+              // ? "bg-[#FB0300]"
+              : "bg-[#939393]"
           }`}
         ></div>
-        {item.status}
+        {item.isActive? "Active" : "InActive"}
       </span>
     ),
   }));
@@ -124,6 +134,7 @@ const UserManagement = () => {
   const handleAddUser = () => {
     setIsModalOpen(true); // Open the modal
   };
+
   return (
     <div>
       <AdminTableComponent
