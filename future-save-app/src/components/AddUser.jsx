@@ -1,17 +1,48 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { useApiPost } from "@/hooks/useApi";
 
 const AddUser = ({ open, setOpen, onUserAdded }) => {
+  const { post, isLoading } = useApiPost();
+  
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+  });
+
   if (!open) return null; // Hide modal if not open
 
   const handleClose = () => {
     setOpen(false);
   };
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onUserAdded(); // Trigger success modal
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+
+    try {
+      const result = await post("admin/add-user-by-admin", {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        emailAddress: formData.email,
+        phoneNumber: formData.phoneNumber,
+      });
+
+      if (result.success && result.data) {
+        onUserAdded(); // Trigger success modal
+        setOpen(false); // Close modal after success
+      }
+    } catch (error) {
+      console.error("Error adding user:", error);
+    }
+  };
+
   const style = {
     position: "fixed",
     top: "50%",
@@ -47,47 +78,64 @@ const AddUser = ({ open, setOpen, onUserAdded }) => {
 
         {/* Add User Form */}
         <form onSubmit={handleSubmit}>
-          <label htmlFor="">
+          <label>
             First Name
-          <input
-            type="text"
-            placeholder="Enter user first name"
-            className="w-full p-2 border rounded-md mb-4"
-          />
-
+            <input
+              type="text"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              placeholder="Enter user first name"
+              className="w-full p-2 border rounded-md mb-4"
+              required
+            />
           </label>
-          <label htmlFor="">
+
+          <label>
             Last Name
-          <input
-            type="text"
-            placeholder="Enter user last name"
-            className="w-full p-2 border rounded-md mb-4"
-          />
-
+            <input
+              type="text"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              placeholder="Enter user last name"
+              className="w-full p-2 border rounded-md mb-4"
+              required
+            />
           </label>
-          <label htmlFor="">
+
+          <label>
             Phone number
-          <input
-            type="text"
-            placeholder="Enter user phone number"
-            className="w-full p-2 border rounded-md mb-4"
-          />
-
+            <input
+              type="text"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              placeholder="Enter user phone number"
+              className="w-full p-2 border rounded-md mb-4"
+              required
+            />
           </label>
-          <label htmlFor="">
+
+          <label>
             Email Address
-          <input
-            type="text"
-            placeholder="Enter user email address"
-            className="w-full p-2 border rounded-md mb-4"
-          />
-
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Enter user email address"
+              className="w-full p-2 border rounded-md mb-4"
+              required
+            />
           </label>
+
           <button
             type="submit"
             className="w-full bg-[#041F62] text-white py-2 rounded-md"
+            disabled={isLoading}
           >
-            Add User
+            {isLoading ? "Adding..." : "Add User"}
           </button>
         </form>
       </Box>

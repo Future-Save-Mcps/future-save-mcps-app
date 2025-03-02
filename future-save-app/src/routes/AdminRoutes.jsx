@@ -15,7 +15,7 @@ const AdminRoutes = () => (
       <Route index element={<LazyRoute Component={Dashboard} />} />
       <Route path="settings" element={<LazyRoute Component={Settings} />} />
       <Route path="user_management" element={<LazyRoute Component={UserManagement} />} />
-      <Route path="user-management/:id" element={<UserDetails />} />
+      <Route path="user_management/:id" element={<UserDetails />} />
       <Route path="savings_management" element={<LazyRoute Component={SavingsManagement} />} />
       <Route path="loan_management" element={<LazyRoute Component={LoanManagement} />} />
 
