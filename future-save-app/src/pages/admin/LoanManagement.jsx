@@ -111,8 +111,9 @@ const LoanManagement = () => {
   const tableData = loan?.data?.items?.map((item) => ({
     ...item,
     id: item.loanApplicationId,
-    name: "--",
-    weeklyAmount: "-----",
+    userRepaymentStartDate: formatDate(item.userRepaymentStartDate),
+    totalRepaymentAmount: formatCurrency(item.totalRepaymentAmount),
+    weeklyRepaymentAmount: formatCurrency(item.weeklyRepaymentAmount),
     loanStatus: (
       <span
         className={`px-3 py-1 flex w-fit items-center gap-2 rounded-2xl  ${
@@ -308,17 +309,20 @@ const LoanManagement = () => {
                     <h2 className="text-xl font-semibold mb-2">Plan Info</h2>
                     <div className="grid grid-cols-3 gap-4">
                       <p className=" flex flex-col">
-                        <strong>Weekly Repayment</strong> {loanPlan?.data?.weeklyRepaymentAmount}
+                        <strong>Weekly Repayment</strong>{" "}
+                        {loanPlan?.data?.weeklyRepaymentAmount}
                       </p>
                       <p className=" flex flex-col">
                         <strong>Target Amount</strong>{" "}
                         {formatCurrency(loanPlan?.data?.totalRepaymentAmount)}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>Start Date</strong>{loanPlan?.data?.repaymentDurationInMonth}
+                        <strong>Start Date</strong>
+                        {loanPlan?.data?.repaymentDurationInMonth}
                       </p>
                       <p className=" flex flex-col">
-                        <strong>End Date</strong>{loanPlan?.data?.endDate}
+                        <strong>End Date</strong>
+                        {loanPlan?.data?.endDate}
                       </p>
                       <p className=" flex flex-col">
                         <strong>Interest Payable</strong>
