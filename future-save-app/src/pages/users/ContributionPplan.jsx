@@ -26,6 +26,8 @@ import { generateWeekOptions } from "../../utils/weeksOptionGenerator";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../../components/Spinner";
 import { getUserData } from "../../utils/getUserData";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 const style = {
   position: "absolute",
   top: "50%",
@@ -602,17 +604,30 @@ const ContributionPplan = () => {
               errors={errors}
             />
 
-            <FormFieldComp
-              label="Start Date"
+            <Controller
               name="startDate"
-              type="date"
-              register={register}
-              validation={{
+              control={control}
+              rules={{
                 required: "Start date is required",
+                validate: (value) => {
+                  const selectedDate = new Date(value);
+                  return (
+                    selectedDate.getDay() === 1 || "Please select a Monday."
+                  );
+                },
               }}
-              errors={errors}
+              render={({ field }) => (
+                <DatePicker
+                  {...field}
+                  selected={field.value}
+                  onChange={(date) => field.onChange(date)}
+                  filterDate={(date) => date.getDay() === 1} // Allow only Mondays
+                  dateFormat="yyyy-MM-dd"
+                  placeholderText="Select a Monday"
+                  className="border border-gray-300 p-2 rounded-md"
+                />
+              )}
             />
-
             <div className="mb-4 f">
               <div className="lex items-center">
                 <Controller

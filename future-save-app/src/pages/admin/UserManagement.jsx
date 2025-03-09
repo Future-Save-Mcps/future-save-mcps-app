@@ -33,35 +33,6 @@ const UserManagement = () => {
     { label: "Account Status", value: "isActive" },
     // { label: "Action", value: "action" },
   ];
-  const rawTableData = [
-    {
-      id: 1,
-      name: "Williams Elum",
-      plan: "Thrift Loan",
-      targetAmount: "₦ 300,000.00",
-      dateCreated: "12/05/2025",
-      weeklyAmount: "₦ 5,000.00",
-      status: "Approved",
-    },
-    {
-      id: 2,
-      name: "Williams Elum",
-      plan: "Premium Loan",
-      targetAmount: "₦ 300,000.00",
-      dateCreated: "12/05/2025",
-      weeklyAmount: "₦ 5,000.00",
-      status: "Rejected",
-    },
-    {
-      id: 3,
-      name: "Williams Elum",
-      plan: "Premium Loan",
-      targetAmount: "₦ 300,000.00",
-      dateCreated: "12/05/2025",
-      weeklyAmount: "₦ 5,000.00",
-      status: "Pending",
-    },
-  ];
 
   const tableData = loan?.data?.items.map((item) => ({
     ...item,
