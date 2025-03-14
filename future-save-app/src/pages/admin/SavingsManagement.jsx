@@ -10,7 +10,7 @@
 
 import AdminTableComponent from "@/components/AdminTableComponent";
 import { Box, Drawer, Modal } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import Spinner from "@/components/Spinner";
 import OngoingCompletedCard from "@/components/Cards/OngoingCompletedCard";
@@ -25,6 +25,7 @@ import { Controller, useForm } from "react-hook-form";
 import FormButton from "@/components/FormBtn";
 import FormFieldComp from "@/components/form/FormFieldComp";
 import { generateWeekOptions } from "@/utils/weeksOptionGenerator";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const style = {
   position: "absolute",
@@ -41,8 +42,11 @@ const style = {
 };
 
 const SavingsManagement = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [state, setState] = useState(false);
-  const [loanId, setLoanId] = useState(null);
+  const [loanId, setLoanId] = useState(searchParams.get("id"));
+  
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
   const { post, isLoading } = useApiPost();
@@ -71,20 +75,16 @@ const SavingsManagement = () => {
     };
   };
 
-  const toggleDrawer =
-    (open, id = null) =>
-    (event) => {
-      if (
-        event.type === "keydown" &&
-        (event.key === "Tab" || event.key === "Shift")
-      ) {
-        return;
-      }
-      console.log("btn clicked");
-      setLoanId(id);
-      setState(open);
-    };
+  
+  useEffect(() => {
+    if (loanId) {
+      setState(true);
+    }
+  }, [loanId]);
 
+  const toggleDrawer = (id) => {
+    window.location.href = `/admin/savings_management?id=${id}`;
+  };
   const handleOpenPaymentModal = (type) => {
     setPaymentModalType(type);
     setOpenPaymentModal(true);
@@ -227,7 +227,7 @@ const SavingsManagement = () => {
           <div className=" p-4  bg-white  sticky top-0 flex justify-between mb-8 items-center ">
             <h2 className="text-[24px] font-[700]">Plan Details</h2>
             <CloseIcon
-              onClick={toggleDrawer(false)}
+              onClick={()=>navigate(-1)}
               sx={{
                 cursor: "pointer",
                 padding: "5px",
@@ -250,7 +250,7 @@ const SavingsManagement = () => {
                   contributionWeekPlan={`${contributionPlan?.data?.durationInWeeks} weeks Plan`}
                   status={contributionPlan?.data?.planStatus}
                   remainingDays={` ${contributionPlan?.data?.daysRemaining} days remaining`}
-                  onClick={toggleDrawer(true)}
+                  // onClick={toggleDrawer(true)}
                   percentage={
                     contributionPlan?.data?.planStatus === "completed"
                       ? 100

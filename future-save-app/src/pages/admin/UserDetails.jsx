@@ -381,7 +381,9 @@ const UserDetails = () => {
                     </td>
                     <td className="p-2 border">
                       <button
-                        onClick={toggleDrawer(true, loan.loanId, "loan")}
+                        onClick={()=>{
+                           window.location.href = `/admin/savings_management?id=${plan.savingsPlanId}`
+                        }}
                         className="bg-[#041F62] text-white px-4 py-1 rounded"
                       >
                         View
@@ -414,28 +416,26 @@ const UserDetails = () => {
               </tr>
             </thead>
             <tbody>
-              {loan?.data?.loanInformation.map((loan, index) => (
+              {loan?.data?.loanInformation.map((loans, index) => (
                 <tr key={index} className="border">
-                  <td className="p-2 border">{loan.loanPlanType}</td>
+                  <td className="p-2 border">{loans.loanPlanType}</td>
                   <td className="p-2 border">
-                    ₦ {loan.targetAmount.toLocaleString()}
+                    ₦ {loans.targetAmount.toLocaleString()}
                   </td>
-                  <td className="p-2 border">{loan.dateCreated}</td>
+                  <td className="p-2 border">{loans.dateCreated}</td>
                   <td className="p-2 border">
-                    ₦ {loan.weeklyAmount.toLocaleString()}
+                    ₦ {loans.weeklyAmount.toLocaleString()}
                   </td>
                   <td className="p-2 border">
                     <span className="bg-orange-200 text-orange-600 px-2 py-1 rounded">
-                      {loan.loanStatus}
+                      {loans.loanStatus}
                     </span>
                   </td>
                   <td className="p-2 border">
                     <button
-                      onClick={toggleDrawer(
-                        true,
-                        plan.savingsPlanId,
-                        "savingsPlanType"
-                      )}
+                       onClick={()=>{
+                        window.location.href = `/admin/loan_management?id=${loans.loanApplicationId || loans.loadId }`
+                     }}
                       className="bg-[#041F62] text-white px-4 py-1 rounded"
                     >
                       View
