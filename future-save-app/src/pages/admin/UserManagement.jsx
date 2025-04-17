@@ -16,7 +16,6 @@ const UserManagement = () => {
     refetch: refetchLoan,
   } = useApiGet(`admin/user-management-all-users`);
 
-
   const handleUserAdded = () => {
     setIsModalOpen(false);
     setIsSuccessOpen(true);
@@ -41,21 +40,21 @@ const UserManagement = () => {
         className={`px-3 py-1 flex w-fit items-center gap-2 rounded-2xl  ${
           item.isActive === true
             ? "bg-[#34C7591F]  text-[#34C759]"
-            // : item.isActive === "Rejected"
-            // ? "bg-[#FB03001F]  text-[#FB0300]"
-            : "bg-[#F7F7F7]  text-[#939393]"
+            : // : item.isActive === "Rejected"
+              // ? "bg-[#FB03001F]  text-[#FB0300]"
+              "bg-[#F7F7F7]  text-[#939393]"
         }`}
       >
         <div
           className={`w-2 h-2 rounded-full ${
             item.isActive === true
               ? "bg-[#34C759]"
-              // : item.isActive === "Rejected"
-              // ? "bg-[#FB0300]"
-              : "bg-[#939393]"
+              : // : item.isActive === "Rejected"
+                // ? "bg-[#FB0300]"
+                "bg-[#939393]"
           }`}
         ></div>
-        {item.isActive? "Active" : "InActive"}
+        {item.isActive ? "Active" : "InActive"}
       </span>
     ),
   }));
@@ -81,18 +80,9 @@ const UserManagement = () => {
     console.log("Exporting data...");
   };
 
-  const toggleDrawer =
-    (open, id = null) =>
-    (event) => {
-      if (
-        event.type === "keydown" &&
-        (event.key === "Tab" || event.key === "Shift")
-      ) {
-        return;
-      }
-      console.log("btn clicked", id);
-      navigate(`/admin/user_management/${id}`, { state: id });
-    };
+  const toggleDrawer = (id) => {
+    navigate(`/admin/user_management/${id}`, { state: id });
+  };
 
   // const userDetails = (user) => {
   //   navigate(`/admin/user-management/${user.id}`, { state: user });

@@ -1,6 +1,6 @@
 import AdminTableComponent from "@/components/AdminTableComponent";
 import { Box, Drawer, Modal } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import Spinner from "@/components/Spinner";
 import OngoingCompletedCard from "@/components/Cards/OngoingCompletedCard";
@@ -10,6 +10,7 @@ import LoanTabs from "@/components/LoanTabs";
 import { formatCurrency } from "@/utils/currencyFormatter";
 import SendImg from "../../assets/send.svg";
 import Warning from "@/components/Cards/Warning";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const style = {
   position: "absolute",
@@ -26,24 +27,22 @@ const style = {
 };
 
 const LoanManagement = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+const navigate = useNavigate()
   const [state, setState] = useState(false);
-  const [loanId, setLoanId] = useState(null);
+  const [loanId, setLoanId] = useState(searchParams.get("id"));
   const [open, setOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
 
-  const toggleDrawer =
-    (open, id = null) =>
-    (event) => {
-      if (
-        event.type === "keydown" &&
-        (event.key === "Tab" || event.key === "Shift")
-      ) {
-        return;
-      }
-      console.log("btn clicked");
-      setLoanId(id);
-      setState(open);
-    };
+  useEffect(() => {
+    if (loanId) {
+      setState(true);
+    }
+  }, [loanId]);
+
+  const toggleDrawer = (id) => {
+    window.location.href = `/admin/loan_management?id=${id}`;
+  };
 
   const handleOpenPaymentModal = (type) => {
     setPaymentModalType(type);
@@ -65,8 +64,6 @@ const LoanManagement = () => {
     isFetching,
     refetch: refetchLoanPlan,
   } = useApiGet(`loan?LoanId=${loanId}`);
-
-  console.log("loanPlan", loanPlan);
 
   const tableHeaders = [
     { label: "Name", value: "fullName" },
@@ -189,9 +186,9 @@ const LoanManagement = () => {
       <Drawer anchor="right" open={state}>
         <div className=" w-[100vw] relative max-w-[700px]">
           <div className=" p-4  bg-white  sticky top-0 flex justify-between mb-8 items-center ">
-            <h2 className="text-[24px] font-[700]">Loan Details</h2>
+            <h2 className="text-[24px] font-[700]">Loan Details </h2>
             <CloseIcon
-              onClick={toggleDrawer(false)}
+              onClick={()=>navigate(-1)}
               sx={{
                 cursor: "pointer",
                 padding: "5px",
