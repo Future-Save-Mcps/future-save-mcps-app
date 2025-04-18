@@ -1,0 +1,70 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: white;
+  text-align: center;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+/* Scrollbar styling for WebKit-based browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 80px; /* Width of vertical scrollbar */
+  height: 80px; /* Height of horizontal scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #e0e0e0; /* Track (background) color */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: blue; /* Thumb (scrolling indicator) color */
+  border-radius: 10px; /* Rounded corners */
+  border: 20px solid transparent; /* To add spacing around the thumb */
+  background-clip: padding-box; /* Ensures border doesn't mess up thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: darkblue; /* Change color on hover */
+}
+
+
+
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
