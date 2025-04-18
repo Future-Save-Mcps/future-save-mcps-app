@@ -1,0 +1,1 @@
+import{j as t}from"./index-ClRCbON2.js";import{W as s}from"./MenuOpen-DMW8SU4I.js";const x=({WarningType:e,text:r})=>t.jsxs("div",{className:` p-3 flex gap-4 items-center rounded-lg mb-4 ${e==="Red"?"bg-[#FB03001A] text-[#FB0300]":e==="Yellow"?"bg-[#FFBF001A] text-[#FFBF00]":e==="Green"?"bg-[#34C7591A] text-[#34C759]":null}`,children:[t.jsx(s,{})," ",r]});export{x as W};
