@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getTokens, setTokens, clearTokens } from "../../utils/tokenManager";
-export const baseUrl = "http://16.170.252.150:5000/api/";
+export const baseUrl = "https://monolith.futuresavemcps.com/api/";
 const baseQuery = fetchBaseQuery({
   baseUrl: baseUrl,
   prepareHeaders: (headers, { getState }) => {

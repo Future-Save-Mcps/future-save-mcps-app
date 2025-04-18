@@ -5,7 +5,7 @@ import { useApiPost } from "@/hooks/useApi";
 
 const AddUser = ({ open, setOpen, onUserAdded }) => {
   const { post, isLoading } = useApiPost();
-  
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -13,30 +13,55 @@ const AddUser = ({ open, setOpen, onUserAdded }) => {
     phoneNumber: "",
   });
 
+  const [errors, setErrors] = useState({});
+
   if (!open) return null; // Hide modal if not open
 
   const handleClose = () => {
     setOpen(false);
+    setErrors({}); // Clear errors on close
   };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" }); // Clear error when user starts typing
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      newErrors.email = "Invalid email format";
+
+    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Phone number is required";
+    else if (!/^\d{10,15}$/.test(formData.phoneNumber))
+      newErrors.phoneNumber = "Phone number must be between 10-15 digits";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // Form is valid if there are no errors
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
+    e.preventDefault();
+
+    if (!validateForm()) return; // Stop if validation fails
 
     try {
-      const result = await post("admin/add-user-by-admin", {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        emailAddress: formData.email,
-        phoneNumber: formData.phoneNumber,
+      const result = await post("admin/user-by-admin", {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        emailAddress: formData.email.trim(),
+        phoneNumber: formData.phoneNumber.trim(),
       });
 
       if (result.success && result.data) {
-        onUserAdded(); // Trigger success modal
-        setOpen(false); // Close modal after success
+        onUserAdded();
+        setOpen(false);
+        setFormData({ firstName: "", lastName: "", email: "", phoneNumber: "" });
+        setErrors({}); // Clear errors on success
       }
     } catch (error) {
       console.error("Error adding user:", error);
@@ -86,9 +111,9 @@ const AddUser = ({ open, setOpen, onUserAdded }) => {
               value={formData.firstName}
               onChange={handleChange}
               placeholder="Enter user first name"
-              className="w-full p-2 border rounded-md mb-4"
-              required
+              className="w-full p-2 border rounded-md mb-1"
             />
+            {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
           </label>
 
           <label>
@@ -99,9 +124,9 @@ const AddUser = ({ open, setOpen, onUserAdded }) => {
               value={formData.lastName}
               onChange={handleChange}
               placeholder="Enter user last name"
-              className="w-full p-2 border rounded-md mb-4"
-              required
+              className="w-full p-2 border rounded-md mb-1"
             />
+            {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
           </label>
 
           <label>
@@ -112,9 +137,9 @@ const AddUser = ({ open, setOpen, onUserAdded }) => {
               value={formData.phoneNumber}
               onChange={handleChange}
               placeholder="Enter user phone number"
-              className="w-full p-2 border rounded-md mb-4"
-              required
+              className="w-full p-2 border rounded-md mb-1"
             />
+            {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber}</p>}
           </label>
 
           <label>
@@ -125,14 +150,14 @@ const AddUser = ({ open, setOpen, onUserAdded }) => {
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter user email address"
-              className="w-full p-2 border rounded-md mb-4"
-              required
+              className="w-full p-2 border rounded-md mb-1"
             />
+            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
           </label>
 
           <button
             type="submit"
-            className="w-full bg-[#041F62] text-white py-2 rounded-md"
+            className="w-full bg-[#041F62] text-white py-2 rounded-md mt-2"
             disabled={isLoading}
           >
             {isLoading ? "Adding..." : "Add User"}

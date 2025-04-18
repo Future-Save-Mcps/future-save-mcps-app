@@ -68,18 +68,25 @@ const UserDetails = () => {
   const navigate = useNavigate();
 
   const {
-    data: loanPlan,
-    isLoading: isLoadingLoanPlan,
-    isFetching,
-    refetch: refetchLoanPlan,
-  } = useApiGet(`loan?LoanId=${loanId}`);
-
-  const {
     data: contributionPlan,
     isLoading: isLoadingContributionPlan,
-    // isFetching,
+    isFetching,
+
     refetch: refetchContributionPlan,
-  } = useApiGet(`savingsplan?PlanId=${loanId}`);
+  } = useApiGet(planId ? `savingsplan?PlanId=${planId}` : null, {
+    enabled: false, // 🚀 Prevent fetching on page mount
+  });
+
+  // 🚀 Fetch loan details ONLY when `loanId` is set
+  const {
+    data: loanPlan,
+    isLoading: isLoadingLoanPlan ,
+    // isFetching,
+
+    refetch: refetchLoanPlan,
+  } = useApiGet(loanId ? `loan?LoanId=${loanId}` : null, {
+    enabled: false, // 🚀 Prevent fetching on page mount
+  });
 
   const {
     data: loan,
@@ -129,7 +136,7 @@ const UserDetails = () => {
       savingsPlanId: loanId,
       amount: data.weeklyAmount,
       paymentType: data.paymentType,
-      offlinePaymentType: ""
+      offlinePaymentType: "",
     };
 
     const response = await post(`admin/make-offline-payment`, formData);
@@ -138,29 +145,32 @@ const UserDetails = () => {
       refetch();
       handleClose();
     }
-
   };
 
-  const toggleDrawer =
-    (open, id = null, type = "savings") =>
-    (event) => {
-      if (
-        event.type === "keydown" &&
-        (event.key === "Tab" || event.key === "Shift")
-      ) {
-        return;
-      }
+  const toggleDrawer = (open, id = null, type = "savings") => () => {
+    if (type === "savings") {
+      setPlanId(id);
+      setLoanId(null);
+      refetchContributionPlan(); // 🚀 Fetch savings data only when opening
+    } else {
+      setLoanId(id);
+      setPlanId(null);
+      refetchLoanPlan(); // 🚀 Fetch loan data only when opening
+    }
+    setState(open);
+  };
+  // Refetch data when planId or loanId changes
+  useEffect(() => {
+    if (planId) {
+      refetchContributionPlan();
+    }
+  }, [planId]);
 
-      if (type === "savings") {
-        setPlanId(id);
-        setLoanId(null);
-      } else {
-        setLoanId(id);
-        setPlanId(null);
-      }
-
-      setState(open);
-    };
+  useEffect(() => {
+    if (loanId) {
+      refetchLoanPlan();
+    }
+  }, [loanId]);
   const weeklyAmount = watch("weeklyAmount", 0);
   const planWeeks = parseInt(savingsPlan || 0, 10);
   // Calculate targetAmount whenever weeklyAmount or savingsPlan changes
