@@ -1,9 +1,8 @@
 import React from 'react';
 import logo from '../assets/logo.svg';
-
 const SidePanel = ({ currentSlide, slides }) => {
   const slide = slides[currentSlide]; // Get current slide data
-
+console.log(slide);
   return (
     <div className="flex flex-col justify-between items-center h-screen p-6 text-white">
       {/* Logo */}
