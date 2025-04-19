@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import LockIcon from "../../assets/LockIcon.svg"
+import LockIcon from "../../assets/lockIcon.svg"
 import Security from '@/components/SettingsPages/Security';
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("Security Settings");
