@@ -39,7 +39,11 @@ const Account = () => {
     },
     { name: "Refer and Earn", Icon: ReferIcon, component: <ReferAndEarn /> },
     { name: "Contact Us", Icon: Contact, component: <ContactUs /> },
-    {name: "Subscription", Icon: SubscriptionIcon, component: <Subscription />}
+    {
+      name: "Subscription",
+      Icon: SubscriptionIcon,
+      component: <Subscription />,
+    },
   ];
 
   const renderContent = () => {
