@@ -10,7 +10,7 @@ import Profile from "../../assets/profile.svg";
 import ReferIcon from "../../assets/referIcon.svg";
 import AccountIcon from "../../assets/account.svg";
 import Contact from "../../assets/contact.svg";
-import SubscriptionIcon from "../../assets/subIcon.svg";
+import SubscriptionIcon from "../../assets/SubIcon.svg";
 import Bank from "../../assets/bank.svg";
 import { useApiGet } from "../../hooks/useApi";
 import Subscription from "../../components/AccountPages/Subscription";
