@@ -13,7 +13,7 @@ import LoanTabs from "../../components/LoanTabs";
 import { Controller, useForm } from "react-hook-form";
 import { useApiGet } from "../../hooks/useApi";
 import AplicationForm from "../../components/ApplicationForm";
-import NoLoan from "../../assets/noloan.svg";
+import NoLoan from "../../assets/NoLoan.svg";
 import Spinner from "../../components/Spinner";
 import { formatCurrency } from "../../utils/currencyFormatter";
 const style = {
