@@ -9,6 +9,8 @@ import { useApiLogin } from "../hooks/useApi";
 import FormButton from "./FormBtn";
 import axios from "axios";
 import { baseUrl } from "../features/api/apiSlice";
+import logo from '../assets/logo.svg';
+
 
 const LoginForm = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -100,6 +102,9 @@ const LoginForm = () => {
   return (
     <div className="flex w-[100%] ">
       <div className=" m-auto flex-1 mt-10 px-[10%]">
+         <div className="bg-white flex justify-center p-2 rounded-xl font-bold text-xl my-6">
+                <img src={logo} alt="Logo" />
+              </div>
         <div>
           {step === 1 && (
             <>
@@ -161,6 +166,7 @@ const LoginForm = () => {
                 <FormButton
                   type="submit"
                   text="Next"
+                  // width="100%"
                   isLoading={isInitiateLoading}
                   disabled={isInitiateLoading}
                 />

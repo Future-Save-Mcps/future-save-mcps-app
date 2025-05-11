@@ -7,6 +7,7 @@ import AccountCompletion from "./AccountCompletion";
 import { useApiPost } from "../hooks/useApi";
 import FormButton from "./FormBtn";
 import { Button } from "./ui/button";
+import logo from "../assets/logo.svg";
 
 const SignUpForm = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -75,6 +76,9 @@ const SignUpForm = () => {
   return (
     <div className="flex w-[100%]">
       <div className="m-auto flex-1 mt-10 px-[10%]">
+        <div className="bg-white flex justify-center p-2 rounded-xl font-bold text-xl my-6">
+          <img src={logo} alt="Logo" />
+        </div>
         <div>
           {step === 1 && (
             <>
@@ -87,12 +91,18 @@ const SignUpForm = () => {
               </p>
 
               {!selectedUserType && (
-                <div className="flex gap-6">
-                  <Button onClick={()=>setSelectedUserType("Admin")} className="bg-white flex-1 text-xl border-2 min-h-[200px] rounded-2xl hover:bg-[#dce9f7]  border-primary p-8">
+                <div className="flex flex-wrap gap-6">
+                  <Button
+                    onClick={() => setSelectedUserType("Admin")}
+                    className="bg-white flex-1 text-2xl border min-h-[200px] rounded-2xl hover:bg-[#dce9f7]  border-primary p-8"
+                  >
                     Sign Up as an Admin
                   </Button>
-                  <Button onClick={()=>setSelectedUserType("User")} className="bg-white flex-1 text-xl border-2 min-h-[200px] rounded-2xl hover:bg-[#dce9f7]  border-primary p-8">
-                    Sign Up as an User
+                  <Button
+                    onClick={() => setSelectedUserType("User")}
+                    className="bg-white flex-1 text-2xl border min-h-[200px] rounded-2xl hover:bg-[#dce9f7]  border-primary p-8"
+                  >
+                    Sign Up as a User
                   </Button>
                 </div>
               )}

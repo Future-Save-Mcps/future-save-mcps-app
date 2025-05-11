@@ -15,7 +15,7 @@ const Login = () => {
   }, []);
   return (
     <div className="md:flex-row flex-col  flex md:gap-4 h-screen md:p-4">
-      <div className="bg-primary text-[#fff] rounded-b-2xl md:rounded-xl flex-[1] flex justify-center items-center">
+      <div className="bg-primary hidden md:flex text-[#fff] rounded-b-2xl md:rounded-xl flex-[1]  justify-center items-center">
         <SidePanel currentSlide={currentSlide} slides={slides} />
       </div>
       <div className=" flex items-center  overflow-auto flex-[1.5]">
