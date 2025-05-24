@@ -91,7 +91,7 @@ const AdminNavbar = ({ refresh }) => {
   };
   const location = useLocation();
   const { patch, isLoadingPatch } = useApiPatch();
- const {
+  const {
     data: userNotif,
     isLoading: isLoadingUserNotif,
     error: errorNotif,
@@ -159,10 +159,22 @@ const AdminNavbar = ({ refresh }) => {
     return notifications?.every((notification) => notification.isRead);
   }
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (refetchNotif) {
+        console.log("Auto-refetching notifications...");
+        refetchNotif();
+      }
+    }, 4 * 60 * 1000); // 4 minutes in milliseconds
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [refetchNotif]);
+
   const getGreetingText = () => {
     switch (location.pathname) {
       case "/admin":
-        return `Hello, ${userData?.data?.firstName}`; // Default or Dashboard greeting
+        return `Hello, ${userData?.data?.firstName || ""}`; // Default or Dashboard greeting
       case "/admin/user_management":
         return "User Management";
       case "/admin/savings_management":
@@ -192,9 +204,10 @@ const AdminNavbar = ({ refresh }) => {
                 src={Bell}
                 alt=""
               />
- {!areAllNotificationsRead(userNotif?.data?.items) && (
+              {!areAllNotificationsRead(userNotif?.data?.items) && (
                 <div className="absolute w-[10px] h-[10px] right-0 rounded-full top-0 bg-[#FF5555] border-2 border-white"></div>
-              )}            </div>
+              )}{" "}
+            </div>
 
             <Popover>
               <PopoverTrigger asChild>
@@ -244,8 +257,7 @@ const AdminNavbar = ({ refresh }) => {
               }}
             />
           </div>
-                  <NotificationsComponent mockData={userNotif} refetch={refetchNotif} />
-        
+          <NotificationsComponent mockData={userNotif} refetch={refetchNotif} />
         </div>
       </Drawer>
 
