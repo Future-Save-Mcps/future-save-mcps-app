@@ -12,6 +12,7 @@ import FormButton from "./FormBtn";
 import { useForm } from "react-hook-form";
 import { DollarSign, Target, User } from "lucide-react";
 import clsx from "clsx";
+import NotificationsComponent from "./Notification";
 
 const style = {
   position: "absolute",
@@ -90,6 +91,12 @@ const AdminNavbar = ({ refresh }) => {
   };
   const location = useLocation();
   const { patch, isLoadingPatch } = useApiPatch();
+  const {
+    data: userNotif,
+    isLoading: isLoadingUserNotif,
+    error: errorNotif,
+    refetch: refetchNotif,
+  } = useApiGet("user/notification/all?PageNumber=1&PageSize=10000");
 
   const [state, setState] = useState(false);
   const { data: userData, isLoading, error, refetch } = useApiGet("user");
@@ -147,10 +154,27 @@ const AdminNavbar = ({ refresh }) => {
     }
   };
 
+  function areAllNotificationsRead(notifications) {
+    if (notifications?.length === 0) return true;
+    return notifications?.every((notification) => notification.isRead);
+  }
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (refetchNotif) {
+        console.log("Auto-refetching notifications...");
+        refetchNotif();
+      }
+    }, 4 * 60 * 1000); // 4 minutes in milliseconds
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [refetchNotif]);
+
   const getGreetingText = () => {
     switch (location.pathname) {
       case "/admin":
-        return `Hello, ${userData?.data?.firstName}`; // Default or Dashboard greeting
+        return `Hello, ${userData?.data?.firstName || ""}`; // Default or Dashboard greeting
       case "/admin/user_management":
         return "User Management";
       case "/admin/savings_management":
@@ -180,7 +204,9 @@ const AdminNavbar = ({ refresh }) => {
                 src={Bell}
                 alt=""
               />
-              <div className="absolute w-[10px] h-[10px] right-0 rounded-full top-0 bg-[#FF5555] border-2 border-white"></div>
+              {!areAllNotificationsRead(userNotif?.data?.items) && (
+                <div className="absolute w-[10px] h-[10px] right-0 rounded-full top-0 bg-[#FF5555] border-2 border-white"></div>
+              )}{" "}
             </div>
 
             <Popover>
@@ -231,59 +257,7 @@ const AdminNavbar = ({ refresh }) => {
               }}
             />
           </div>
-          <div className=" mt-4 w-full max-w-2xl">
-            {/* Filter Buttons */}
-            <div className="flex space-x-4 mb-4">
-              {["All", "Read", "Unread"].map((option) => (
-                <button
-                  key={option}
-                  onClick={() => setFilter(option)}
-                  className={clsx(
-                    "px-4 py-2 rounded-full text-sm font-semibold border",
-                    filter === option
-                      ? "bg-blue-900 text-white"
-                      : "border-gray-300 text-gray-700"
-                  )}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-
-            {/* Notification List */}
-            <div className="space-y-4">
-              {filteredNotifications.length > 0 ? (
-                filteredNotifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    onClick={() => toggleRead(notification.id)}
-                    className="flex items-center justify-between p-3  cursor-pointer hover:bg-gray-100 rounded-md"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-blue-900 text-white p-3 rounded-full">
-                        {iconMap[notification.type]}
-                      </div>
-                      <p
-                        className={clsx(
-                          "text-sm",
-                          notification.read
-                            ? "text-gray-500"
-                            : "font-semibold text-gray-900"
-                        )}
-                      >
-                        {notification.name} {notification.message}
-                      </p>
-                    </div>
-                    <span className="text-xs text-gray-400">
-                      {notification.time}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 text-center">No notifications</p>
-              )}
-            </div>
-          </div>
+          <NotificationsComponent mockData={userNotif} refetch={refetchNotif} />
         </div>
       </Drawer>
 

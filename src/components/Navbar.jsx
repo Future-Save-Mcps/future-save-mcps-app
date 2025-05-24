@@ -5,19 +5,44 @@ import { Drawer } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { getUserData } from "../utils/getUserData";
 import { useApiGet } from "../hooks/useApi";
+import NotificationsComponent from "./Notification";
 
-const Navbar = ({refresh}) => {
+const Navbar = ({ refresh }) => {
   const location = useLocation();
   const [state, setState] = React.useState(false);
   const { data: userData, isLoading, error, refetch } = useApiGet("user");
-console.log(userData?.data);
+  console.log(userData?.data);
 
-useEffect(() => {
- refetch()
-}, [refresh])
+  useEffect(() => {
+    refetch();
+  }, [refresh]);
 
+  const {
+    data: userNotif,
+    isLoading: isLoadingUserNotif,
+    error: errorNotif,
+    refetch: refetchNotif,
+  } = useApiGet("user/notification/all?PageNumber=1&PageSize=10000");
+
+  function areAllNotificationsRead(notifications) {
+    if (notifications?.length === 0) return true;
+    return notifications?.every((notification) => notification.isRead);
+  }
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (refetchNotif) {
+        console.log("Auto-refetching notifications...");
+        refetchNotif();
+      }
+    }, 4 * 60 * 1000); // 4 minutes in milliseconds
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [refetchNotif]);
 
   const toggleDrawer = (open) => (event) => {
+    refetchNotif();
     if (
       event.type === "keydown" &&
       (event.key === "Tab" || event.key === "Shift")
@@ -30,7 +55,7 @@ useEffect(() => {
   const getGreetingText = () => {
     switch (location.pathname) {
       case "/user":
-        return `Hello, ${userData?.data?.firstName}`; // Default or Dashboard greeting
+        return `Hello, ${userData?.data?.firstName || ""}`; // Default or Dashboard greeting
       case "/user/contribution_plan":
         return "Contribution Plans";
       case "/user/loan_management":
@@ -58,7 +83,9 @@ useEffect(() => {
                 src={Bell}
                 alt=""
               />
-              <div className="absolute w-[10px] h-[10px] right-0 rounded-full top-0 bg-[#FF5555] border-2 border-white"></div>
+              {!areAllNotificationsRead(userNotif?.data?.items) && (
+                <div className="absolute w-[10px] h-[10px] right-0 rounded-full top-0 bg-[#FF5555] border-2 border-white"></div>
+              )}
             </div>
             <div className="bg-[#CD2280]  rounded-full p-2">
               <span className="text-sm aspect-square h-[2.5em] text-white flex items-center justify-center">
@@ -68,7 +95,7 @@ useEffect(() => {
           </div>
         </div>
       </div>
-      <Drawer anchor="right" open={state} >
+      <Drawer anchor="right" open={state}>
         <div className="p-4 w-[100vw] max-w-[500px]">
           <div className=" flex justify-between items-center ">
             <h2 className="text-[24px] font-[700]">Notificactions</h2>
@@ -84,6 +111,7 @@ useEffect(() => {
               }}
             />
           </div>
+          <NotificationsComponent mockData={userNotif} refetch={refetchNotif} />
         </div>
       </Drawer>
     </>
