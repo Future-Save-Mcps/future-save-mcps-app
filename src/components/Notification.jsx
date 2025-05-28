@@ -100,7 +100,7 @@ export default function NotificationsComponent({ mockData, refetch }) {
   const { patch, isLoading: isLoadingPatch } = useApiPatch();
 
   const [notifications, setNotifications] = useState(
-    [...mockData.data.items]
+    [...mockData?.data?.items]
       .map((item) => ({ ...item, showFullDescription: false }))
       .sort(
         (a, b) =>

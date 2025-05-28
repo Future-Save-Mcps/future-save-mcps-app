@@ -16,6 +16,7 @@ import AplicationForm from "../../components/ApplicationForm";
 import NoLoan from "../../assets/NoLoan.svg";
 import Spinner from "../../components/Spinner";
 import { formatCurrency } from "../../utils/currencyFormatter";
+import ReusablePaystackButton from "@/components/paystack/PaystackButton";
 const style = {
   position: "absolute",
   top: "50%",
@@ -127,6 +128,18 @@ const LoanManagement = () => {
   const handleOpenPaymentModal = () => {
     setOpenPaymentModal(true);
   };
+
+  const handleSuccess = (reference) => {
+    console.log("Payment successful:", reference);
+    // setTimeout(() => {
+    // handleClosePaymentModal();
+    // }, 3000);
+  };
+
+  const handleClosePaystack = () => {
+    console.log("Payment cancelled");
+  };
+
   const handleClosePaymentModal = () => setOpenPaymentModal(false);
 
   const toggleDrawer =
@@ -561,92 +574,6 @@ const LoanManagement = () => {
           </div>
         </div>
       </Drawer>
-      {/* <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        {modalType === "Error" ? (
-          <Box sx={style}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Thrift Loan</h2>
-              <CloseIcon
-                onClick={handleClose}
-                sx={{
-                  cursor: "pointer",
-                  padding: "5px",
-                  width: "35px",
-                  height: "35px",
-                  borderRadius: "50%",
-                  backgroundColor: "#F8F8FA",
-                }}
-              />
-            </div>
-
-            <h2 className="text-lg text-center font-semibold">Error!</h2>
-            <p className="max-w-[90%] text-center m-auto my-4 text-[16px] text-[#B0B0B0] ">
-              You can not apply for this loan now because you have a similar
-              loan that has not been settled yet!
-            </p>
-
-            <img src={NotFound} width="50%" className="m-auto my-4" alt="" />
-          </Box>
-        ) : modalType === "Eligible" ? (
-          <Box sx={style}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Thrift Loan</h2>
-              <CloseIcon
-                onClick={handleClose}
-                sx={{
-                  cursor: "pointer",
-                  padding: "5px",
-                  width: "35px",
-                  height: "35px",
-                  borderRadius: "50%",
-                  backgroundColor: "#F8F8FA",
-                }}
-              />
-            </div>
-
-            <h2 className="text-lg text-center font-semibold">Error!</h2>
-            <p className="max-w-[90%] text-center m-auto my-4 text-[16px] text-[#B0B0B0] ">
-              You can not apply for this loan now because you have a similar
-              loan that has not been settled yet!
-            </p>
-
-            <img src={NotFound} width="50%" className="m-auto my-4" alt="" />
-          </Box>
-        ) : (
-          <Box sx={style}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Thrift Loan</h2>
-              <CloseIcon
-                onClick={handleClose}
-                sx={{
-                  cursor: "pointer",
-                  padding: "5px",
-                  width: "35px",
-                  height: "35px",
-                  borderRadius: "50%",
-                  backgroundColor: "#F8F8FA",
-                }}
-              />
-            </div>
-
-            <h2 className="text-lg text-center font-semibold">Thrift Loan!</h2>
-            <p className="max-w-[80%] text-center m-auto my-4 text-[16px] text-[#B0B0B0] ">
-              You are not eligible because you do not have a 25 weeks savings
-              plan yet
-            </p>
-
-            <img src={WarningImg} width="30%" className="m-auto my-4" alt="" />
-            <button className="bg-primary w-[100%] p-3 mt-6 rounded-lg text-white ">
-              Start Contribution Plan
-            </button>
-          </Box>
-        )}
-      </Modal> */}
 
       <Modal
         open={openPaymentModal}
@@ -760,12 +687,31 @@ const LoanManagement = () => {
                 </div>
               </div>
 
-              <button
+              {/* <button
                 type="submit"
                 className="w-full py-2 px-4 mt-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#00205C] hover:bg-[#001845] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00205C]"
               >
                 Make payment
-              </button>
+              </button> */}
+
+              <ReusablePaystackButton
+                afterClose={handleClosePaymentModal}
+                email={"ayo@yopmail.com"}
+                amount={
+                  Number(paymentType === "advance" ? numberOfWeeks : 1) *
+                  weeklyAmount
+                }
+                currency="NGN"
+                metadata={{
+                  event_name: "Tech Conference 2024",
+                  ticket_type: "early_bird",
+                  event_date: "2024-06-15",
+                }}
+                onSuccess={handleSuccess}
+                onClose={handleClosePaymentModal}
+                text="Make payment"
+                className="w-full py-2 px-4 mt-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#00205C] hover:bg-[#001845] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00205C]"
+              />
             </form>
           </div>
         </Box>

@@ -160,7 +160,7 @@ const Dashboard = () => {
   const stats = [
     {
       title: "Total Contributions",
-      subtitle: "Total Savings today",
+      subtitle: "Total Savings ",
       amount: formatCurrency(
         dashboardData?.data?.metrics?.totalSavings?.value || 0
       ),
@@ -172,7 +172,7 @@ const Dashboard = () => {
     },
     {
       title: "Refer Success Rate",
-      subtitle: "Referral Success rate today",
+      subtitle: "Referral Success rate ",
       amount: dashboardData?.data?.metrics?.referralSuccessRate?.value || "0",
       change: "-14%",
       icon: <DashboardReferIcon />,
@@ -182,7 +182,7 @@ const Dashboard = () => {
     },
     {
       title: "Total Loans Disbursed",
-      subtitle: "Total loans disbursed today",
+      subtitle: "Total loans disbursed ",
       amount: formatCurrency(
         dashboardData?.data?.metrics?.totalLoansDisbursed?.value || 0
       ),
@@ -194,7 +194,7 @@ const Dashboard = () => {
     },
     {
       title: "Pending Loan Applications",
-      subtitle: "Pending loan applications today",
+      subtitle: "Pending loan applications ",
       amount: formatCurrency(
         dashboardData?.data?.metrics?.totalPendingLoan?.value || 0
       ),
@@ -206,7 +206,7 @@ const Dashboard = () => {
     },
     {
       title: "Total Registered Users",
-      subtitle: "Total registered users today",
+      subtitle: "Total registered users ",
       amount: dashboardData?.data?.metrics?.totalRegisteredUsers?.value || "0",
       change: "+74%",
       icon: <DashboardTRIcon />,
@@ -216,7 +216,7 @@ const Dashboard = () => {
     },
     {
       title: "Defaulted Loan Amount",
-      subtitle: "Defaulted loan amount today",
+      subtitle: "Defaulted loan amount ",
       amount: formatCurrency(
         dashboardData?.data?.metrics?.defaultedLoanAmount?.value || 0
       ),
@@ -258,7 +258,7 @@ const Dashboard = () => {
               <h3 className="text-base font-semibold">{stat.title}</h3>
             </div>
             <p className="text-[#939393] font-normal text-xs">
-              {stat.subtitle}
+              {stat.subtitle} {selected}
             </p>
             {isLoadingDashboardData || isFerchingDashboardData ? (
               <Spinner />
