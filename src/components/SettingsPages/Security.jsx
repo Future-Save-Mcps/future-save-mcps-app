@@ -1,61 +1,60 @@
-import React from "react";
+import React, { useState } from "react";
 import FormFieldComp from "../form/FormFieldComp";
 import { useForm } from "react-hook-form";
-import FormButton from "../FormBtn";
+import { useApiPost } from "@/hooks/useApi";
+import ResetPassword from "../ResetPassword";
 
 const Security = () => {
+  const { post } = useApiPost();
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
   const {
     register,
     handleSubmit,
+    getValues,
+    reset,
     formState: { errors },
-    watch,
   } = useForm();
+
+  const onSubmit = async (data) => {
+    setSuccessMsg("");
+    setErrorMsg("");
+
+    try {
+      const response = await post("/auth/change-password", {
+        oldPassword: data.oldPassword,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      });
+
+      if (!response.ok) {
+        const error = await response;
+        setErrorMsg(error.message || "Failed to update password");
+        return;
+      }
+
+      setSuccessMsg("Password updated successfully");
+      reset()
+    } catch (error) {
+      setErrorMsg("An error occurred: " + error.message);
+    }
+  };
 
   return (
     <div>
       <div className="font-[600] text-[22px]">Security Settings</div>
-      <div className="  mt-10 w-[70%]">
-        <form action="">
-          <div className="grid   gap-4">
+      <div className="mt-10 w-[70%]">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid gap-4">
             <FormFieldComp
               label="Current Password"
-              name="password"
+              name="oldPassword"
               type="password"
               placeholder="current password"
               register={register}
               validation={{
-                required: "Password is required",
-                minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters",
-                },
-              }}
-              errors={errors}
-            />
-          </div>
-          <FormFieldComp
-              label="New Password"
-              name="password"
-              type="password"
-              placeholder="new password"
-              register={register}
-              validation={{
-                required: "Password is required",
-                minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters",
-                },
-              }}
-              errors={errors}
-            />
-            <FormFieldComp
-              label="Confirm Password"
-              name="password"
-              type="password"
-              placeholder="confirm password"
-              register={register}
-              validation={{
-                required: "Password is required",
+                required: "Current password is required",
                 minLength: {
                   value: 6,
                   message: "Password must be at least 6 characters",
@@ -64,13 +63,46 @@ const Security = () => {
               errors={errors}
             />
 
-            <div className="">
-            <button 
-            className="w-full bg-[#041F62] rounded-lg py-4 text-white mt-4 text-2xl"
-            type="submit"
-            >Update</button>
-            </div>
-            
+            <FormFieldComp
+              label="New Password"
+              name="newPassword"
+              type="password"
+              placeholder="new password"
+              register={register}
+              validation={{
+                required: "New password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+              }}
+              errors={errors}
+            />
+
+            <FormFieldComp
+              label="Confirm Password"
+              name="confirmPassword"
+              type="password"
+              placeholder="confirm password"
+              register={register}
+              validation={{
+                required: "Confirm password is required",
+                validate: (value) =>
+                  value === getValues("newPassword") || "Passwords do not match",
+              }}
+              errors={errors}
+            />
+          </div>
+
+
+          <div className="mt-4">
+            <button
+              className="w-full bg-[#041F62] rounded-lg py-4 text-white text-2xl"
+              type="submit"
+            >
+              Update
+            </button>
+          </div>
         </form>
       </div>
     </div>

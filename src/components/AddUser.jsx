@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useApiPost } from "@/hooks/useApi";
+import { useSelector } from "react-redux";
 
 const AddUser = ({ open, setOpen, onUserAdded }) => {
   const { post, isLoading } = useApiPost();
-
+// const token = useSelector((state) => state.accessToken)
+// console.log(token);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
