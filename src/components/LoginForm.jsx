@@ -88,13 +88,34 @@ const LoginForm = () => {
 
   const handleVerify = (otp) => {
     console.log("Entered OTP:", otp);
-    alert("Verification successful!");
+    // alert("Verification successful!");
+    setSearchParams({
+      step: 5,
+      email: searchParams.get("email"),
+      otp: otp,
+    });
+
     setStep((prevStep) => prevStep + 1);
   };
 
-  const handleResetPassword = (otp) => {
-    alert("reset successful!");
+  const handleResetPassword = () => {
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.delete("otp");
+      params.set("step", "1");
+      return params;
+    });
     setStep(1);
+  };
+  
+  const goBackToOtpStep = () => {
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.delete("otp");
+      params.set("step", "4");
+      return params;
+    });
+    setStep(4);
   };
 
   const password = watch("password");
@@ -183,7 +204,7 @@ const LoginForm = () => {
           )}
           {step === 3 && <ForgotPassword onNext={handleNext} />}
           {step === 4 && <EmailVerification onVerify={handleVerify} />}
-          {step === 5 && <ResetPassword onNext={handleResetPassword} />}
+          {step === 5 && <ResetPassword onNext={handleResetPassword} onFailure={goBackToOtpStep} />}
         </div>
       </div>
     </div>

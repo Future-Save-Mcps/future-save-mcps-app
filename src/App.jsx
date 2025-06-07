@@ -89,7 +89,7 @@ const theme = createTheme({
 
 function App() {
   const [storedUserInfo, setStoredUserInfo] = useState(
-    JSON.parse(localStorage.getItem("userInfo"))
+    JSON?.parse(localStorage.getItem("userInfo"))
   );
 
   useEffect(() => {

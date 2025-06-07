@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import FormFieldComp from "./form/FormFieldComp";
+import { useApiPost } from "@/hooks/useApi";
+import { useSearchParams } from "react-router-dom";
 
 const ForgotPassword = ({ onNext }) => {
   const {
@@ -9,11 +11,39 @@ const ForgotPassword = ({ onNext }) => {
     setValue,
     formState: { errors },
   } = useForm();
+  const { post } = useApiPost();
 
-  const onSubmit = (data) => {
-    console.log("Account Completion Data:", data);
-    onNext(); // Proceed to the next step
-  };
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const onSubmit = async (data) => {
+    setErrorMsg("");
+    setSuccessMsg("");
+    // setLoading(true);
+
+    try {
+
+      const response = await post(`/auth/forgot-password?EmailAddress=${data.email}`);
+
+      if (!response.success) {
+        const error = await response.json();
+        setErrorMsg(error.message || "Failed to process request");
+      } else {
+        setSuccessMsg("Reset instructions sent to your email");
+        setSearchParams({
+          step: 4,
+          email: data.email,
+        });
+
+        onNext(); 
+      }
+    } catch (error) {
+      setErrorMsg("An error occurred: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };  
 
   return (
     <div className="w-full   mx-auto ">

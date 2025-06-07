@@ -2,7 +2,24 @@ import React from "react";
 import Bg from "../../assets/cardBd.svg";
 import Copy from "../../assets/copy.svg";
 import Upload from "../../assets/withdrawicon.svg";
+import { useApiGet } from "@/hooks/useApi";
+import { toast } from "react-toastify";
 const ReferAndEarn = () => {
+  const token = localStorage.getItem("accessToken");
+  console.log(token);
+
+  const {
+    data: dashboardData,
+    isLoading: isLoadingDashboardData,
+    refetch: refetchDashboardData,
+    isFetching: isFerchingDashboardData,
+  } = useApiGet("user/referral-dashboard", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  console.log(dashboardData);
+  const referralLink = `https://app.futuresavemcps.com/register?ref=${dashboardData?.data?.referralCode}`;
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -21,10 +38,10 @@ const ReferAndEarn = () => {
           Balance
         </div>
         <div className="font-[700] text-center text-[32px] text-[#fff]">
-          N 0.00
+          {dashboardData?.data?.referralTotalAmountEarned}
         </div>
         <button
-          // onClick={copyToClipboard}
+          onClick={() => {navigator.clipboard.writeText(referralLink); toast.success("Referral link copied!");} }
           className="   text-[18px] font-[600] text-[#fff] bg-[#FFFFFF1F] py-2 w-[40%] flex items-center justify-center rounded-lg"
         >
           <span className="px-2">

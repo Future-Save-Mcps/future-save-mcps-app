@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useApiPost } from "@/hooks/useApi";
+import { useSelector } from "react-redux";
 
 const AddUser = ({ open, setOpen, onUserAdded }) => {
   const { post, isLoading } = useApiPost();
-
+const token = localStorage.getItem("accessToken")
+console.log(token);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -55,6 +57,11 @@ const AddUser = ({ open, setOpen, onUserAdded }) => {
         lastName: formData.lastName.trim(),
         emailAddress: formData.email.trim(),
         phoneNumber: formData.phoneNumber.trim(),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (result.success && result.data) {

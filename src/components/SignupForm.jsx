@@ -47,11 +47,24 @@ const SignUpForm = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
     watch,
   } = useForm();
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get("ref");
+
+    if (refCode) {
+      setValue("referralCode", refCode);
+    }
+  }, [setValue]);
+
+
   const onSubmit = async (formData) => {
+    console.log("formData:", formData);
+
     const result = await post("auth/register", {
       firstName: formData.firstName,
       lastName: formData.lastName,
@@ -59,6 +72,7 @@ const SignUpForm = () => {
       password: formData.password,
       role: selectedUserType,
       phoneNumber: formData.phoneNumber,
+      referralCode: formData.referralCode,
     });
 
     if (result.success && result.data) {
@@ -109,6 +123,8 @@ const SignUpForm = () => {
 
               {selectedUserType && (
                 <form onSubmit={handleSubmit(onSubmit)}>
+                  <input type="hidden" {...register("referralCode")} />
+
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <FormFieldComp
                       label="First Name"
@@ -127,6 +143,7 @@ const SignUpForm = () => {
                       errors={errors}
                     />
                   </div>
+
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <FormFieldComp
                       label="Phone Number"

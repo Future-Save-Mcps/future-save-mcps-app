@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getTokens, setTokens, clearTokens } from "../../utils/tokenManager";
-export const baseUrl = "https://monolith.futuresavemcps.com/api/";
+export const baseUrl = import.meta.env.VITE_APP_URL;
 const baseQuery = fetchBaseQuery({
   baseUrl: baseUrl,
   prepareHeaders: (headers, { getState }) => {

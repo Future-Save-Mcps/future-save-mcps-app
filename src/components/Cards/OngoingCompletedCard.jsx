@@ -51,7 +51,7 @@ const OngoingCompletedCard = ({
           </div>
           <div className="flex justify-between">
             <div className=" text-[#939393] text-[16px] font-[500]">
-              Repayment Bal
+              Bal
             </div>
             <div className=" text-[#939393] text-[16px] font-[500]">
               {remainingDays}

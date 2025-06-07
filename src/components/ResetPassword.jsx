@@ -1,29 +1,58 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
 import FormFieldComp from "./form/FormFieldComp";
+import { useApiPost } from "@/hooks/useApi";
 
-const ResetPassword = ({ onNext }) => {
+const ResetPassword = ({ onNext, onFailure }) => {
+  const [searchParams] = useSearchParams();
+  const emailAddress = searchParams.get("email");
+  const otp = searchParams.get("otp");
+
   const {
     register,
     handleSubmit,
-    setValue,
+    watch,
     formState: { errors },
   } = useForm();
+  const { post } = useApiPost();
 
-  const onSubmit = (data) => {
-    console.log("Account Completion Data:", data);
-    onNext(); // Proceed to the next step
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const newPassword = watch("password");
+
+  const onSubmit = async (data) => {
+    try {
+      const res = await post("/auth/reset-password", {
+        emailAddress,
+        otp,
+        newPassword: data.password,
+        confirmNewPassword: data.confirmPassword,
+      });
+
+      if (!res.success) {
+        const errData = await res.json();
+        setErrorMsg(errData.message || "Failed to reset password");
+        if (onFailure) onFailure();  // notify parent
+      } else {
+        setSuccessMsg("Password reset successful");
+        onNext(); // success
+      }
+    } catch (error) {
+      setErrorMsg("An error occurred: " + error.message);
+      if (onFailure) onFailure();
+    } finally {
+      setLoading(false);
+    }
   };
-
   return (
-    <div className="w-full   mx-auto ">
+    <div className="w-full mx-auto">
       <h2 className="text-2xl font-semibold mb-2">Reset Password</h2>
-      <p className="text-gray-600 mb-14">
-        Enter new password to reset password
-      </p>
+      <p className="text-gray-600 mb-14">Enter new password to reset password</p>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="gap-4 mb-6">
-          {/* Gender */}
           <FormFieldComp
             label="New Password"
             name="password"
@@ -48,18 +77,21 @@ const ResetPassword = ({ onNext }) => {
             validation={{
               required: "Confirm Password is required",
               validate: (value) =>
-                value === password || "Passwords do not match",
+                value === newPassword || "Passwords do not match",
             }}
             errors={errors}
           />
         </div>
 
-        {/* Next Button */}
+
         <button
           type="submit"
-          className="w-[150px] mt-8 bg-primary text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+          disabled={loading}
+          className={`w-[150px] mt-8 bg-primary text-white py-2 px-4 rounded-lg transition ${
+            loading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
+          }`}
         >
-          Continue
+          {loading ? "Submitting..." : "Continue"}
         </button>
       </form>
     </div>
