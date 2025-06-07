@@ -7,6 +7,7 @@ import AccountCompletion from "./AccountCompletion";
 import { useApiPost } from "../hooks/useApi";
 import FormButton from "./FormBtn";
 import { Button } from "./ui/button";
+import logo from "../assets/logo.svg";
 
 const SignUpForm = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -46,11 +47,24 @@ const SignUpForm = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
     watch,
   } = useForm();
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get("ref");
+
+    if (refCode) {
+      setValue("referralCode", refCode);
+    }
+  }, [setValue]);
+
+
   const onSubmit = async (formData) => {
+    console.log("formData:", formData);
+
     const result = await post("auth/register", {
       firstName: formData.firstName,
       lastName: formData.lastName,
@@ -58,6 +72,7 @@ const SignUpForm = () => {
       password: formData.password,
       role: selectedUserType,
       phoneNumber: formData.phoneNumber,
+      referralCode: formData.referralCode,
     });
 
     if (result.success && result.data) {
@@ -75,6 +90,9 @@ const SignUpForm = () => {
   return (
     <div className="flex w-[100%]">
       <div className="m-auto flex-1 mt-10 px-[10%]">
+        <div className="bg-white flex justify-center p-2 rounded-xl font-bold text-xl my-6">
+          <img src={logo} alt="Logo" />
+        </div>
         <div>
           {step === 1 && (
             <>
@@ -87,18 +105,26 @@ const SignUpForm = () => {
               </p>
 
               {!selectedUserType && (
-                <div className="flex gap-6">
-                  <Button onClick={()=>setSelectedUserType("Admin")} className="bg-white flex-1 text-xl border-2 min-h-[200px] rounded-2xl hover:bg-[#dce9f7]  border-primary p-8">
+                <div className="flex flex-wrap gap-6">
+                  <Button
+                    onClick={() => setSelectedUserType("Admin")}
+                    className="bg-white flex-1 text-2xl border min-h-[200px] rounded-2xl hover:bg-[#dce9f7]  border-primary p-8"
+                  >
                     Sign Up as an Admin
                   </Button>
-                  <Button onClick={()=>setSelectedUserType("User")} className="bg-white flex-1 text-xl border-2 min-h-[200px] rounded-2xl hover:bg-[#dce9f7]  border-primary p-8">
-                    Sign Up as an User
+                  <Button
+                    onClick={() => setSelectedUserType("User")}
+                    className="bg-white flex-1 text-2xl border min-h-[200px] rounded-2xl hover:bg-[#dce9f7]  border-primary p-8"
+                  >
+                    Sign Up as a User
                   </Button>
                 </div>
               )}
 
               {selectedUserType && (
                 <form onSubmit={handleSubmit(onSubmit)}>
+                  <input type="hidden" {...register("referralCode")} />
+
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <FormFieldComp
                       label="First Name"
@@ -117,6 +143,7 @@ const SignUpForm = () => {
                       errors={errors}
                     />
                   </div>
+
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <FormFieldComp
                       label="Phone Number"

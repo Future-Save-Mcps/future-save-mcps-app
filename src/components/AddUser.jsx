@@ -6,8 +6,8 @@ import { useSelector } from "react-redux";
 
 const AddUser = ({ open, setOpen, onUserAdded }) => {
   const { post, isLoading } = useApiPost();
-// const token = useSelector((state) => state.accessToken)
-// console.log(token);
+const token = localStorage.getItem("accessToken")
+console.log(token);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -57,6 +57,11 @@ const AddUser = ({ open, setOpen, onUserAdded }) => {
         lastName: formData.lastName.trim(),
         emailAddress: formData.email.trim(),
         phoneNumber: formData.phoneNumber.trim(),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (result.success && result.data) {

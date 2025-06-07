@@ -9,6 +9,8 @@ import { useApiLogin } from "../hooks/useApi";
 import FormButton from "./FormBtn";
 import axios from "axios";
 import { baseUrl } from "../features/api/apiSlice";
+import logo from '../assets/logo.svg';
+
 
 const LoginForm = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -86,13 +88,34 @@ const LoginForm = () => {
 
   const handleVerify = (otp) => {
     console.log("Entered OTP:", otp);
-    alert("Verification successful!");
+    // alert("Verification successful!");
+    setSearchParams({
+      step: 5,
+      email: searchParams.get("email"),
+      otp: otp,
+    });
+
     setStep((prevStep) => prevStep + 1);
   };
 
-  const handleResetPassword = (otp) => {
-    alert("reset successful!");
+  const handleResetPassword = () => {
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.delete("otp");
+      params.set("step", "1");
+      return params;
+    });
     setStep(1);
+  };
+  
+  const goBackToOtpStep = () => {
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.delete("otp");
+      params.set("step", "4");
+      return params;
+    });
+    setStep(4);
   };
 
   const password = watch("password");
@@ -100,6 +123,9 @@ const LoginForm = () => {
   return (
     <div className="flex w-[100%] ">
       <div className=" m-auto flex-1 mt-10 px-[10%]">
+         <div className="bg-white flex justify-center p-2 rounded-xl font-bold text-xl my-6">
+                <img src={logo} alt="Logo" />
+              </div>
         <div>
           {step === 1 && (
             <>
@@ -161,6 +187,7 @@ const LoginForm = () => {
                 <FormButton
                   type="submit"
                   text="Next"
+                  // width="100%"
                   isLoading={isInitiateLoading}
                   disabled={isInitiateLoading}
                 />
@@ -177,7 +204,7 @@ const LoginForm = () => {
           )}
           {step === 3 && <ForgotPassword onNext={handleNext} />}
           {step === 4 && <EmailVerification onVerify={handleVerify} />}
-          {step === 5 && <ResetPassword onNext={handleResetPassword} />}
+          {step === 5 && <ResetPassword onNext={handleResetPassword} onFailure={goBackToOtpStep} />}
         </div>
       </div>
     </div>

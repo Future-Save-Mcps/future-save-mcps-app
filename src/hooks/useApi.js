@@ -69,7 +69,7 @@ export const useApiLogin = () => {
 };
 
 export const useApiPost = () => {
-  const [trigger, { isLoading, isError, error, }] = usePostDataMutation();
+  const [trigger, { isLoading, isError, error }] = usePostDataMutation();
 
   const post = useCallback(
     async (url, data) => {
@@ -106,7 +106,10 @@ export const useApiPost = () => {
 // };
 
 export const useApiGet = (url, params) => {
-  const { data, error, isLoading, refetch, isFetching } = useGetDataQuery({ url, params });
+  const { data, error, isLoading, refetch, isFetching } = useGetDataQuery({
+    url,
+    params,
+  });
 
   const get = async () => {
     try {
@@ -124,13 +127,13 @@ export const useApiPatch = () => {
   const [trigger, { isLoading, isError, error }] = usePatchDataMutation();
 
   const patch = useCallback(
-    async (url, data) => {
+    async (url, data, notify) => {
       try {
         const result = await trigger({ url, data }).unwrap();
-        toast.info("Update successful!");
+        !notify && toast.info("Update successful!");
         return result;
       } catch (err) {
-        return handleError(err);
+        return !notify && handleError(err);
       }
     },
     [trigger]

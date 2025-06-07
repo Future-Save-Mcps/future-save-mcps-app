@@ -28,6 +28,7 @@ import Spinner from "../../components/Spinner";
 import { getUserData } from "../../utils/getUserData";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import ReusablePaystackButton from "@/components/paystack/PaystackButton";
 const style = {
   position: "absolute",
   top: "50%",
@@ -95,7 +96,7 @@ const ContributionPplan = () => {
     isFetching,
     refetch: refetchContributionPlan,
   } = useApiGet(`savingsplan?PlanId=${planId}`);
-
+  
   const {
     data: contribution,
     isLoading: isLoadingContribution,
@@ -170,6 +171,7 @@ const ContributionPplan = () => {
       handleClosePaymentModal();
     }
   };
+  console.log(contributionPlan?.data);
 
   const [open, setOpen] = useState(false);
   const [onChangeValueNumberOfWeeks, setOnChangeValueNumberOfWeeks] =
@@ -183,6 +185,12 @@ const ContributionPplan = () => {
   const handleClose = () => {
     setOpen(false);
     reset();
+  };
+  const handleSuccess = (reference) => {
+    console.log("Payment successful:", reference);
+    // setTimeout(() => {
+    // handleClosePaymentModal();
+    // }, 3000);
   };
 
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
@@ -803,12 +811,23 @@ const ContributionPplan = () => {
                 errors={errors}
               />
 
-              <FormButton
-                width="100%"
-                type="submit"
+              <ReusablePaystackButton
+                afterClose={handleClosePaymentModal}
+                email={"ayo@yopmail.com"}
+                amount={
+                  Number(paymentType === "advance" ? numberOfWeeks : 1) *
+                  weeklyAmount
+                }
+                currency="NGN"
+                metadata={{
+                  event_name: "Tech Conference 2024",
+                  ticket_type: "early_bird",
+                  event_date: "2024-06-15",
+                }}
+                onSuccess={handleSuccess}
+                onClose={handleClosePaymentModal}
                 text="Make payment"
-                isLoading={isLoading}
-                disabled={isLoading}
+                className="w-full py-2 px-4 mt-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#00205C] hover:bg-[#001845] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00205C]"
               />
             </form>
           )}
@@ -819,7 +838,7 @@ const ContributionPplan = () => {
               onSubmit={handleSubmit(onSubmitWithdrawal)}
             >
               <FormFieldComp
-                label={`Total Balance (NGN 2,500.00)`}
+                label={`Total Balance ${contributionPlan?.data?.currentBalance}`}
                 name="weeklyAmount"
                 type="number"
                 big
