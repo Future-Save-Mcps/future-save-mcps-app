@@ -56,7 +56,7 @@ const ContactUs = () => {
           >
             <div className="flex flex-col  flex-1 items-center justify-center gap-1">
               <h3 className="font-bold">Email</h3>
-              <p>testing@gmail.com</p>
+              <p>futuresavempcs@gmail.com</p>
             </div>
             <div className="flex flex-col  flex-1 items-center justify-center gap-1">
               <h3 className="font-bold">Phone Number</h3>
