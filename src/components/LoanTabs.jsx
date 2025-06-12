@@ -10,7 +10,7 @@ const LoanTabs = ({ activities = [], transactions = [], totalWeek }) => {
   const handleTabClick = (tab) => {
     setActiveTab(tab);
   };
-console.log(transactions);
+  console.log(transactions);
   return (
     <div className="max-w-2xl mx-auto p-6 rounded-lg bg-white">
       {/* Tabs */}
@@ -67,8 +67,30 @@ console.log(transactions);
             </div>
           ) : (
             <>
+              <div className="flex gap-6 mb-4 text-sm font-medium">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-[#34C759]"></div>
+                  <span>Timely Payment</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-[#E2C626]"></div>
+                  <span>Weekend Payment</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-[#1342B7]"></div>
+                  <span>Advance Payment</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-[#FB0300]"></div>
+                  <span>Defaulted Payment</span>
+                </div>
+              </div>
+
               {/* Render Payment History Bar Chart */}
-              <PaymentBarChart transactions={transactions} totalWeek={totalWeek} />
+              <PaymentBarChart
+                transactions={transactions}
+                totalWeek={totalWeek}
+              />
               {/* <div className="mt-6">
                 {transactions
                   ?.slice()
