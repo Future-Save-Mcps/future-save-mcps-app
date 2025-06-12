@@ -1,23 +1,16 @@
 import React, { useState } from "react";
-import PaymentBarChart from "./charts/PaymentBarChart";
-import {
-  ContributionIcon,
-  LoanIcon,
-  PercentIcon,
-} from "../components/icons/Icons";
+import PaymentBarChart from "./charts/PaymentBarChart"; // Import PaymentBarChart
+import { ContributionIcon } from "../components/icons/Icons";
 import formatTimeAgo from "../utils/formatTimeAgo";
 import PaymentTag from "./PaymentTag";
 
-const LoanTabs = ({ activities = [], transactions = [] }) => {
+const LoanTabs = ({ activities = [], transactions = [], totalWeek }) => {
   const [activeTab, setActiveTab] = useState("activities");
-
-  
-  
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
   };
-
+console.log(transactions);
   return (
     <div className="max-w-2xl mx-auto p-6 rounded-lg bg-white">
       {/* Tabs */}
@@ -68,35 +61,43 @@ const LoanTabs = ({ activities = [], transactions = [] }) => {
 
       {activeTab === "payment" && (
         <div className="mt-4 space-y-4">
-          {
-            transactions.length < 1 ? <div className=" flex justify-center items-center h-[150px] font-semibold text-lg">No Transaction History</div> :
-          
-          
-          transactions
-            ?.slice()
-            .reverse()
-            .map((activity, index) => (
-              <div
-                key={index}
-                className="flex p-1 justify-between items-center space-x-4"
-              >
-                <div className="flex  items-center gap-2">
-                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-900 text-white">
-                    <ContributionIcon color="white" />
-                  </div>
-                  <div>
-                    <p className="font-medium">{activity.description}</p>
-                    <p className="text-sm text-gray-500">
-                      {formatTimeAgo(activity.transactionTimestamp)}
-                    </p>
-                  </div>
-                </div>
-                <div className=" gap-2 flex flex-col justify-end items-end">
-                  <div className=""> NGN {activity.amount}</div>
-                  <PaymentTag type={activity.paymentTime} />
-                </div>
-              </div>
-            ))}
+          {transactions.length < 1 ? (
+            <div className="flex justify-center items-center h-[150px] font-semibold text-lg">
+              No Transaction History
+            </div>
+          ) : (
+            <>
+              {/* Render Payment History Bar Chart */}
+              <PaymentBarChart transactions={transactions} totalWeek={totalWeek} />
+              {/* <div className="mt-6">
+                {transactions
+                  ?.slice()
+                  .reverse()
+                  .map((activity, index) => (
+                    <div
+                      key={index}
+                      className="flex p-1 justify-between items-center space-x-4"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-900 text-white">
+                          <ContributionIcon color="white" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{activity.title}</p>
+                          <p className="text-sm text-gray-500">
+                            {formatTimeAgo(activity.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="gap-2 flex flex-col justify-end items-end">
+                        <div className=""> NGN {activity.amount}</div>
+                        <PaymentTag type={activity.paymentStatus} />
+                      </div>
+                    </div>
+                  ))}
+              </div> */}
+            </>
+          )}
         </div>
       )}
     </div>

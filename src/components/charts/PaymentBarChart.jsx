@@ -4,106 +4,92 @@ import {
   Bar,
   XAxis,
   YAxis,
-//   CartesianGrid,
   Tooltip,
-  Legend,
 } from "recharts";
 
-// Function to generate the data for 50 weeks based on payment logic
-const generatePaymentData = () => {
-  const data = [];
-  const weeklyPayment = 5000;
-
-  for (let week = 1; week <= 25; week++) {
-    const status = Math.floor(Math.random() * 4); // Random payment status for simulation
-    let Timely = 0;
-    let Weekend = 0;
-    let Advanced = 0;
-    let Defaulted = 0;
-
-    if (status === 0) {
-      Timely = weeklyPayment; // Paid on time (Monday - Friday)
-    } else if (status === 1) {
-      Weekend = weeklyPayment; // Paid on weekend (Saturday - Sunday)
-    } else if (status === 2) {
-      Advanced = weeklyPayment; // Paid in advance
-    } else if (status === 3) {
-      Defaulted = weeklyPayment; // Defaulted and paid in later weeks
-    }
-
-    data.push({
-      name: `WK${week}`,
-      Timely,
-      Weekend,
-      Advanced,
-      Defaulted,
-    });
+// Map Paystack payment types to bar keys
+const getBarKeyFromPaymentTime = (type) => {
+  switch (type) {
+    case "TimelyPayment":
+      return "Timely";
+    case "WeekendPayment":
+      return "Weekend";
+    case "AdvancePayment":
+      return "Advanced";
+    case "DefaultedPayment":
+      return "Defaulted";
+    default:
+      return null;
   }
-
-  return data;
 };
 
-const PaymentBarChart = () => {
-  const data = generatePaymentData();
+const buildFullChartData = (transactions, totalWeek) => {
+  const dataMap = {};
+
+  // Map each transaction into the dataMap keyed by week number
+  transactions.forEach((tx) => {
+    const weekKey = `WK${tx.weekNumber}`;
+    const barKey = getBarKeyFromPaymentTime(tx.paymentTime);
+    if (!dataMap[weekKey]) {
+      dataMap[weekKey] = {
+        name: weekKey,
+        Timely: 0,
+        Weekend: 0,
+        Advanced: 0,
+        Defaulted: 0,
+      };
+    }
+    dataMap[weekKey][barKey] = tx.totalAmount;
+  });
+
+  // Ensure all 25 weeks are present
+  const chartData = [];
+  for (let i = 1; i <= totalWeek; i++) {
+    const key = `WK${i}`;
+    chartData.push(
+      dataMap[key] || {
+        name: key,
+        Timely: 0,
+        Weekend: 0,
+        Advanced: 0,
+        Defaulted: 0,
+      }
+    );
+  }
+
+  return chartData;
+};
+
+const PaymentBarChart = ({ transactions = [],totalWeek = []  }) => {
+  const data = buildFullChartData(transactions, totalWeek);
 
   return (
-    <div className="p-4 bg-white rounded shadow-lg">
+    <div className="p-4 bg-white rounded shadow-lg overflow-x-auto">
       <BarChart
         width={1000}
         height={400}
         data={data}
-        cx={"none"}
-        // barCategoryGap="100px"
-        barGap={50} // Add space between bars in the same group
+        barGap={50}
         barCategoryGap={50}
         barSize={15}
         margin={{ top: 20, right: 20, left: -30, bottom: 10 }}
       >
-        {/* <CartesianGrid strokeDasharray="3 3" /> */}
         <XAxis
           dataKey="name"
           tick={{ fontSize: 10 }}
-          style={{ fontSize: "10px" }}
         />
         <YAxis
-          tickFormatter={(value) => `${value / 1000}K`}
+          tickFormatter={(value) => `₦${value / 1000}k`}
           tick={{ fontSize: 10 }}
-          style={{ fontSize: "10px" }}
         />
-        <Tooltip
-          formatter={(value) => `₦${value.toLocaleString()}`}
-          contentStyle={{ fontSize: "10px" }}
-        />
-        {/* <Legend wrapperStyle={{ fontSize: "10px" }} /> */}
-        <Bar
-          dataKey="Timely"
-          stackId="a"
-          radius={[15, 15, 15, 15]}
-          fill="#34C759"
-        />
-        <Bar
-          dataKey="Weekend"
-          stackId="a"
-          radius={[15, 15, 15, 15]}
-          fill="#E2C626"
-        />
-        <Bar
-          dataKey="Advanced"
-          stackId="a"
-          radius={[15, 15, 15, 15]}
-          fill="#1342B7"
-        />
-        <Bar
-          dataKey="Defaulted"
-          stackId="a"
-          radius={[15, 15, 15, 15]}
-          fill="#FB0300"
-        />
+        <Tooltip formatter={(value) => `₦${value.toLocaleString()}`} />
+        <Bar dataKey="Timely" stackId="a" fill="#34C759" radius={[15, 15, 15, 15]} />
+        <Bar dataKey="Weekend" stackId="a" fill="#E2C626" radius={[15, 15, 15, 15]} />
+        <Bar dataKey="Advanced" stackId="a" fill="#1342B7" radius={[15, 15, 15, 15]} />
+        <Bar dataKey="Defaulted" stackId="a" fill="#FB0300" radius={[15, 15, 15, 15]} />
       </BarChart>
     </div>
   );
 };
 
 export default PaymentBarChart;
-
-

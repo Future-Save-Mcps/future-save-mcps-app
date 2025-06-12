@@ -80,8 +80,13 @@ const IOSSwitch = styled((props) => (
 
 const ContributionPplan = () => {
   const userData = getUserData();
-
+  console.log(userData);
   const [state, setState] = useState(false);
+  const [paymentData, setPaymentData] = useState({
+    reference: null,
+    amount: null,
+  });
+
   const [planId, setPlanId] = useState(null);
   const {
     data,
@@ -96,7 +101,15 @@ const ContributionPplan = () => {
     isFetching,
     refetch: refetchContributionPlan,
   } = useApiGet(`savingsplan?PlanId=${planId}`);
-  
+
+  const {
+    data: activities,
+    isLoading: isActivities,
+    // isFetching,
+    refetch: refetchActivities,
+  } = useApiGet(`savingsplan/activities-and-history-tracking?SavingsPlanId=${planId}`);
+
+console.log(activities);
   const {
     data: contribution,
     isLoading: isLoadingContribution,
@@ -133,7 +146,7 @@ const ContributionPplan = () => {
     if (result.success && result.data) {
       refetchContribution();
       refetch();
-      handleClose();
+      handleClose()
     }
   };
 
@@ -147,13 +160,19 @@ const ContributionPplan = () => {
     };
 
     const result = await post(`savingsplan/add-savings-fund`, formData);
+    
+console.log(result.data.transactionReference);
     if (result.success && result.data) {
       refetchContribution();
       refetch();
-      handleClose();
+      const paymentReference = result?.data?.transactionReference;
+      setPaymentData({
+        reference: paymentReference, // Make sure the reference is coming from the response
+        amount: data.weeklyAmount,
+      });
+      handleOpenPaymentModal("addFund");
     }
   };
-
   const onSubmitWithdrawal = async (data) => {
     const formData = {
       savingsPlanId: planId,
@@ -478,8 +497,9 @@ const ContributionPplan = () => {
                 </div>
 
                 <LoanTabs
-                  transactions={contributionPlan?.data?.transactions}
-                  activities={contributionPlan?.data?.activities}
+                  transactions={activities?.data?.weeklyInflow}
+                  activities={activities?.data?.activities}
+                  totalWeek={contributionPlan?.data?.durationInWeeks}
                 />
               </>
             )}
@@ -810,25 +830,20 @@ const ContributionPplan = () => {
                 // setOnChangeValue={setOnChangeValuePaymentType}
                 errors={errors}
               />
-
-              <ReusablePaystackButton
-                afterClose={handleClosePaymentModal}
-                email={"ayo@yopmail.com"}
-                amount={
-                  Number(paymentType === "advance" ? numberOfWeeks : 1) *
-                  weeklyAmount
-                }
-                currency="NGN"
-                metadata={{
-                  event_name: "Tech Conference 2024",
-                  ticket_type: "early_bird",
-                  event_date: "2024-06-15",
-                }}
-                onSuccess={handleSuccess}
-                onClose={handleClosePaymentModal}
-                text="Make payment"
-                className="w-full py-2 px-4 mt-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#00205C] hover:bg-[#001845] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00205C]"
-              />
+                <ReusablePaystackButton
+                  afterClose={handleClosePaymentModal}
+                  email={userData?.data?.email}
+                  amount={
+                    Number(paymentType === "advance" ? numberOfWeeks : 1) *
+                    weeklyAmount
+                  }
+                  currency="NGN"
+                  reference={paymentData?.reference}
+                  onSuccess={handleSuccess}
+                  onClose={handleClosePaymentModal}
+                  text="Make payment"
+                  className="w-full py-2 px-4 mt-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#00205C] hover:bg-[#001845] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00205C]"
+                />
             </form>
           )}
 

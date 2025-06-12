@@ -1,71 +1,3 @@
-// import { PaystackButton } from "react-paystack"
-
-// const ReusablePaystackButton = ({
-//   email,
-//   amount,
-//   currency = "NGN",
-//   metadata = {},
-//   onSuccess,
-//   onClose,
-//   text = "Pay Now",
-//   className = "",
-//   disabled = false,
-//   ...otherProps
-// }) => {
-//     const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY
-
-//   const componentProps = {
-//     email,
-//     amount: amount * 100, // Convert to kobo
-//     currency,
-//     metadata,
-//     publicKey,
-//     text,
-//     onSuccess: (reference) => {
-//       console.log("Payment successful!", reference)
-//       if (onSuccess) {
-//         onSuccess(reference)
-//       }
-//     },
-//     onClose: () => {
-//       console.log("Payment dialog closed")
-//       if (onClose) {
-//         onClose()
-//       }
-//     },
-//     ...otherProps,
-//   }
-
-//   if (!publicKey) {
-//     console.error("Paystack public key is not set")
-//     return (
-//       <button disabled className={`bg-red-500 text-white px-4 py-2 rounded ${className}`}>
-//         Paystack key not configured
-//       </button>
-//     )
-//   }
-
-//   if (!email || !amount) {
-//     return (
-//       <button disabled className={`bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed ${className}`}>
-//         {text}
-//       </button>
-//     )
-//   }
-
-//   return (
-//     <PaystackButton
-//       {...componentProps}
-//       className={`  text-white font-bold py-2 px-4 rounded transition duration-200 ${className} ${
-//         disabled ? "opacity-50 cursor-not-allowed" : ""
-//       }`}
-//       disabled={disabled}
-//     />
-//   )
-// }
-
-// export default ReusablePaystackButton
-
 "use client";
 
 import { Box, Modal } from "@mui/material";
@@ -81,7 +13,7 @@ const style = {
   width: 400,
   bgcolor: "background.paper",
   border: "none",
-  borderRadius:4,
+  borderRadius: 4,
   boxShadow: 24,
   p: 4,
 };
@@ -90,8 +22,8 @@ const ReusablePaystackButton = ({
   email,
   amount,
   currency = "NGN",
-  metadata = {},
   onSuccess,
+  reference,
   onClose,
   text = "Pay Now",
   className = "",
@@ -101,16 +33,13 @@ const ReusablePaystackButton = ({
   ...otherProps
 }) => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [paymentData, setPaymentData] = useState(null);
   const [countdown, setCountdown] = useState(0);
   const [autoCloseEnabled, setAutoCloseEnabled] = useState(true);
-
   const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
 
   // Auto-close countdown effect
   useEffect(() => {
     if (!showSuccessModal || !autoCloseEnabled) return;
-
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -127,37 +56,33 @@ const ReusablePaystackButton = ({
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
     afterClose();
-    setPaymentData(null);
     setCountdown(0);
     setAutoCloseEnabled(true);
   };
+
+  useEffect(() => {
+    if (!reference) {
+      console.error("Reference is missing. Ensure reference is passed from the backend.");
+    }
+  }, [reference]);
 
   const componentProps = {
     email,
     amount: amount * 100, // Convert to kobo
     currency,
-    metadata,
     publicKey,
     text,
-    onSuccess: (reference) => {
-      console.log("Payment successful!", reference);
+    reference, // Pass the reference here directly
+    onSuccess: () => {
+      console.log("Payment successful!");
       setShowSuccessModal(true);
-
-      // Store payment data for the success modal
-      setPaymentData({
-        reference: reference.reference,
-        amount: amount,
-        email: email,
-        transactionId: reference.trans,
-        metadata: metadata,
-      });
 
       // Set countdown and show modal
       setCountdown(autoCloseDelay / 1000);
 
       // Call external onSuccess if provided
       if (onSuccess) {
-        onSuccess(reference);
+        onSuccess(reference); // Pass the reference or any other relevant data
       }
     },
     onClose: () => {
@@ -196,7 +121,7 @@ const ReusablePaystackButton = ({
     <>
       <PaystackButton
         {...componentProps}
-        className={` text-white font-bold py-2 px-4 rounded transition duration-200 ${className} ${
+        className={`text-white font-bold py-2 px-4 rounded transition duration-200 ${className} ${
           disabled ? "opacity-50 cursor-not-allowed" : ""
         }`}
         disabled={disabled}
@@ -210,7 +135,7 @@ const ReusablePaystackButton = ({
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
         >
-          <Box sx={style}>
+          <Box sx={{ ...style, zIndex: 9999 }}>
             <div className="text-center mb-6">
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <svg
@@ -230,9 +155,7 @@ const ReusablePaystackButton = ({
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
                 Payment Successful!
               </h2>
-              <p className="text-gray-600">
-                Your payment has been processed successfully.
-              </p>
+              <p className="text-gray-600">Your payment has been processed successfully.</p>
             </div>
 
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
@@ -240,27 +163,17 @@ const ReusablePaystackButton = ({
                 <div className="flex justify-between">
                   <span className="text-gray-600">Amount:</span>
                   <span className="font-semibold">
-                    {currency} {paymentData?.amount?.toLocaleString()}
+                    {currency} {amount.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Email:</span>
-                  <span className="font-semibold">{paymentData?.email}</span>
+                  <span className="font-semibold">{email}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Reference:</span>
-                  <span className="font-semibold text-sm">
-                    {paymentData?.reference}
-                  </span>
+                  <span className="font-semibold text-sm">{reference}</span>
                 </div>
-                {paymentData?.metadata?.name && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Name:</span>
-                    <span className="font-semibold">
-                      {paymentData.metadata.name}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -281,14 +194,14 @@ const ReusablePaystackButton = ({
             <div className="flex mt-16 flex-col gap-3">
               <button
                 onClick={handleCloseSuccessModal}
-                className="flex-1 border border-green-600 text-green-600 hover:bg-[#c4fad6]  font-bold py-2 px-4 rounded-lg transition duration-200"
+                className="flex-1 border border-green-600 text-green-600 hover:bg-[#c4fad6] font-bold py-2 px-4 rounded-lg transition duration-200"
               >
                 Close
               </button>
               <button
                 onClick={() => {
                   // Copy reference to clipboard
-                  navigator.clipboard.writeText(paymentData?.reference || "");
+                  navigator.clipboard.writeText(reference || "");
                   toast.info("Payment reference copied to clipboard!");
                 }}
                 className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
