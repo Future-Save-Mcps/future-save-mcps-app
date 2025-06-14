@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import Spinner from "@/components/Spinner";
 import OngoingCompletedCard from "@/components/Cards/OngoingCompletedCard";
-import { useApiGet } from "@/hooks/useApi";
+import { useApiGet, useApiPost } from "@/hooks/useApi";
 import { formatDate } from "@/utils/formatDate";
 import LoanTabs from "@/components/LoanTabs";
 import { formatCurrency } from "@/utils/currencyFormatter";
@@ -28,12 +28,12 @@ const style = {
 
 const LoanManagement = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-const navigate = useNavigate()
+  const navigate = useNavigate();
   const [state, setState] = useState(false);
   const [loanId, setLoanId] = useState(searchParams.get("id"));
   const [open, setOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
-
+  const post = useApiPost();
   useEffect(() => {
     if (loanId) {
       setState(true);
@@ -64,6 +64,30 @@ const navigate = useNavigate()
     isFetching,
     refetch: refetchLoanPlan,
   } = useApiGet(`loan?LoanId=${loanId}`);
+
+  const handleConfirmAction = async () => {
+    try {
+      const res = await post(
+        `/admin/approve-or-reject-loan?LoanApplicationId=${loanId}&IsApproved=${
+          modalType === "Approval"
+        }`
+      );
+
+      if (!res.ok) {
+        throw new Error("Something went wrong");
+      }
+
+      toast.success(
+        `Loan ${
+          modalType === "Approval" ? "approved" : "rejected"
+        } successfully`
+      );
+      handleClose();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to process loan request");
+    }
+  };
 
   const tableHeaders = [
     { label: "Name", value: "fullName" },
@@ -188,7 +212,7 @@ const navigate = useNavigate()
           <div className=" p-4  bg-white  sticky top-0 flex justify-between mb-8 items-center ">
             <h2 className="text-[24px] font-[700]">Loan Details </h2>
             <CloseIcon
-              onClick={()=>navigate(-1)}
+              onClick={() => navigate(-1)}
               sx={{
                 cursor: "pointer",
                 padding: "5px",
@@ -376,32 +400,28 @@ const navigate = useNavigate()
             </h2>
           </div>
 
-          <div className="">
+          <div>
             <p className="text-[#B0B0B0] my-4 text-center">
               Are you sure you want to{" "}
               {modalType === "Approval" ? "approve" : "reject"} this loan?
             </p>
 
-            <div className="flex  gap-4 ">
+            <div className="flex gap-4">
               <button
                 onClick={handleClose}
-                className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#000] bg-[#F8F8FA] "
+                className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center rounded-md text-[#000] bg-[#F8F8FA]"
               >
-                {" "}
                 No, I’m not
               </button>
 
-              {modalType === "Approval" ? (
-                <button className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#fff] bg-[#041F62] ">
-                  {" "}
-                  Yes, I am
-                </button>
-              ) : (
-                <button className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#fff] bg-[#FB0300] ">
-                  {" "}
-                  Yes, I am
-                </button>
-              )}
+              <button
+                onClick={handleConfirmAction}
+                className={`flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center rounded-md text-[#fff] ${
+                  modalType === "Approval" ? "bg-[#041F62]" : "bg-[#FB0300]"
+                }`}
+              >
+                Yes, I am
+              </button>
             </div>
           </div>
         </Box>
