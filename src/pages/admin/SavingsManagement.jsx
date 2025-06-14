@@ -45,8 +45,8 @@ const SavingsManagement = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [state, setState] = useState(false);
   const [loanId, setLoanId] = useState(searchParams.get("id"));
-  
-  const navigate = useNavigate()
+  const [openPaymentModal, setOpenPaymentModal] = useState(false);
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
   const { post, isLoading } = useApiPost();
@@ -72,10 +72,20 @@ const SavingsManagement = () => {
       savingsPlanId: loanId,
       amount: data.weeklyAmount,
       paymentType: data.paymentType,
+      offlinePaymentType: data.offlinePaymentType,
     };
+
+    const result = await post(`admin/make-offline-payment`, formData);
+    if (result.success && result.data) {
+      refetchContributionPlan();
+      handleClose();
+    }
   };
 
-  
+  const offLinePaymentOptions = [
+    { label: "Cash", value: "Cash" },
+    { label: "Transfer", value: "Transfer" },
+  ];
   useEffect(() => {
     if (loanId) {
       setState(true);
@@ -85,26 +95,11 @@ const SavingsManagement = () => {
   const toggleDrawer = (id) => {
     window.location.href = `/admin/savings_management?id=${id}`;
   };
-  const handleOpenPaymentModal = (type) => {
-    setPaymentModalType(type);
-    setOpenPaymentModal(true);
-  };
-  const handleClosePaymentModal = () => {
-    setOpenPaymentModal(false);
-    setPaymentModalType(null);
-  };
   const {
     data: loan,
     isLoading: isLoadingLoan,
     refetch: refetchLoan,
   } = useApiGet(`admin/savings/all?PageNumber=1&PageSize=100`);
-
-  // const {
-  //   data: loanPlan,
-  //   isLoading: isLoadingLoanPlan,
-  //   isFetching,
-  //   refetch: refetchLoanPlan,
-  // } = useApiGet(`loan?LoanId=${loanId}`);
 
   const {
     data: contributionPlan,
@@ -122,35 +117,6 @@ const SavingsManagement = () => {
     { label: "Weekly Amount", value: "weeklyAmount" },
     { label: "Account Status", value: "planStatus" },
     // { label: "Action", value: "action" },
-  ];
-  const rawTableData = [
-    {
-      id: 1,
-      name: "Williams Elum",
-      plan: "Thrift Loan",
-      targetAmount: "₦ 300,000.00",
-      dateCreated: "12/05/2025",
-      weeklyAmount: "₦ 5,000.00",
-      status: "Approved",
-    },
-    {
-      id: 2,
-      name: "Williams Elum",
-      plan: "Premium Loan",
-      targetAmount: "₦ 300,000.00",
-      dateCreated: "12/05/2025",
-      weeklyAmount: "₦ 5,000.00",
-      status: "Rejected",
-    },
-    {
-      id: 2,
-      name: "Williams Elum",
-      plan: "Premium Loan",
-      targetAmount: "₦ 300,000.00",
-      dateCreated: "12/05/2025",
-      weeklyAmount: "₦ 5,000.00",
-      status: "Pending",
-    },
   ];
 
   const tableData = loan?.data?.items?.map((item) => ({
@@ -201,14 +167,6 @@ const SavingsManagement = () => {
     console.log("this is the filter");
   };
 
-  const handleExport = () => {
-    console.log("Exporting data...");
-  };
-
-  const handleAuditTrail = () => {
-    console.log("Viewing audit trail...");
-  };
-
   return (
     <div>
       <AdminTableComponent
@@ -227,7 +185,7 @@ const SavingsManagement = () => {
           <div className=" p-4  bg-white  sticky top-0 flex justify-between mb-8 items-center ">
             <h2 className="text-[24px] font-[700]">Plan Details</h2>
             <CloseIcon
-              onClick={()=>navigate(-1)}
+              onClick={() => navigate(-1)}
               sx={{
                 cursor: "pointer",
                 padding: "5px",
@@ -320,7 +278,11 @@ const SavingsManagement = () => {
                   </div>
                 </div>
 
-                <LoanTabs activities={contributionPlan?.data?.activities} />
+                <LoanTabs
+                  activities={contributionPlan?.data?.activities}
+                  transactions={contributionPlan?.data?.weeklyInflow}
+                  totalWeek={contributionPlan?.data?.durationInWeeks}
+                />
               </>
             )}
           </div>
@@ -355,12 +317,12 @@ const SavingsManagement = () => {
           >
             <FormFieldComp
               label="Offline Payment Type"
-              name="Type"
+              name="offlinePaymentType"
               type="select"
               setValue={setValue}
               register={register}
               validation={{ required: "Paymemt Type is required" }}
-              options={generateWeekOptions(25)}
+              options={offLinePaymentOptions}
               errors={errors}
             />
             <div className="mb-4">
@@ -451,8 +413,6 @@ const SavingsManagement = () => {
                   message: "Amount must be at least NGN 5000.00",
                 },
               }}
-              // onchange={true}
-              // setOnChangeValue={setOnChangeValuePaymentType}
               errors={errors}
             />
 
@@ -464,41 +424,6 @@ const SavingsManagement = () => {
               disabled={isLoading}
             />
           </form>
-
-          {/* <div className="flex justify-center items-center mb-4">
-            <h2 className="text-xl font-semibold">
-              Loan {modalType} Confirmation
-            </h2>
-          </div>
-
-          <div className="">
-            <p className="text-[#B0B0B0] my-4 text-center">
-              Are you sure you want to{" "}
-              {modalType === "Approval" ? "approve" : "reject"} this loan?
-            </p>
-
-            <div className="flex  gap-4 ">
-              <button
-                onClick={handleClose}
-                className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#000] bg-[#F8F8FA] "
-              >
-                {" "}
-                No, I’m not
-              </button>
-
-              {modalType === "Approval" ? (
-                <button className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#fff] bg-[#041F62] ">
-                  {" "}
-                  Yes, I am
-                </button>
-              ) : (
-                <button className="flex my-6 justify-center flex-1 p-[10px] min-w-[150px] items-center   rounded-md text-[#fff] bg-[#FB0300] ">
-                  {" "}
-                  Yes, I am
-                </button>
-              )}
-            </div>
-          </div> */}
         </Box>
       </Modal>
     </div>

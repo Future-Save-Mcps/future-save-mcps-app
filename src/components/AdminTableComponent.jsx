@@ -1,101 +1,99 @@
 import { useState } from "react";
-import { Search, Clock, Calendar as CalendarIcon } from "lucide-react";
+import { Search, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FilterDropdown } from "./FilterDropdown";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import TableContainer from "@mui/material/TableContainer";
 import { ExportIcon, FilterIcon } from "./icons/Icons";
 import { Drawer } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import DatePickerComponent from "./DatePickerComponent";
-import { useApiGet } from "@/hooks/useApi";
+import { useApiGet, useApiPatch } from "@/hooks/useApi";
 import Spinner from "./Spinner";
-
+import TableContainer from "@mui/material/TableContainer";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 const AdminTableComponent = ({
   headers,
   data,
   onSearch,
   onFilter,
   onExport,
-  onAuditTrail,
   view,
-  onAddUser, // Function to handle adding a user
+  onAddUser,
   showAddUserButton = false,
   loading,
 }) => {
-  // const [data, setData] = useState(initialData);
-  const [activeFilter, setActiveFilter] = useState(null);
-
-  const {
-    data: auditTrail,
-    isLoading: isLoadingAuditTrail,
-    isFetching,
-    refetch: refetchAuditTrail,
-  } = useApiGet(`admin/audit-trail/all`);
-
-  ///admin/audit-trail/all
-  const [state, setState] = useState(false);
-  const [dateValue, setDateValue] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [auditData, setAuditData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
 
+  const { refetch: refetchAuditTrail } = useApiGet(`admin/audit-trail/all`);
+  const { patch } = useApiPatch();
+
   const toggleDrawer = (open) => () => {
-    setState(open);
+    setDrawerOpen(open);
   };
+
   const handleFilterChange = (filter) => {
     if (onFilter) onFilter(filter);
   };
 
-  const handleValueChange = (value) => {
-    setDateValue(value);
+  const handleAuditTrail = async () => {
+    try {
+      const result = await refetchAuditTrail();
+      const items = result?.data?.data?.items || [];
+
+      const processedItems = items
+        .map((item) => ({
+          ...item,
+          showFullDescription: false,
+          isRead: item.isRead ?? false,
+          timeAgo: format(new Date(item.dateTime), "PPpp"),
+        }))
+        .sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+
+      setAuditData(processedItems);
+      setDrawerOpen(true);
+    } catch (error) {
+      console.error("Failed to fetch audit trail:", error);
+    }
   };
 
-  const notifications = [
-    {
-      id: 1,
-      message: "David Agama approved a Thrift Loan of N300,000 for Nonso Udo",
-      timeAgo: "5hrs ago",
-      isNew: true,
-    },
-    {
-      id: 2,
-      message: "Musa Huga rejected a Thrift Loan of N300,000 for Nonso Udo",
-      timeAgo: "5hrs ago",
-      isNew: true,
-    },
-    {
-      id: 3,
-      message: "David Agama approved a Premium Loan of N300,000 for Nonso Udo",
-      timeAgo: "5hrs ago",
-      isNew: false,
-    },
-    {
-      id: 4,
-      message: "David Agama rejected a Premium Loan of N300,000 for Nonso Udo",
-      timeAgo: "5hrs ago",
-      isNew: false,
-    },
-  ];
+  const markAuditTrailAsRead = async (auditTrailId) => {
+    try {
+      const result = await patch(`/admin/mark-audit-as-read?AuditTrailId=${auditTrailId}`);
+
+      if (result?.success === true) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to mark audit trail as read:", error);
+      return false;
+    }
+  };
+  const handleExport = () => {
+    const exportData = data.map((row) => {
+      const rowData = {};
+      headers.forEach((header) => {
+        rowData[header.label] = row[header.value];
+      });
+      return rowData;
+    });
+  
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+  
+    const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+  
+    const blob = new Blob([wbout], { type: "application/octet-stream" });
+    saveAs(blob, "exported-data.xlsx");
+  }; 
+
 
   return (
     <div className="border min-h-[400px] p-4 rounded-2xl">
@@ -108,12 +106,9 @@ const AdminTableComponent = ({
             className="pl-10 max-w-[300px]"
           />
         </div>
+
         <div className="flex flex-wrap items-center gap-4">
-          <Button
-            onClick={toggleDrawer(true)}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
+          <Button onClick={handleAuditTrail} variant="outline" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Audit Trail
           </Button>
@@ -130,30 +125,21 @@ const AdminTableComponent = ({
             </PopoverContent>
           </Popover>
 
-          <Button
-            onClick={onExport}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
+          <Button onClick={handleExport} variant="outline" className="flex items-center gap-2">
             <ExportIcon />
             Export
           </Button>
 
           {showAddUserButton && (
-            <Button
-              onClick={onAddUser}
-              variant="default"
-              className="bg-[#041F62] text-white px-4 hover:bg-[#041F62]"
-            >
-              <span>+</span>
-              Add User
+            <Button onClick={onAddUser} variant="default" className="bg-[#041F62] text-white px-4 hover:bg-[#041F62]">
+              <span>+</span> Add User
             </Button>
           )}
         </div>
       </div>
 
       {loading ? (
-        <div className="  flex justify-center items-center min-h-[300px] ">
+        <div className="flex justify-center items-center min-h-[300px]">
           <Spinner />
         </div>
       ) : (
@@ -173,18 +159,15 @@ const AdminTableComponent = ({
               <TableBody>
                 {data?.map((item) => (
                   <TableRow key={item.id}>
-                    {headers?.map((column, colIndex) => (
-                      <TableCell
-                        className="font-semibold whitespace-nowrap text-[#5b5b5b]"
-                        key={colIndex}
-                      >
+                    {headers.map((column, colIndex) => (
+                      <TableCell className="font-semibold whitespace-nowrap text-[#5b5b5b]" key={colIndex}>
                         {item[column.value]}
                       </TableCell>
                     ))}
 
                     <TableCell>
                       <Button
-                        onClick={()=>view(item.id)}
+                        onClick={() => view(item.id)}
                         size="small"
                         variant="default"
                         className="bg-primary py-1 text-white px-4 min-w-[80px] hover:bg-[#1e3f99]"
@@ -200,14 +183,7 @@ const AdminTableComponent = ({
         </div>
       )}
 
-      <Drawer
-        anchor="right"
-        sx={{
-          zIndex: 50,
-        }}
-        open={state}
-        onClose={toggleDrawer(false)}
-      >
+      <Drawer anchor="right" sx={{ zIndex: 50 }} open={drawerOpen} onClose={toggleDrawer(false)}>
         <div className="w-[100vw] relative max-w-[600px]">
           <div className="p-4 bg-white sticky top-0 flex justify-between items-center">
             <h2 className="text-[24px] font-[700]">Audit Trail</h2>
@@ -225,37 +201,45 @@ const AdminTableComponent = ({
           </div>
 
           <div className="p-4">
-            <div className="">
+            <div>
               <div className="flex items-center justify-end gap-1">
-                <p className=" text-base font-normal">Filter by</p>
-                <DatePickerComponent
-                  selectedDate={selectedDate}
-                  onDateChange={setSelectedDate}
-                />
+                <p className="text-base font-normal">Filter by</p>
+                <DatePickerComponent selectedDate={selectedDate} onDateChange={setSelectedDate} />
               </div>
-              {selectedDate && (
-                <p className="mt-2">
-                  Selected Date: {selectedDate.toDateString()}
-                </p>
-              )}
+              {selectedDate && <p className="mt-2">Selected Date: {selectedDate.toDateString()}</p>}
             </div>
+
             <div className="max-w-2xl mx-auto p-4">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className="mb-6 flex justify-between items-center"
-                >
+              {auditData?.map((notification) => (
+                <div key={notification.auditTrailId} className="mb-6 flex justify-between items-center">
                   <div>
-                    <p className="text-sm font-medium">
-                      {notification.message}
+                    <p className="text-sm text-gray-500 mt-1">
+                      {notification.showFullDescription || notification.description.length <= 30
+                        ? notification.description
+                        : `${notification.description.substring(0, 30)}...`}
+                      {notification.description.length > 20 && !notification.showFullDescription && (
+                        <span
+                          className="text-[#7499cf] font-semibold cursor-pointer ml-1"
+                          onClick={async () => {
+                            const success = await markAuditTrailAsRead(notification.auditTrailId);
+                            if (success) {
+                              setAuditData((prev) =>
+                                prev.map((n) =>
+                                  n.auditTrailId === notification.auditTrailId
+                                    ? { ...n, showFullDescription: true, isRead: true }
+                                    : n
+                                )
+                              );
+                            }
+                          }}
+                        >
+                          Read more
+                        </span>
+                      )}
                     </p>
-                    <p className="text-gray-500 text-xs">
-                      {notification.timeAgo}
-                    </p>
+                    <p className="text-gray-500 text-xs">{notification.timeAgo}</p>
                   </div>
-                  {notification.isNew && (
-                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                  )}
+                  {!notification.isRead && <span className="w-2 h-2 bg-red-500 rounded-full"></span>}
                 </div>
               ))}
             </div>
@@ -265,4 +249,5 @@ const AdminTableComponent = ({
     </div>
   );
 };
+
 export default AdminTableComponent;
