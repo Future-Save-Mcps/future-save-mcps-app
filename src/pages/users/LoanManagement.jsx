@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import OngoingCompletedCard from "../../components/Cards/OngoingCompletedCard";
 import Warning from "../../components/Cards/Warning";
 import Bg from "../../assets/cardBd.svg";
@@ -91,6 +91,9 @@ const LoanManagement = () => {
   }
   const [open, setOpen] = useState(false);
   const [loanType, setLoanType] = useState(null);
+  const paystackBtnRef = useRef(null);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
   const [activeTab, setActiveTab] = useState("ongoing");
   const [eligible, setEligible] = useState(false);
   const [errorType, setErrorType] = useState(null);
@@ -171,9 +174,31 @@ const LoanManagement = () => {
   const numberOfWeeks = watch("numberOfWeeks");
   const weeklyAmount = watch("weeklyAmount");
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // Handle payment submission
+  const onSubmit = async (data) => {
+    const formData = {
+      loanApplicationId: loanId,
+      amount: data.weeklyAmount,
+      paymentType: data.paymentType,
+    };
+
+    const result = await post(`savingsplan/add-loan-fund`, formData);
+
+    if (result.success && result.data) {
+      refetchContribution();
+      refetch();
+
+      const paymentReference = result?.data?.transactionReference;
+
+      setPaymentData({
+        reference: paymentReference,
+        amount: data.weeklyAmount,
+      });
+      setFormSubmitted(true);
+      // Slight delay to ensure the Paystack button is mounted before clicking
+      setTimeout(() => {
+        paystackBtnRef.current?.click();
+      }, 200);
+    }
   };
 
   useEffect(() => {
@@ -693,8 +718,30 @@ const LoanManagement = () => {
               >
                 Make payment
               </button> */}
+                <div className="flex items-center gap-3 mt-4 mb-2">
+                  <label
+                    htmlFor="addFundsToggle"
+                    className="text-sm font-medium text-primary"
+                  >
+                    Add Funds
+                  </label>
 
-              <ReusablePaystackButton
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      id="addFundsToggle"
+                      type="checkbox"
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          handleSubmit(onSubmitPayment)(); // manually submit the form
+                        }
+                      }}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-300 rounded-full peer-focus:ring-2 peer-focus:ring-primary peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-5"></div>
+                  </label>
+                </div>
+
+              {/* <ReusablePaystackButton
                 afterClose={handleClosePaymentModal}
                 email={"ayo@yopmail.com"}
                 amount={
@@ -711,8 +758,25 @@ const LoanManagement = () => {
                 onClose={handleClosePaymentModal}
                 text="Make payment"
                 className="w-full py-2 px-4 mt-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#00205C] hover:bg-[#001845] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00205C]"
-              />
+              /> */}
             </form>
+            {formSubmitted && paymentData?.reference && (
+                <ReusablePaystackButton
+                  afterClose={handleClosePaymentModal}
+                  email={userData?.data?.email}
+                  amount={
+                    Number(paymentType === "advance" ? numberOfWeeks : 1) *
+                    weeklyAmount
+                  }
+                  currency="NGN"
+                  reference={paymentData.reference}
+                  onSuccess={handleSuccess}
+                  onClose={handleClosePaymentModal}
+                  text="Make payment"
+                  className="w-full py-2 px-4 mt-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#00205C] hover:bg-[#001845] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00205C]"
+                />
+              )}
+
           </div>
         </Box>
       </Modal>
