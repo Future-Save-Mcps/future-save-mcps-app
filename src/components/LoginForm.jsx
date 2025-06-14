@@ -130,7 +130,7 @@ const LoginForm = () => {
           {step === 1 && (
             <>
               <h2 className="text-3xl font-semibold mb-4">Login</h2>
-              <p className="text-sm mb-[50px]">
+              <p className="text-sm mb-[20px]">
                 Don't have an account?{" "}
                 <a
                   href="/register"
@@ -140,7 +140,7 @@ const LoginForm = () => {
                 </a>
               </p>
               <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="grid   gap-4 mb-4">
+                <div className="grid   gap-4 mb-2">
                   <FormFieldComp
                     label="Email"
                     name="email"
@@ -174,7 +174,7 @@ const LoginForm = () => {
                   errors={errors}
                 />
 
-                <p className="text- font-semibold mb-[50px] flex  justify-between">
+                <p className="text- font-semibold mb-[10px] flex  justify-between">
                   <span></span>
                   <p
                     onClick={() => setStep(3)}

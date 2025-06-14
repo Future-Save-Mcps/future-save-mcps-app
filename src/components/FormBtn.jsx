@@ -14,7 +14,7 @@ const FormButton = ({
       type={type}
       onClick={onClick}
       disabled={isLoading || disabled}
-      className={`mt-8 bg-primary border text-[#c7c7c7] py-2 px-4 rounded-lg disabled:bg-[#ffffff]  transition ${className}`}
+      className={` bg-primary border text-[#c7c7c7] py-2 px-4 rounded-lg disabled:bg-[#ffffff]  transition ${className}`}
       style={{ width }}
     >
       {isLoading ? (
