@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import OngoingCompletedCard from "../../components/Cards/OngoingCompletedCard";
 import Warning from "../../components/Cards/Warning";
 import Bg from "../../assets/cardBd.svg";
@@ -86,8 +86,11 @@ const ContributionPplan = () => {
     reference: null,
     amount: null,
   });
+  const paystackBtnRef = useRef(null);
 
   const [planId, setPlanId] = useState(null);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
   const {
     data,
     refetch,
@@ -107,9 +110,11 @@ const ContributionPplan = () => {
     isLoading: isActivities,
     // isFetching,
     refetch: refetchActivities,
-  } = useApiGet(`savingsplan/activities-and-history-tracking?SavingsPlanId=${planId}`);
+  } = useApiGet(
+    `savingsplan/activities-and-history-tracking?SavingsPlanId=${planId}`
+  );
 
-console.log(activities);
+  console.log(activities);
   const {
     data: contribution,
     isLoading: isLoadingContribution,
@@ -146,13 +151,11 @@ console.log(activities);
     if (result.success && result.data) {
       refetchContribution();
       refetch();
-      handleClose()
+      handleClose();
     }
   };
 
   const onSubmitPayment = async (data) => {
-    console.log(data);
-
     const formData = {
       savingsPlanId: planId,
       amount: data.weeklyAmount,
@@ -160,17 +163,22 @@ console.log(activities);
     };
 
     const result = await post(`savingsplan/add-savings-fund`, formData);
-    
-console.log(result.data.transactionReference);
+
     if (result.success && result.data) {
       refetchContribution();
       refetch();
+
       const paymentReference = result?.data?.transactionReference;
+
       setPaymentData({
-        reference: paymentReference, // Make sure the reference is coming from the response
+        reference: paymentReference,
         amount: data.weeklyAmount,
       });
-      handleOpenPaymentModal("addFund");
+      setFormSubmitted(true);
+      // Slight delay to ensure the Paystack button is mounted before clicking
+      setTimeout(() => {
+        paystackBtnRef.current?.click();
+      }, 200);
     }
   };
   const onSubmitWithdrawal = async (data) => {
@@ -734,102 +742,125 @@ console.log(result.data.transactionReference);
           </div>
 
           {paymentModalType === "addFund" && (
-            <form
-              className=" overflow-auto max-h-[80dvh]"
-              onSubmit={handleSubmit(onSubmitPayment)}
-            >
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-primary mb-2">
-                  Payment Type
-                </label>
-                <Controller
-                  name="paymentType"
-                  control={control}
-                  defaultValue="CurrentWeekPayment"
-                  rules={{ required: "payment type is required" }}
-                  render={({ field }) => (
-                    <div className="flex gap-4">
-                      <label
-                        className={`flex items-center space-x-2 flex-1 p-3 rounded-md border ${
-                          field.value === "CurrentWeekPayment"
-                            ? "border-primary"
-                            : "border-gray-300"
-                        }`}
-                      >
-                        <input
-                          {...field}
-                          type="radio"
-                          value="CurrentWeekPayment"
-                          checked={field.value === "CurrentWeekPayment"}
-                          className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
-                        />
-                        <span>This week payment</span>
-                      </label>
-                      <label
-                        className={`flex items-center space-x-2 flex-1 p-3 rounded-md border ${
-                          field.value === "AdvancePayment"
-                            ? "border-primary"
-                            : "border-gray-300"
-                        }`}
-                      >
-                        <input
-                          {...field}
-                          type="radio"
-                          value="AdvancePayment"
-                          checked={field.value === "AdvancePayment"}
-                          className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
-                        />
-                        <span>Advance Payment</span>
-                      </label>
-                    </div>
+            <div className="">
+              <form
+                className=" overflow-auto max-h-[80dvh]"
+                onSubmit={handleSubmit(onSubmitPayment)}
+              >
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-primary mb-2">
+                    Payment Type
+                  </label>
+                  <Controller
+                    name="paymentType"
+                    control={control}
+                    defaultValue="CurrentWeekPayment"
+                    rules={{ required: "payment type is required" }}
+                    render={({ field }) => (
+                      <div className="flex gap-4">
+                        <label
+                          className={`flex items-center space-x-2 flex-1 p-3 rounded-md border ${
+                            field.value === "CurrentWeekPayment"
+                              ? "border-primary"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          <input
+                            {...field}
+                            type="radio"
+                            value="CurrentWeekPayment"
+                            checked={field.value === "CurrentWeekPayment"}
+                            className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                          />
+                          <span>This week payment</span>
+                        </label>
+                        <label
+                          className={`flex items-center space-x-2 flex-1 p-3 rounded-md border ${
+                            field.value === "AdvancePayment"
+                              ? "border-primary"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          <input
+                            {...field}
+                            type="radio"
+                            value="AdvancePayment"
+                            checked={field.value === "AdvancePayment"}
+                            className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                          />
+                          <span>Advance Payment</span>
+                        </label>
+                      </div>
+                    )}
+                  />
+                  {errors.paymentType && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.paymentType.message}
+                    </p>
                   )}
-                />
-                {errors.paymentType && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.paymentType.message}
-                  </p>
+                </div>
+                {paymentType === "AdvancePayment" && (
+                  <FormFieldComp
+                    label="Number of weeks (25 weeks Plan)"
+                    name="Weeks"
+                    type="select"
+                    setValue={setValue}
+                    register={register}
+                    validation={{ required: "Number of weeks is required" }}
+                    options={generateWeekOptions(25)}
+                    errors={errors}
+                  />
                 )}
-              </div>
-              {paymentType === "AdvancePayment" && (
+
                 <FormFieldComp
-                  label="Number of weeks (25 weeks Plan)"
-                  name="Weeks"
-                  type="select"
-                  setValue={setValue}
+                  label={`Weekly Amount (Your weekly payment is NGN 5000.00)`}
+                  name="weeklyAmount"
+                  type="number"
+                  big
+                  readOnly
+                  placeholder="5000"
                   register={register}
-                  validation={{ required: "Number of weeks is required" }}
-                  options={generateWeekOptions(25)}
+                  defaultValueAttachment={
+                    numberOfWeeks === ""
+                      ? 5000
+                      : paymentType === "CurrentWeekPayment"
+                      ? 5000
+                      : 5000 * numberOfWeeks
+                  }
+                  setValue={setValue}
+                  validation={{
+                    required: "Weekly amount is required",
+                    min: {
+                      value: 5000,
+                      message: "Amount must be at least NGN 5000.00",
+                    },
+                  }}
+                  // onchange={true}
+                  // setOnChangeValue={setOnChangeValuePaymentType}
                   errors={errors}
                 />
-              )}
 
-              <FormFieldComp
-                label={`Weekly Amount (Your weekly payment is NGN 5000.00)`}
-                name="weeklyAmount"
-                type="number"
-                big
-                readOnly
-                placeholder="5000"
-                register={register}
-                defaultValueAttachment={
-                  numberOfWeeks === ""
-                    ? 5000
-                    : paymentType === "CurrentWeekPayment"
-                    ? 5000
-                    : 5000 * numberOfWeeks
-                }
-                setValue={setValue}
-                validation={{
-                  required: "Weekly amount is required",
-                  min: {
-                    value: 5000,
-                    message: "Amount must be at least NGN 5000.00",
-                  },
-                }}
-                // onchange={true}
-                // setOnChangeValue={setOnChangeValuePaymentType}
-                errors={errors}
-              />
+<div className="flex items-center gap-3 mt-4 mb-2">
+  <label htmlFor="addFundsToggle" className="text-sm font-medium text-primary">
+    Add Funds
+  </label>
+
+  <label className="relative inline-flex items-center cursor-pointer">
+    <input
+      id="addFundsToggle"
+      type="checkbox"
+      onChange={(e) => {
+        if (e.target.checked) {
+          handleSubmit(onSubmitPayment)(); // manually submit the form
+        }
+      }}
+      className="sr-only peer"
+    />
+    <div className="w-11 h-6 bg-gray-300 rounded-full peer-focus:ring-2 peer-focus:ring-primary peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-5"></div>
+  </label>
+</div>
+              </form>
+              {formSubmitted && paymentData?.reference && (
                 <ReusablePaystackButton
                   afterClose={handleClosePaymentModal}
                   email={userData?.data?.email}
@@ -838,13 +869,14 @@ console.log(result.data.transactionReference);
                     weeklyAmount
                   }
                   currency="NGN"
-                  reference={paymentData?.reference}
+                  reference={paymentData.reference}
                   onSuccess={handleSuccess}
                   onClose={handleClosePaymentModal}
                   text="Make payment"
                   className="w-full py-2 px-4 mt-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#00205C] hover:bg-[#001845] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00205C]"
                 />
-            </form>
+              )}
+            </div>
           )}
 
           {paymentModalType === "withdrawFund" && (
