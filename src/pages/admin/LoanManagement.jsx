@@ -11,6 +11,7 @@ import { formatCurrency } from "@/utils/currencyFormatter";
 import SendImg from "../../assets/send.svg";
 import Warning from "@/components/Cards/Warning";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const style = {
   position: "absolute",
