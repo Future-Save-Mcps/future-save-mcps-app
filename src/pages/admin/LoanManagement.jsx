@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import Spinner from "@/components/Spinner";
 import OngoingCompletedCard from "@/components/Cards/OngoingCompletedCard";
-import { useApiGet, useApiPost } from "@/hooks/useApi";
+import { useApiGet, useApiPatch, useApiPost } from "@/hooks/useApi";
 import { formatDate } from "@/utils/formatDate";
 import LoanTabs from "@/components/LoanTabs";
 import { formatCurrency } from "@/utils/currencyFormatter";
@@ -34,7 +34,7 @@ const LoanManagement = () => {
   const [loanId, setLoanId] = useState(searchParams.get("id"));
   const [open, setOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
-  const { post, isLoading } = useApiPost();
+  const { patch, isLoading } = useApiPatch();
   useEffect(() => {
     if (loanId) {
       setState(true);
@@ -65,10 +65,10 @@ const LoanManagement = () => {
     isFetching,
     refetch: refetchLoanPlan,
   } = useApiGet(`loan?LoanId=${loanId}`);
-
+  console.log("loanplan", loanPlan);
   const handleConfirmAction = async () => {
     try {
-      const res = await post(
+      const res = await patch(
         `/admin/approve-or-reject-loan?LoanApplicationId=${loanId}&IsApproved=${
           modalType === "Approval"
         }`
@@ -78,15 +78,9 @@ const LoanManagement = () => {
         throw new Error("Something went wrong");
       }
 
-      toast.success(
-        `Loan ${
-          modalType === "Approval" ? "approved" : "rejected"
-        } successfully`
-      );
-      handleClose();
+      handleClosePaymentModal();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to process loan request");
     }
   };
 
@@ -98,36 +92,6 @@ const LoanManagement = () => {
     { label: "Weekly Amount", value: "weeklyRepaymentAmount" },
     { label: "Account Status", value: "loanStatus" },
     // { label: "Action", value: "action" },
-  ];
-
-  const rawTableData = [
-    {
-      id: 1,
-      name: "Williams Elum",
-      plan: "Thrift Loan",
-      targetAmount: "₦ 300,000.00",
-      dateCreated: "12/05/2025",
-      weeklyAmount: "₦ 5,000.00",
-      status: "Approved",
-    },
-    {
-      id: 2,
-      name: "Williams Elum",
-      plan: "Premium Loan",
-      targetAmount: "₦ 300,000.00",
-      dateCreated: "12/05/2025",
-      weeklyAmount: "₦ 5,000.00",
-      status: "Rejected",
-    },
-    {
-      id: 2,
-      name: "Williams Elum",
-      plan: "Premium Loan",
-      targetAmount: "₦ 300,000.00",
-      dateCreated: "12/05/2025",
-      weeklyAmount: "₦ 5,000.00",
-      status: "Pending",
-    },
   ];
 
   const tableData = loan?.data?.items?.map((item) => ({
@@ -257,14 +221,13 @@ const LoanManagement = () => {
                 />
 
                 <div className="flex justify-center flex-wrap gap-4 items-center">
-                  {loanPlan?.data?.isLoanEligibleForAdminApproval &&
+                  {loanPlan?.data?.loanStatus === "PendingApproval" &&
                     loanPlan?.data?.isLoanEligibleForAdminApproval && (
                       <>
                         <button
                           onClick={() => handleOpen("Approval")}
                           className="flex my-6 justify-center min-w-[200px] items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-primary "
                         >
-                          {" "}
                           Approve
                         </button>
 
@@ -272,7 +235,6 @@ const LoanManagement = () => {
                           onClick={() => handleOpen("Rejection")}
                           className="flex my-6 justify-center min-w-[200px] items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-[#FB0300] "
                         >
-                          {" "}
                           Reject
                         </button>
                       </>
@@ -381,7 +343,11 @@ const LoanManagement = () => {
                   </div>
                 </div>
 
-                <LoanTabs activities={loanPlan?.data?.activities} />
+                <LoanTabs
+                  activities={loanPlan?.data?.activities}
+                  transactions={loanPlan?.data?.weeklyInflow}
+                  totalWeek={loanPlan?.data?.durationInWeeks}
+                />
               </>
             )}
           </div>
