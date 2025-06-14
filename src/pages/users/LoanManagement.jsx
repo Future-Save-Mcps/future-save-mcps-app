@@ -11,7 +11,7 @@ import SendImg from "../../assets/send.svg";
 import { Box, Modal, Typography } from "@mui/material";
 import LoanTabs from "../../components/LoanTabs";
 import { Controller, useForm } from "react-hook-form";
-import { useApiGet } from "../../hooks/useApi";
+import { useApiGet, useApiPost } from "../../hooks/useApi";
 import AplicationForm from "../../components/ApplicationForm";
 import NoLoan from "../../assets/NoLoan.svg";
 import Spinner from "../../components/Spinner";
@@ -36,9 +36,10 @@ const style = {
 const LoanManagement = () => {
   const [state, setState] = useState(false);
   const [loanId, setLoanId] = useState(null);
+  const { post, isLoading } = useApiPost();
+
   const {
     data: eligibleData,
-    isLoading,
     error,
     refetch,
   } = useApiGet("loan/eligible");

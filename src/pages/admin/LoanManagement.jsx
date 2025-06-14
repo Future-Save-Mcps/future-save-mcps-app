@@ -34,7 +34,7 @@ const LoanManagement = () => {
   const [loanId, setLoanId] = useState(searchParams.get("id"));
   const [open, setOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
-  const post = useApiPost();
+  const { post, isLoading } = useApiPost();
   useEffect(() => {
     if (loanId) {
       setState(true);
