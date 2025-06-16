@@ -17,6 +17,8 @@ import NoLoan from "../../assets/NoLoan.svg";
 import Spinner from "../../components/Spinner";
 import { formatCurrency } from "../../utils/currencyFormatter";
 import ReusablePaystackButton from "@/components/paystack/PaystackButton";
+import { getUserData } from "@/utils/getUserData";
+
 const style = {
   position: "absolute",
   top: "50%",
@@ -37,6 +39,7 @@ const LoanManagement = () => {
   const [state, setState] = useState(false);
   const [loanId, setLoanId] = useState(null);
   const { post, isLoading } = useApiPost();
+  const userData = getUserData();
 
   const {
     data: eligibleData,
@@ -94,6 +97,10 @@ const LoanManagement = () => {
   const [loanType, setLoanType] = useState(null);
   const paystackBtnRef = useRef(null);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [paymentData, setPaymentData] = useState({
+    reference: null,
+    amount: null,
+  });
 
   const [activeTab, setActiveTab] = useState("ongoing");
   const [eligible, setEligible] = useState(false);
@@ -163,18 +170,23 @@ const LoanManagement = () => {
     console.log(hello);
   };
 
-  const { control, handleSubmit, watch } = useForm({
+  const { control, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
-      paymentType: "this-week",
+      paymentType: "CurrentWeekPayment",
       numberOfWeeks: "2",
-      weeklyAmount: 5000,
+      weeklyAmount: 0, // temporary default
     },
   });
-
+  
+  useEffect(() => {
+    if (loanPlan?.data?.weeklyRepaymentAmount) {
+      setValue("weeklyAmount", loanPlan.data.weeklyRepaymentAmount);
+    }
+  }, [loanPlan, setValue]);
+  
   const paymentType = watch("paymentType");
   const numberOfWeeks = watch("numberOfWeeks");
   const weeklyAmount = watch("weeklyAmount");
-
   const onSubmit = async (data) => {
     const formData = {
       loanApplicationId: loanId,
@@ -182,10 +194,10 @@ const LoanManagement = () => {
       paymentType: data.paymentType,
     };
 
-    const result = await post(`savingsplan/add-loan-fund`, formData);
+    const result = await post(`loan/add-loan-fund`, formData);
 
     if (result.success && result.data) {
-      refetchContribution();
+      refetchLoanPlan();
       refetch();
 
       const paymentReference = result?.data?.transactionReference;
@@ -248,7 +260,7 @@ const LoanManagement = () => {
 
     switch (activeTab) {
       case "ongoing":
-        const ongoingLoans = filterLoans("PendingApproval");
+        const ongoingLoans = filterLoans("InProgress");
         return ongoingLoans?.length > 0 ? (
           ongoingLoans.map((loan) => (
             <OngoingCompletedCard
@@ -406,41 +418,7 @@ const LoanManagement = () => {
           </div>
           <div className="mt-4">{renderTabContent()}</div>
         </div>
-        {/* <div className=" max-w-[550px] border min-h-[500px] p-4 rounded-2xl ">
-          <div className="flex border-b ">
-            <button className="flex-1 text-[20px] font-[600] p-4 border-b-2 border-primary">
-              OnGoing
-            </button>
-            <button className="flex-1 text-[20px] font-[600] text-[#717171] p-4">
-              Completed
-            </button>
-            <button className="flex-1 text-[20px] font-[600] text-[#717171] p-4">
-              Rejected
-            </button>
-          </div>
-          <div className="">
-            <OngoingCompletedCard
-              onClick={toggleDrawer(true)}
-              percentage={20}
-              cardType={"Loan"}
-              loanAmount={"₦375,000.00 "}
-              loanBalance={"₦ 15,650.00"}
-              status={"In Progress"}
-              cardTitle={"Thrift Loan"}
-              remainingDays={" 299 days remaining"}
-            />
-            <OngoingCompletedCard
-              onClick={toggleDrawer(true)}
-              percentage={90}
-              cardType={"Loan"}
-              loanAmount={"₦375,000.00 "}
-              loanBalance={"₦ 15,650.00"}
-              status={"In Progress"}
-              cardTitle={"Premium Loan"}
-              remainingDays={" 299 days remaining"}
-            />
-          </div>
-        </div> */}
+        
       </div>
       <Drawer anchor="right" open={state}>
         <div className=" w-[100vw] relative max-w-[700px]">
@@ -491,9 +469,7 @@ const LoanManagement = () => {
                 />
 
                 <div className="flex justify-center items-center">
-                  {/* {loanPlan?.data?.loanStatus !== "PendingApproval" ||
-                  loanPlan?.data?.loanStatus !== "completed" ||
-                  (loanPlan?.data?.loanStatus !== "rejected" && ( */}
+                 
                   <button
                     onClick={handleOpenPaymentModal}
                     className="flex my-6 justify-center items-center gap-6 px-6 py-3 rounded-xl text-[#fff] bg-primary "
@@ -501,19 +477,10 @@ const LoanManagement = () => {
                     {" "}
                     <img src={SendImg} alt="" /> Make Repayment
                   </button>
-                  {/* ))} */}
                 </div>
 
                 <div style={styles.card}>
                   <div style={styles.row}>
-                    {/* <div style={styles.column}>
-                <div className="w-fit m-auto">
-                  <p>
-                    <strong>Weekly Repayment</strong>
-                  </p>
-                  <p>NGN 15,650.00</p>
-                </div>
-              </div> */}
                     <div style={styles.column}>
                       <div className="w-fit m-auto">
                         <p>
@@ -534,14 +501,6 @@ const LoanManagement = () => {
                     </div>
                   </div>
                   <div style={styles.row}>
-                    {/* <div style={styles.column}>
-                    <div className="w-fit m-auto">
-                      <p>
-                        <strong>End Date</strong>
-                      </p>
-                      <p>{loanPlan?.data?.endDate}</p>
-                    </div>
-                  </div> */}
                     <div style={styles.column}>
                       <div className="w-fit m-auto">
                         <p>
@@ -594,7 +553,7 @@ const LoanManagement = () => {
                   </div>
                 </div>
 
-                <LoanTabs activities={loanPlan?.data?.activities} />
+                <LoanTabs activities={loanPlan?.data?.activities} transactions={loanPlan?.data?.weeklyInflow} totalWeek={loanPlan?.data?.durationInWeeks} />
               </>
             )}
           </div>
@@ -603,7 +562,6 @@ const LoanManagement = () => {
 
       <Modal
         open={openPaymentModal}
-        // onClose={handleClosePaymentModal}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
@@ -637,28 +595,28 @@ const LoanManagement = () => {
                     <div className="flex gap-4">
                       <label
                         className={`flex items-center space-x-2 flex-1  p-3 rounded-md border ${
-                          field.value === "this-week" ? "border-primary" : ""
+                          field.value === "CurrentWeekPayment" ? "border-primary" : ""
                         }`}
                       >
                         <input
                           type="radio"
                           {...field}
-                          value="this-week"
-                          checked={field.value === "this-week"}
+                          value="CurrentWeekPayment"
+                          checked={field.value === "CurrentWeekPayment"}
                           className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                         />
                         <span>This week payment</span>
                       </label>
                       <label
                         className={`flex items-center space-x-2 flex-1  p-3 rounded-md border ${
-                          field.value === "advance" ? "border-primary" : ""
+                          field.value === "AdvancePayment" ? "border-primary" : ""
                         }`}
                       >
                         <input
                           type="radio"
                           {...field}
-                          value="advance"
-                          checked={field.value === "advance"}
+                          value="AdvancePayment"
+                          checked={field.value === "AdvancePayment"}
                           className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                         />
                         <span>Advance Payment</span>
@@ -669,7 +627,7 @@ const LoanManagement = () => {
               </div>
 
               {/* Number of weeks - only show if Advance Payment is selected */}
-              {paymentType === "advance" && (
+              {paymentType === "AdvancePayment" && (
                 <div className="mt-4 space-y-2">
                   <label
                     htmlFor="numberOfWeeks"
@@ -699,12 +657,12 @@ const LoanManagement = () => {
               {/* Weekly Amount */}
               <div className="mt-4 space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Weekly Amount (Your weekly payment is NGN 5000.00)
+                  Weekly Amount (Your weekly payment is NGN {loanPlan?.data?.weeklyRepaymentAmount})
                 </label>
                 <div className="text-2xl h-[100px] flex justify-center items-center rounded-lg mb-6 border font-semibold">
-                  ₦{" "}
+                  ₦
                   {(
-                    Number(paymentType === "advance" ? numberOfWeeks : 1) *
+                    Number(paymentType === "AdvancePayment" ? numberOfWeeks : 1) *
                     weeklyAmount
                   ).toLocaleString("en-NG", {
                     minimumFractionDigits: 2,
@@ -724,7 +682,7 @@ const LoanManagement = () => {
                     htmlFor="addFundsToggle"
                     className="text-sm font-medium text-primary"
                   >
-                    Add Funds
+                    Initiate Funds Transfer
                   </label>
 
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -733,7 +691,7 @@ const LoanManagement = () => {
                       type="checkbox"
                       onChange={(e) => {
                         if (e.target.checked) {
-                          handleSubmit(onSubmitPayment)(); // manually submit the form
+                          handleSubmit(onSubmit)(); // manually submit the form
                         }
                       }}
                       className="sr-only peer"
@@ -763,10 +721,10 @@ const LoanManagement = () => {
             </form>
             {formSubmitted && paymentData?.reference && (
                 <ReusablePaystackButton
-                  afterClose={handleClosePaymentModal}
+                  afterClose={ () => {handleClosePaymentModal(); refetchLoanPlan();} }
                   email={userData?.data?.email}
                   amount={
-                    Number(paymentType === "advance" ? numberOfWeeks : 1) *
+                    Number(paymentType === "AdvancePayment" ? numberOfWeeks : 1) *
                     weeklyAmount
                   }
                   currency="NGN"

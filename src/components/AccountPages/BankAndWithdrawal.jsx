@@ -1,10 +1,11 @@
 import { Box, Modal, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import FormFieldComp from "../form/FormFieldComp";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import CloseIcon from "@mui/icons-material/Close";
-import { useApiPatch } from "../../hooks/useApi";
-
+import { useApiGet, useApiPatch, useApiPost } from "../../hooks/useApi";
+import axios from "axios";
+import FormButton from "../FormBtn";
 const style = {
   position: "absolute",
   top: "50%",
@@ -19,29 +20,121 @@ const style = {
   borderRadius: "20px",
 };
 
-const BankAndWithdrawal = ({ userData, refetch }) => {
+const BankAndWithdrawal = () => {
   const [open, setOpen] = useState(false);
+  const [banks, setBanks] = useState([]);
+  const [bank, setBank] = useState({});
+  const { post } = useApiPost();
+  const secretKey = import.meta.env.VITE_PAYSTACK_SECRET_KEY;
+  const { data: userData,  refetch } = useApiGet("user");
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    control,
+    formState: { errors },
+  } = useForm();
+
+  
+  // Fetch banks from Paystack API
+  useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const response = await axios.get("https://api.paystack.co/bank", {
+          headers: {
+            Authorization: `Bearer ${secretKey}`,
+          },
+        });
+        const bankOptions = response.data.data.map((bank) => ({
+          label: bank.name,
+          value: bank.code,
+        }));
+        setBanks(bankOptions);
+      } catch (error) {
+        console.error("Error fetching banks:", error);
+      }
+    };
+    fetchBanks();
+  }, []);
+
+  const accountNumber = watch("accountNumber");
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const resolveAccount = async () => {
+        if (accountNumber?.length === 10 && bank?.value) {
+          try {
+            const res = await axios.get(
+              `https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${bank.value}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${secretKey}`,
+                },
+              }
+            );
+
+            const name = res.data?.data?.account_name;
+            if (name) {
+              setValue("accountName", name);
+            } else {
+              throw new Error("No name found");
+            }
+          } catch (err) {
+            setValue("accountName", "");
+            console.error("Error resolving:", err);
+            alert("Failed to resolve account name");
+          }
+        }
+      };
+
+      resolveAccount();
+    }, 600); // debounce for 600ms
+
+    return () => clearTimeout(timeout);
+  }, [accountNumber, bank?.value]);
+
+  useEffect(() => {
+    console.log(
+      "Effect fired with accountNumber:",
+      accountNumber,
+      "bank:",
+      bank?.value
+    );
+  }, [accountNumber, bank?.value]);
+
   const handleOpen = () => {
     setOpen(true);
   };
   const { patch, isLoading } = useApiPatch();
 
   const handleClose = () => setOpen(false);
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm();
 
   const onSubmit = async (data) => {
-    const result = await patch(`user`, data);
+    if (!data.accountName) {
+      alert(
+        "Unable to fetch account name. Please check your account number and bank."
+      );
+      return;
+    }
+
+    const formData = {
+      bvn: data.bvn,
+      userLoginPassword: data.password,
+      accountNumber: data.accountNumber,
+      accountName: data.accountName,
+      bankName: bank.label,
+      bankCode: bank.value,
+    };
+
+    const result = await patch(`user/bank-details`, formData);
     if (result.success && result.data) {
-      fetchAndStoreUserData();
-      refetch();
-      handleClose();
+      handleClose(); // Close modal
+      refetch(); // Refresh user data
     }
   };
+
   return (
     <>
       <div>
@@ -105,93 +198,103 @@ const BankAndWithdrawal = ({ userData, refetch }) => {
 
             {/* First Name */}
             <FormFieldComp
-              label="First Name"
-              name="firstName"
+              label="BVN"
+              name="bvn"
               type="text"
-              placeholder="Enter First Name"
-              register={register}
-              validation={{ required: "First Name is required" }}
-              errors={errors}
-            />
-
-            {/* Last Name */}
-            <FormFieldComp
-              label="Last Name"
-              name="lastName"
-              type="text"
-              placeholder="Enter Last Name"
-              register={register}
-              validation={{ required: "Last Name is required" }}
-              errors={errors}
-            />
-
-            {/* Gender (Select) */}
-            <FormFieldComp
-              label="Gender"
-              name="gender"
-              type="select"
-              setValue={setValue}
-              register={register}
-              validation={{ required: "Gender is required" }}
-              errors={errors}
-              options={[
-                { label: "Male", value: "male" },
-                { label: "Female", value: "female" },
-              ]}
-            />
-
-            {/* Date of Birth */}
-            <FormFieldComp
-              label="Date of Birth"
-              name="dob"
-              type="date"
-              register={register}
-              validation={{ required: "Date of Birth is required" }}
-              errors={errors}
-              // icon={<FaCalendarAlt />}
-            />
-
-            {/* Phone Number */}
-            <FormFieldComp
-              label="Phone Number"
-              name="phone"
-              type="tel"
-              placeholder="Enter Phone Number"
               register={register}
               validation={{
-                required: "Phone Number is required",
+                required: "BVN is required",
                 pattern: {
-                  value: /^[0-9]{10,11}$/,
-                  message: "Phone number must be 10-11 digits",
+                  value: /^\d{11}$/,
+                  message: "BVN must be 11 digits",
                 },
               }}
+              placeholder="Enter BVN"
               errors={errors}
+            />
+            {/* Last Name */}
+            <div>
+              <FormFieldComp
+                label="Bank Name"
+                name="bankName"
+                type="Bank"
+                searchable={true}
+                setValue={setValue}
+                setBank={setBank}
+                register={register}
+                validation={{ required: "Bank name is required" }}
+                options={banks}
+                errors={errors}
+              />
+            </div>
+
+            {/* Account Number */}
+            <Controller
+              control={control}
+              name="accountNumber"
+              rules={{
+                required: "Account number is required",
+                pattern: {
+                  value: /^\d{10}$/,
+                  message: "Account number must be 10 digits",
+                },
+              }}
+              render={({ field }) => (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-[#939393] mb-1">
+                    Account Number
+                  </label>
+                  <input
+                    {...field}
+                    type="text"
+                    placeholder="Enter Account Number"
+                    className="w-full px-2 py-3 rounded-lg border focus:outline-none"
+                  />
+                  {errors.accountNumber && (
+                    <p className="text-red-500 mt-1 text-[12px]">
+                      {errors.accountNumber.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+
+            <FormFieldComp
+              label="Name of Account"
+              name="accountName"
+              type="text"
+              register={register}
+              validation={{ required: "Account name is required" }}
+              placeholder="Enter Name of Account"
+              errors={errors}
+              readOnly
             />
 
             {/* Email */}
             <FormFieldComp
-              label="Email"
-              name="email"
-              type="email"
-              placeholder="Enter Email Address"
+              label="Password"
+              name="password"
+              type="password"
+              placeholder="Password"
               register={register}
               validation={{
-                required: "Email is required",
-                pattern: {
-                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-                  message: "Invalid email address",
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
                 },
               }}
               errors={errors}
             />
 
             {/* Submit Button */}
-            <button
+            <FormButton
+              width="100%"
               type="submit"
-              className="w-full bg-primary text-white py-3 mt-4 rounded-lg hover:bg-blue-600 transition"
-            >
-              Update
-            </button>
+              text="Withdraw Funds"
+              isLoading={isLoading}
+              disabled={isLoading}
+            />
           </form>
         </Box>
       </Modal>

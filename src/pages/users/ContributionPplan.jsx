@@ -165,7 +165,7 @@ const ContributionPplan = () => {
     const result = await post(`savingsplan/add-savings-fund`, formData);
 
     if (result.success && result.data) {
-      refetchContribution();
+      refetchContributionPlan();
       refetch();
 
       const paymentReference = result?.data?.transactionReference;
@@ -813,7 +813,10 @@ const ContributionPplan = () => {
                 )}
 
                 <FormFieldComp
-                  label={`Weekly Amount (Your weekly payment is NGN 5000.00)`}
+                  label={`Weekly Amount (Your weekly payment is NGN ${contributionPlan?.data?.weeklyAmount?.toLocaleString(
+                    "en-NG",
+                    { minimumFractionDigits: 2 }
+                  )})`}
                   name="weeklyAmount"
                   type="number"
                   big
@@ -821,11 +824,9 @@ const ContributionPplan = () => {
                   placeholder="5000"
                   register={register}
                   defaultValueAttachment={
-                    numberOfWeeks === ""
-                      ? 5000
-                      : paymentType === "CurrentWeekPayment"
-                      ? 5000
-                      : 5000 * numberOfWeeks
+                    paymentType === "AdvancePayment" && numberOfWeeks
+                      ? contributionPlan?.data?.weeklyAmount * numberOfWeeks
+                      : contributionPlan?.data?.weeklyAmount
                   }
                   setValue={setValue}
                   validation={{
@@ -835,8 +836,6 @@ const ContributionPplan = () => {
                       message: "Amount must be at least NGN 5000.00",
                     },
                   }}
-                  // onchange={true}
-                  // setOnChangeValue={setOnChangeValuePaymentType}
                   errors={errors}
                 />
 
@@ -845,7 +844,7 @@ const ContributionPplan = () => {
                     htmlFor="addFundsToggle"
                     className="text-sm font-medium text-primary"
                   >
-                    Add Funds
+                  Initiate Funds transfer
                   </label>
 
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -865,7 +864,7 @@ const ContributionPplan = () => {
               </form>
               {formSubmitted && paymentData?.reference && (
                 <ReusablePaystackButton
-                  afterClose={handleClosePaymentModal}
+                  afterClose={ () => {handleClosePaymentModal(); refetchContributionPlan();}}
                   email={userData?.data?.email}
                   amount={
                     Number(paymentType === "advance" ? numberOfWeeks : 1) *

@@ -5,13 +5,14 @@ import Upload from "../../assets/withdrawicon.svg";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import { toast } from "react-toastify";
 import { ContributionIcon } from "../icons/Icons";
-import formatTimeAgo from "@/utils/formatTimeAgo";
+// import formatTimeAgo from "@/utils/formatTimeAgo";
 import FormFieldComp from "../form/FormFieldComp";
 import FormButton from "../FormBtn";
 import { Box, Modal } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { getUserData } from "@/utils/getUserData";
 import CloseIcon from "@mui/icons-material/Close";
+import { formatDate } from "../../utils/formatDate";
 
 const style = {
   position: "absolute",
@@ -41,7 +42,6 @@ const ReferAndEarn = () => {
   const { post, isLoading } = useApiPost();
 
   const token = localStorage.getItem("accessToken");
-  console.log(token);
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const [paymentModalType, setPaymentModalType] = useState(null);
 
@@ -62,7 +62,10 @@ const ReferAndEarn = () => {
   const handleClosePaymentModal = () => {
     setOpenPaymentModal(false);
     setPaymentModalType(null);
-  };
+
+    setTimeout(() => {
+      refetchDashboardData();
+    }, 500);  };
 
   const onSubmitWithdrawal = async (data) => {
     const formData = {
@@ -70,7 +73,6 @@ const ReferAndEarn = () => {
       loginPassword: data.password,
     };
 
-    // console.log(formData);
 
     const result = await post(`user/withdraw-referral-fund`, formData);
     if (result.success && result.data) {
@@ -79,7 +81,6 @@ const ReferAndEarn = () => {
     }
   };
 
-  console.log(dashboardData);
   const referralLink = `https://app.futuresavemcps.com/register?ref=${dashboardData?.data?.referralCode}`;
   return (
     <div>
@@ -139,7 +140,7 @@ const ReferAndEarn = () => {
                 <div>
                   <p className="font-medium">{activity.description}</p>
                   <p className="text-sm text-gray-500">
-                    {formatTimeAgo(activity.timestamp)}
+                    {formatDate(activity.timeStamp)}
                   </p>
                 </div>
               </div>

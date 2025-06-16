@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
-import LockIcon from "../../assets/lockIcon.svg"
-import Security from '@/components/SettingsPages/Security';
+import React, { useState } from "react";
+import LockIcon from "../../assets/lockIcon.svg";
+import Security from "@/components/SettingsPages/Security";
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("Security Settings");
 
@@ -8,15 +8,13 @@ const Settings = () => {
     // {
     //   name: "Profile",
     //   Icon: Profile,
-    //   component: <ProfileContent refetch={refetch} userData={userData} />,
+    //   component: <ProfileContent refetch={refetch} userData={ata} />,
     // },
     {
       name: "Account Settings",
       Icon: LockIcon,
       component: <Security />,
     },
-
-
 
     // {
     //   name: "Bank & Withdrawal",
@@ -52,7 +50,7 @@ const Settings = () => {
 
       <div className="flex-1 p-4  min-h-[75vh]">{renderContent()}</div>
     </div>
-  )
-}
+  );
+};
 
-export default Settings
+export default Settings;
