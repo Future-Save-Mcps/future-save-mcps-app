@@ -9,10 +9,11 @@ const EmailVerification = ({ email, onVerify, agreement = false, userId, isLoadi
   const [loading, setLoading] = useState(false);
   const inputRefs = useRef([]);
   const [resending, setResending] = useState(false);
+  const {post} = useApiPost()
+
   const handleChange = (value, index) => {
     // Allow only alphanumeric characters and convert to uppercase
     value = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-
     const newOtp = [...otp];
 
     // If multiple characters are pasted

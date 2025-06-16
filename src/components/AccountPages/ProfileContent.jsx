@@ -65,15 +65,15 @@ const ProfileContent = ({ userData, refetch }) => {
 
         <div className="p-6 mt-8">
           <div className="flex flex-wrap gap-12">
-            <div className="max-w-[200px] w-[90vw]">
+            {/* <div className="max-w-[200px] w-[90vw]">
               <h3 className="font-bold">Gender</h3>
               <p>{userData?.data?.gender || "---"}</p>
-            </div>
+            </div> */}
 
-            <div className="max-w-[200px] w-[90vw]">
+            {/* <div className="max-w-[200px] w-[90vw]">
               <h3 className="font-bold">Date of Birth</h3>
               <p>{userData?.data?.dateOfBirth || "---"}</p>
-            </div>
+            </div> */}
 
             <div className="max-w-[200px] w-[90vw]">
               <h3 className="font-bold">Phone Number</h3>

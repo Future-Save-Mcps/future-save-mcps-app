@@ -78,7 +78,7 @@ const LoanManagement = () => {
         throw new Error("Something went wrong");
       }
 
-      handleClosePaymentModal();
+      handleClose();
     } catch (err) {
       console.error(err);
     }
