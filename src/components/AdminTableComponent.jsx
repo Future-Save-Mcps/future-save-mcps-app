@@ -102,7 +102,7 @@ const AdminTableComponent = ({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             onChange={(e) => onSearch?.(e.target.value)}
-            placeholder="Search for savings plan by User's name"
+            placeholder="Search  by User's name"
             className="pl-10 max-w-[300px]"
           />
         </div>

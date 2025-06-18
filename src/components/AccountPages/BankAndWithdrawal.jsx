@@ -26,7 +26,7 @@ const BankAndWithdrawal = () => {
   const [bank, setBank] = useState({});
   const { post } = useApiPost();
   const secretKey = import.meta.env.VITE_PAYSTACK_SECRET_KEY;
-  const { data: userData,  refetch } = useApiGet("user");
+  const { data: userData, refetch } = useApiGet("user");
 
   const {
     register,
@@ -37,7 +37,6 @@ const BankAndWithdrawal = () => {
     formState: { errors },
   } = useForm();
 
-  
   // Fetch banks from Paystack API
   useEffect(() => {
     const fetchBanks = async () => {
@@ -291,7 +290,7 @@ const BankAndWithdrawal = () => {
             <FormButton
               width="100%"
               type="submit"
-              text="Withdraw Funds"
+              text="Update"
               isLoading={isLoading}
               disabled={isLoading}
             />
