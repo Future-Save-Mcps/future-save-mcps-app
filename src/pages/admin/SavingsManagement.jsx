@@ -50,6 +50,7 @@ const SavingsManagement = () => {
   const [open, setOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
   const { post, isLoading } = useApiPost();
+  const [currentPage, setCurrentPage] = useState(1);
 
   const {
     register,
@@ -99,7 +100,7 @@ const SavingsManagement = () => {
     data: loan,
     isLoading: isLoadingLoan,
     refetch: refetchLoan,
-  } = useApiGet(`admin/savings/all?PageNumber=1&PageSize=100`);
+  } = useApiGet(`admin/savings/all?PageNumber=${currentPage}&PageSize=${10}`);
 
   const {
     data: contributionPlan,
@@ -160,12 +161,13 @@ const SavingsManagement = () => {
   };
 
   const handleSearch = (query, data) => {
-    console.log(query);
+    refetchLoan({ search: value, PageNumber: currentPage, PageSize: 10 });
   };
 
   const handleFilter = (filter, data) => {
     console.log("this is the filter");
   };
+  const handlePageChange = (newPage) => setCurrentPage(newPage);
 
   return (
     <div>
@@ -176,6 +178,12 @@ const SavingsManagement = () => {
         onFilter={handleFilter}
         view={toggleDrawer}
         loading={isLoadingLoan}
+        searchKey="planName"
+        totalCount={loan?.data?.totalCount || 0}
+        pageSize={loan?.data?.pageSize || 10}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
+
       />
 
       <Drawer anchor="right" open={state}>

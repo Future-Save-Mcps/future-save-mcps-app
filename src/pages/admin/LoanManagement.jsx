@@ -34,6 +34,8 @@ const LoanManagement = () => {
   const [loanId, setLoanId] = useState(searchParams.get("id"));
   const [open, setOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
   const { patch, isLoading } = useApiPatch();
   useEffect(() => {
     if (loanId) {
@@ -57,7 +59,7 @@ const LoanManagement = () => {
     data: loan,
     isLoading: isLoadingLoan,
     refetch: refetchLoan,
-  } = useApiGet(`admin/loan/all?PageNumber=1&PageSize=100`);
+  } = useApiGet(`admin/loan/all?PageNumber=${currentPage}&PageSize=${10}`);
 
   const {
     data: loanPlan,
@@ -132,10 +134,11 @@ const LoanManagement = () => {
     setOpen(false);
     setModalType(null);
   };
+  const handlePageChange = (newPage) => setCurrentPage(newPage);
 
   // Search Function
   const handleSearch = (query, data) => {
-    console.log(query);
+    refetchLoan({ search: value, PageNumber: currentPage, PageSize: 10 });
 
     // return data.filter((item) =>
     //   item.name.toLowerCase().includes(query.toLowerCase())
@@ -170,6 +173,12 @@ const LoanManagement = () => {
         onAuditTrail={handleAuditTrail}
         view={toggleDrawer}
         loading={isLoadingLoan}
+        searchKey="fullName"
+        totalCount={loan?.data?.totalCount || 0}
+        pageSize={loan?.data?.pageSize || 10}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
+
       />
 
       <Drawer anchor="right" open={state}>

@@ -8,13 +8,16 @@ import { useNavigate } from "react-router-dom";
 const UserManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
 
   const {
     data: loan,
     isLoading: isLoadingLoan,
     refetch: refetchLoan,
-  } = useApiGet(`admin/user-management-all-users`);
+  } = useApiGet(
+    `admin/user-management-all-users?PageNumber=${currentPage}&PageSize=${10}`
+  );
 
   const handleUserAdded = () => {
     setIsModalOpen(false);
@@ -61,13 +64,12 @@ const UserManagement = () => {
 
   // Search Function
   const handleSearch = (query, data) => {
-    console.log(query);
-
+    refetchLoan({ search: value, PageNumber: currentPage, PageSize: 10 });
     // return data.filter((item) =>
     //   item.name.toLowerCase().includes(query.toLowerCase())
     // );
   };
-
+  const handlePageChange = (newPage) => setCurrentPage(newPage);
   // Filter Function
   const handleFilter = (filter, data) => {
     // if (!filter) return data;
@@ -104,10 +106,16 @@ const UserManagement = () => {
         onSearch={handleSearch}
         onFilter={handleFilter}
         onExport={handleExport}
+        totalCount={loan?.data?.totalCount || 0}
+        pageSize={loan?.data?.pageSize || 10}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
         onAuditTrail={handleAuditTrail}
         view={toggleDrawer}
         onAddUser={handleAddUser} // Function to handle adding a user
         showAddUserButton={true}
+        searchKey="firstName"
+        loading={isLoadingLoan}
       />
 
       {isModalOpen && (
