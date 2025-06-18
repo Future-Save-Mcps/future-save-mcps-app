@@ -257,7 +257,7 @@ const Dashboard = () => {
               <span className={`text-xl ${stat.color}`}>{stat.icon}</span>
               <h3 className="text-base font-semibold">{stat.title}</h3>
             </div>
-            <p className="text-[#939393] font-normal text-xs">
+            <p className="text-[#939393] font-normal text-xs mt-2">
               {stat.subtitle} {selected}
             </p>
             {isLoadingDashboardData || isFerchingDashboardData ? (

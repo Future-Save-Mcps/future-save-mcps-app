@@ -174,8 +174,6 @@ const SavingsManagement = () => {
         data={tableData}
         onSearch={handleSearch}
         onFilter={handleFilter}
-        onExport={handleExport}
-        onAuditTrail={handleAuditTrail}
         view={toggleDrawer}
         loading={isLoadingLoan}
       />

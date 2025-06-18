@@ -98,7 +98,7 @@ const Navbar = ({ refresh }) => {
       <Drawer anchor="right" open={state}>
         <div className="p-4 w-[100vw] max-w-[500px]">
           <div className=" flex justify-between items-center ">
-            <h2 className="text-[24px] font-[700]">Notificactions</h2>
+            <h2 className="text-[24px] font-[700]">Notifications</h2>
             <CloseIcon
               onClick={toggleDrawer(false)}
               sx={{
