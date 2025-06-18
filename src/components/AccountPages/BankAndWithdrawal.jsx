@@ -94,15 +94,6 @@ const BankAndWithdrawal = () => {
     return () => clearTimeout(timeout);
   }, [accountNumber, bank?.value]);
 
-  useEffect(() => {
-    console.log(
-      "Effect fired with accountNumber:",
-      accountNumber,
-      "bank:",
-      bank?.value
-    );
-  }, [accountNumber, bank?.value]);
-
   const handleOpen = () => {
     setOpen(true);
   };

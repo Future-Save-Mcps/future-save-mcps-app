@@ -9,6 +9,7 @@ const AccountCompletion = ({ onNext, userId }) => {
   const [banks, setBanks] = useState([]);
   const [bank, setBank] = useState({});
   const { post, isLoading } = useApiPost();
+  const secretKey = import.meta.env.VITE_PAYSTACK_SECRET_KEY;
 
   const {
     register,
@@ -24,7 +25,7 @@ const AccountCompletion = ({ onNext, userId }) => {
       try {
         const response = await axios.get("https://api.paystack.co/bank", {
           headers: {
-            Authorization: `Bearer YOUR_PAYSTACK_SECRET_KEY`, // Replace with your Paystack secret key
+            Authorization: `Bearer ${secretKey}`, // Replace with your Paystack secret key
           },
         });
         const bankOptions = response.data.data.map((bank) => ({
@@ -38,6 +39,42 @@ const AccountCompletion = ({ onNext, userId }) => {
     };
     fetchBanks();
   }, []);
+
+  const accountNumber = watch("accountNumber");
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const resolveAccount = async () => {
+        if (accountNumber?.length === 10 && bank?.value) {
+          try {
+            const res = await axios.get(
+              `https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${bank.value}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${secretKey}`,
+                },
+              }
+            );
+
+            const name = res.data?.data?.account_name;
+            if (name) {
+              setValue("accountName", name);
+            } else {
+              throw new Error("No name found");
+            }
+          } catch (err) {
+            setValue("accountName", "");
+            console.error("Error resolving:", err);
+            alert("Failed to resolve account name");
+          }
+        }
+      };
+
+      resolveAccount();
+    }, 600); // debounce for 600ms
+
+    return () => clearTimeout(timeout);
+  }, [accountNumber, bank?.value]);
 
   const onSubmit = async (data) => {
     const formData = {
@@ -84,7 +121,6 @@ const AccountCompletion = ({ onNext, userId }) => {
             ]}
             errors={errors}
           />
-
           {/* Date of Birth */}
           <FormFieldComp
             label="Date of Birth"
@@ -95,7 +131,6 @@ const AccountCompletion = ({ onNext, userId }) => {
             placeholder="DD/MM/YYYY"
             errors={errors}
           />
-
           {/* BVN */}
           <FormFieldComp
             label="BVN"
@@ -112,7 +147,6 @@ const AccountCompletion = ({ onNext, userId }) => {
             placeholder="Enter BVN"
             errors={errors}
           />
-
           {/* Bank Name */}
           <div>
             <FormFieldComp
@@ -128,8 +162,36 @@ const AccountCompletion = ({ onNext, userId }) => {
               errors={errors}
             />
           </div>
-
-          {/* Name of Account */}
+          {/* Account Number */}
+          <Controller
+            control={control}
+            name="accountNumber"
+            rules={{
+              required: "Account number is required",
+              pattern: {
+                value: /^\d{10}$/,
+                message: "Account number must be 10 digits",
+              },
+            }}
+            render={({ field }) => (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-[#939393] mb-1">
+                  Account Number
+                </label>
+                <input
+                  {...field}
+                  type="text"
+                  placeholder="Enter Account Number"
+                  className="w-full px-2 py-3 rounded-lg border focus:outline-none"
+                />
+                {errors.accountNumber && (
+                  <p className="text-red-500 mt-1 text-[12px]">
+                    {errors.accountNumber.message}
+                  </p>
+                )}
+              </div>
+            )}
+          />
           <FormFieldComp
             label="Name of Account"
             name="accountName"
@@ -138,23 +200,7 @@ const AccountCompletion = ({ onNext, userId }) => {
             validation={{ required: "Account name is required" }}
             placeholder="Enter Name of Account"
             errors={errors}
-          />
-
-          {/* Account Number */}
-          <FormFieldComp
-            label="Account Number"
-            name="accountNumber"
-            type="text"
-            register={register}
-            validation={{
-              required: "Account number is required",
-              pattern: {
-                value: /^\d{10}$/,
-                message: "Account number must be 10 digits",
-              },
-            }}
-            placeholder="Enter Account Number"
-            errors={errors}
+            readOnly
           />
         </div>
 
