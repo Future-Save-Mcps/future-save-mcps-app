@@ -80,7 +80,6 @@ const IOSSwitch = styled((props) => (
 
 const ContributionPplan = () => {
   const userData = getUserData();
-  console.log(userData);
   const [state, setState] = useState(false);
   const [paymentData, setPaymentData] = useState({
     reference: null,
@@ -197,7 +196,22 @@ const ContributionPplan = () => {
       handleClosePaymentModal();
     }
   };
+  const onSubmitDeactivation = async (data) => {
+    const formData = {
+      savingsPlanId: planId,
+      loginPassword: data.password,
+    };
 
+    // console.log(formData);
+
+    const result = await post(`savingsplan/withdraw-deactivate-savings-fund`, formData);
+    if (result.success && result.data) {
+      refetchContribution();
+      refetchContributionPlan();
+      refetch();
+      handleClosePaymentModal();
+    }
+  };
   const [open, setOpen] = useState(false);
   const [onChangeValueNumberOfWeeks, setOnChangeValueNumberOfWeeks] =
     useState("");
@@ -216,12 +230,12 @@ const ContributionPplan = () => {
     // handleClosePaymentModal();
     // }, 3000);
   };
+  const [openDeactivateModal, setOpenDeactivateModal] = useState(false);
 
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const [activeTab, setActiveTab] = useState("Ongoing");
   const [paymentModalType, setPaymentModalType] = useState(null);
 
-  //  let filteredPlans;
 
   useEffect(() => {
     if (contribution) {
@@ -273,7 +287,6 @@ const ContributionPplan = () => {
   }, [paymentType, onChangeValuePaymentType]);
 
   useEffect(() => {
-
     setValue("weeklyAmount", 5000 * numberOfWeeks);
   }, [numberOfWeeks, onChangeValueNumberOfWeeks]);
 
@@ -708,6 +721,7 @@ const ContributionPplan = () => {
       </Modal>
 
       <Modal
+        key={openPaymentModal ? paymentModalType : "closed"}
         open={openPaymentModal}
         onClose={handleClosePaymentModal}
         aria-labelledby="modal-modal-title"
@@ -720,7 +734,9 @@ const ContributionPplan = () => {
                 ? "Add Fund"
                 : paymentModalType === "withdrawFund"
                 ? "Withdraw Funds"
-                : "Deactivate Plan"}
+                : paymentModalType === "deactivatePlan" // New condition added here
+                ? "Deactivate Plan"
+                : ""}
             </h2>
             <CloseIcon
               onClick={handleClosePaymentModal}
@@ -838,7 +854,7 @@ const ContributionPplan = () => {
                     htmlFor="addFundsToggle"
                     className="text-sm font-medium text-primary"
                   >
-                  Initiate Funds transfer
+                    Initiate Funds transfer
                   </label>
 
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -858,7 +874,10 @@ const ContributionPplan = () => {
               </form>
               {formSubmitted && paymentData?.reference && (
                 <ReusablePaystackButton
-                  afterClose={ () => {handleClosePaymentModal(); refetchContributionPlan();}}
+                  afterClose={() => {
+                    handleClosePaymentModal();
+                    refetchContributionPlan();
+                  }}
                   email={userData?.data?.email}
                   amount={
                     Number(paymentType === "advance" ? numberOfWeeks : 1) *
@@ -958,7 +977,7 @@ const ContributionPplan = () => {
               <h2 className="text-2xl font-semibold">Warning!</h2>
               <p className="w-[70%] text-center text-[#313131] text-base font-semibold">
                 Deactivating funds means that you will lose 50% of this savings
-                balance.{" "}
+                balance.
               </p>
               <div className="flex  w-full justify-center gap-6">
                 <button
@@ -969,7 +988,7 @@ const ContributionPplan = () => {
                 </button>
 
                 <button
-                  // onClick={()=>handleOpenPaymentModal("deactivatePlan")}
+                  onClick={() => setOpenDeactivateModal(true)}
                   className=" mt-6 flex-1 justify-center items-center gap-4 px-6 py-3 rounded-xl text-[#fff] bg-[#FB0300] "
                 >
                   Deactivate
@@ -979,6 +998,89 @@ const ContributionPplan = () => {
           )}
         </Box>
       </Modal>
+      <Modal
+  open={openDeactivateModal}
+  onClose={() => setOpenDeactivateModal(false)} // Close modal on close button click
+  aria-labelledby="modal-modal-title"
+  aria-describedby="modal-modal-description"
+>
+  <Box sx={style}>
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="text-xl font-semibold">Confirm Deactivation</h2>
+      <CloseIcon
+        onClick={() => setOpenDeactivateModal(false)}  // Close modal on close button click
+        sx={{
+          cursor: "pointer",
+          padding: "5px",
+          width: "35px",
+          height: "35px",
+          borderRadius: "50%",
+          backgroundColor: "#F8F8FA",
+        }}
+      />
+    </div>
+
+    {/* Modal Content: Confirmation */}
+    <form
+              className=" overflow-auto max-h-[80dvh]"
+              onSubmit={handleSubmit(onSubmitDeactivation)}
+            >
+              
+
+              <div className="my-6 ">
+                <label className="block text-sm font-medium text-[#939393] mb-1">
+                  Withdrawal Account
+                </label>
+                <div
+                  style={{
+                    backgroundImage: `url(${Bg})`,
+                    backgroundColor: "#72109D",
+                    backgroundSize: "cover",
+                    backgroundRepeat: "repeat",
+                    backgroundPosition: "center",
+                  }}
+                  className=" bg-[#72109D] rounded-2xl p-6 flex flex-col justify-center items-center gap-1 "
+                >
+                  <div className="font-bold text-xl text-white">
+                    {userData?.data?.bankName}
+                  </div>
+                  <div className="font-bold text-xl text-white">
+                    {userData?.data?.bankAccountNumber}
+                  </div>
+                  <div className="font-bold text-base text-white">
+                    {`(${userData?.data?.accountName})`}
+                  </div>
+                </div>
+              </div>
+
+              <FormFieldComp
+                label="Password"
+                name="password"
+                type="password"
+                placeholder="Password"
+                register={register}
+                validation={{
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
+                }}
+                errors={errors}
+              />
+
+              <FormButton
+                width="100%"
+                type="submit"
+                text="Withdraw Funds"
+                isLoading={isLoading}
+                disabled={isLoading}
+              />
+            </form>
+
+  </Box>
+</Modal>
+
     </>
   );
 };
