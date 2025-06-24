@@ -22,7 +22,11 @@ const SignUpForm = () => {
 
   const handleNext = () => {
     if (step === 3) {
-      navigate("/", { replace: true });
+      if (selectedUserType === "Admin") {
+        navigate("/", { replace: true }); 
+      } else {
+        navigate("/", { replace: true }); 
+      }
     } else {
       setStep((prevStep) => prevStep + 1);
     }
@@ -40,7 +44,11 @@ const SignUpForm = () => {
         prevParams.set("step", "3");
         return prevParams;
       });
-      handleNext();
+      if (selectedUserType === "Admin") {
+        navigate("/", { replace: true }); 
+      } else {
+        handleNext(); 
+      }
     }
   };
 
@@ -61,9 +69,7 @@ const SignUpForm = () => {
     }
   }, [setValue]);
 
-
   const onSubmit = async (formData) => {
-    console.log("formData:", formData);
 
     const result = await post("auth/register", {
       firstName: formData.firstName,

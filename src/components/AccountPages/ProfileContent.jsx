@@ -21,6 +21,7 @@ const style = {
 };
 
 const ProfileContent = ({ userData, refetch }) => {
+  console.log(userData);
   const { patch, isLoading } = useApiPatch();
   // api/user
   const [open, setOpen] = useState(false);
@@ -39,8 +40,24 @@ const ProfileContent = ({ userData, refetch }) => {
     const result = await patch(`user`, data);
     if (result.success && result.data) {
       fetchAndStoreUserData();
-      refetch()
+      refetch();
       handleClose();
+    }
+  };
+
+  const getBvnVerificationStatus = (status) => {
+    if (status === true) {
+      return <span className="text-green-500 font-semibold">Verified</span>;
+    } else if (status === false) {
+      return (
+        <span className="text-red-500 font-semibold">Verification Failed</span>
+      );
+    } else {
+      return (
+        <span className="text-yellow-500 font-semibold">
+          Pending Verification
+        </span>
+      );
     }
   };
   return (
@@ -65,15 +82,15 @@ const ProfileContent = ({ userData, refetch }) => {
 
         <div className="p-6 mt-8">
           <div className="flex flex-wrap gap-12">
-            {/* <div className="max-w-[200px] w-[90vw]">
+            <div className="max-w-[200px] w-[90vw]">
               <h3 className="font-bold">Gender</h3>
               <p>{userData?.data?.gender || "---"}</p>
-            </div> */}
+            </div>
 
-            {/* <div className="max-w-[200px] w-[90vw]">
+            <div className="max-w-[200px] w-[90vw]">
               <h3 className="font-bold">Date of Birth</h3>
               <p>{userData?.data?.dateOfBirth || "---"}</p>
-            </div> */}
+            </div>
 
             <div className="max-w-[200px] w-[90vw]">
               <h3 className="font-bold">Phone Number</h3>
@@ -83,6 +100,11 @@ const ProfileContent = ({ userData, refetch }) => {
             <div className="max-w-[200px] w-[90vw]">
               <h3 className="font-bold">Email</h3>
               <p>{userData?.data?.email || "---"}</p>
+            </div>
+
+            <div className="max-w-[200px] w-[90vw]">
+              <h3 className="font-bold">BVN Verification Status</h3>
+              <p>{getBvnVerificationStatus(userData?.data?.isBVNVerified)}</p>
             </div>
           </div>
         </div>
@@ -194,7 +216,12 @@ const ProfileContent = ({ userData, refetch }) => {
               Update
             </button> */}
 
-            <FormButton isLoading={isLoading} type="submit" text="Update" width="100%"/>
+            <FormButton
+              isLoading={isLoading}
+              type="submit"
+              text="Update"
+              width="100%"
+            />
           </form>
         </Box>
       </Modal>

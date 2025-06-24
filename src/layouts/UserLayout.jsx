@@ -31,7 +31,6 @@ const UserLayout = () => {
     useEffect(() => {
       // ref
         // React to local state changes if needed
-        console.log("User Info updated:", userInfo);
     }, [userInfo]);
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);

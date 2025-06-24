@@ -22,18 +22,13 @@ const UserManagement = () => {
   const handleUserAdded = () => {
     setIsModalOpen(false);
     setIsSuccessOpen(true);
-    // setTimeout(() => setIsSuccessOpen(false), 4000);
   };
 
-  console.log(loan);
   const tableHeaders = [
     { label: "Name", value: "firstName" },
     { label: "Email Address", value: "email" },
     { label: "Phone Number", value: "phoneNumber" },
-    // { label: "Last login", value: "userRepaymentStartDate" },
-    // { label: "Weekly Amount", value: "weeklyAmount" },
     { label: "Account Status", value: "isActive" },
-    // { label: "Action", value: "action" },
   ];
 
   const tableData = loan?.data?.items.map((item) => ({
@@ -97,7 +92,10 @@ const UserManagement = () => {
   const handleAddUser = () => {
     setIsModalOpen(true); // Open the modal
   };
-
+  const handleSuccessModalClose = () => {
+    setIsSuccessOpen(false);
+    refetchLoan(); // Trigger the refetch after the success modal is closed
+  };
   return (
     <div>
       <AdminTableComponent
@@ -127,7 +125,7 @@ const UserManagement = () => {
       )}
 
       {isSuccessOpen && (
-        <SuccessModal open={isSuccessOpen} setOpen={setIsSuccessOpen} />
+        <SuccessModal open={isSuccessOpen} setOpen={setIsSuccessOpen} onClose={handleSuccessModalClose} />
       )}
     </div>
   );

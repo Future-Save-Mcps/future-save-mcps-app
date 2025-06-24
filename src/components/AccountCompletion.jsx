@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import FormFieldComp from "./form/FormFieldComp";
 import { useApiPost } from "../hooks/useApi";
 import axios from "axios";
@@ -16,6 +16,7 @@ const AccountCompletion = ({ onNext, userId }) => {
     handleSubmit,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useForm();
 
@@ -43,39 +44,34 @@ const AccountCompletion = ({ onNext, userId }) => {
   const accountNumber = watch("accountNumber");
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      const resolveAccount = async () => {
-        if (accountNumber?.length === 10 && bank?.value) {
-          try {
-            const res = await axios.get(
-              `https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${bank.value}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${secretKey}`,
-                },
-              }
-            );
-
-            const name = res.data?.data?.account_name;
-            if (name) {
-              setValue("accountName", name);
-            } else {
-              throw new Error("No name found");
+    const resolveAccount = async () => {
+      if (accountNumber?.length === 10 && bank?.value) {
+        try {
+          const res = await axios.get(
+            `https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${bank.value}`,
+            {
+              headers: {
+                Authorization: `Bearer ${secretKey}`,
+              },
             }
-          } catch (err) {
-            setValue("accountName", "");
-            console.error("Error resolving:", err);
-            alert("Failed to resolve account name");
+          );
+  
+          const name = res.data?.data?.account_name;
+          if (name) {
+            setValue("accountName", name); // Set the account name in the form
+          } else {
+            setValue("accountName", ""); // Clear the account name if no name is found
           }
+        } catch (err) {
+          setValue("accountName", ""); // Clear account name on error
+          console.error("Error resolving account:", err);
         }
-      };
-
-      resolveAccount();
-    }, 600); // debounce for 600ms
-
-    return () => clearTimeout(timeout);
-  }, [accountNumber, bank?.value]);
-
+      }
+    };
+  
+    resolveAccount();
+  }, [accountNumber, bank?.value]); // Trigger this effect when accountNumber or bank changes
+  
   const onSubmit = async (data) => {
     const formData = {
       gender: data.gender,
@@ -192,15 +188,28 @@ const AccountCompletion = ({ onNext, userId }) => {
               </div>
             )}
           />
-          <FormFieldComp
-            label="Name of Account"
+          <Controller
+            control={control}
             name="accountName"
-            type="text"
-            register={register}
-            validation={{ required: "Account name is required" }}
-            placeholder="Enter Name of Account"
-            errors={errors}
-            readOnly
+            rules={{ required: "Account name is required" }}
+            render={({ field }) => (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-[#939393] mb-1">
+                  Name of Account
+                </label>
+                <input
+                  {...field}
+                  type="text"
+                  placeholder="Enter Name of Account"
+                  className="w-full px-2 py-3 rounded-lg border focus:outline-none"
+                />
+                {errors.accountName && (
+                  <p className="text-red-500 mt-1 text-[12px]">
+                    {errors.accountName.message}
+                  </p>
+                )}
+              </div>
+            )}
           />
         </div>
 

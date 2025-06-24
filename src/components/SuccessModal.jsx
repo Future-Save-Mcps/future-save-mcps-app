@@ -2,8 +2,13 @@ import React from "react";
 import success from "../assets/success.gif";
 import { motion } from "framer-motion";
 
-const SuccessModal = ({ open, setOpen }) => {
+const SuccessModal = ({ open, setOpen, onClose }) => {
   if (!open) return null;
+
+  const handleClose = () => {
+    setOpen(false)
+    onClose()
+  }
   return (
     <div className="fixed z-30 inset-0 bg-black bg-opacity-50 flex justify-center items-center">
       <motion.div
@@ -20,7 +25,7 @@ const SuccessModal = ({ open, setOpen }) => {
           user's portal have been sent.
         </p>
         <button
-          onClick={() => setOpen(false)}
+          onClick={handleClose}
           className="mt-4 bg-[#F8F8FA] w-full text-[#171717] px-6 py-3 rounded-md text-lg font-medium"
         >
           Continue
