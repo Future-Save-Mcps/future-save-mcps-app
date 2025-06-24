@@ -257,7 +257,6 @@ const BankAndWithdrawal = () => {
               validation={{ required: "Account name is required" }}
               placeholder="Enter Name of Account"
               errors={errors}
-              readOnly
             />
 
             {/* Email */}

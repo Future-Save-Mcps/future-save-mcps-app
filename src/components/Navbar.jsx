@@ -11,7 +11,6 @@ const Navbar = ({ refresh }) => {
   const location = useLocation();
   const [state, setState] = React.useState(false);
   const { data: userData, isLoading, error, refetch } = useApiGet("user");
-  console.log(userData?.data);
 
   useEffect(() => {
     refetch();
@@ -32,7 +31,6 @@ const Navbar = ({ refresh }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       if (refetchNotif) {
-        console.log("Auto-refetching notifications...");
         refetchNotif();
       }
     }, 4 * 60 * 1000); // 4 minutes in milliseconds

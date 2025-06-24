@@ -114,7 +114,6 @@ const ContributionPplan = () => {
     `savingsplan/activities-and-history-tracking?SavingsPlanId=${planId}`
   );
 
-  console.log(activities);
   const {
     data: contribution,
     isLoading: isLoadingContribution,
@@ -198,7 +197,6 @@ const ContributionPplan = () => {
       handleClosePaymentModal();
     }
   };
-  console.log(contributionPlan?.data);
 
   const [open, setOpen] = useState(false);
   const [onChangeValueNumberOfWeeks, setOnChangeValueNumberOfWeeks] =
@@ -214,7 +212,6 @@ const ContributionPplan = () => {
     reset();
   };
   const handleSuccess = (reference) => {
-    console.log("Payment successful:", reference);
     // setTimeout(() => {
     // handleClosePaymentModal();
     // }, 3000);
@@ -228,7 +225,6 @@ const ContributionPplan = () => {
 
   useEffect(() => {
     if (contribution) {
-      console.log(contribution);
     }
   }, [activeTab, contribution]);
 
@@ -270,7 +266,6 @@ const ContributionPplan = () => {
   }, [savingsPlan, onChangeValue]);
 
   useEffect(() => {
-    console.log(paymentType === "AdvancePayment");
     if (paymentType === "CurrentWeekPayment") {
       setValue("Weeks", 1);
     }
@@ -278,7 +273,6 @@ const ContributionPplan = () => {
   }, [paymentType, onChangeValuePaymentType]);
 
   useEffect(() => {
-    console.log(onChangeValueNumberOfWeeks);
 
     setValue("weeklyAmount", 5000 * numberOfWeeks);
   }, [numberOfWeeks, onChangeValueNumberOfWeeks]);
